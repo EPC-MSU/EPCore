@@ -1,6 +1,6 @@
 #include "foo.h"
 
-int a()
+int get_foo()
 {
     return 42;
 }
