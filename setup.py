@@ -8,6 +8,7 @@ setup(
     install_requires=[
         "numpy"  # for pin module
     ],
+    #package_dir = {'': 'epcore'},
     package_data={
         'epcore.sound': ['sound/foo.so']  # for sound module
     }
