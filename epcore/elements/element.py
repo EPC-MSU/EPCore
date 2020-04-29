@@ -4,7 +4,7 @@ from .measurement import Measurement
 from .pin import Pin
 
 
-class Element:  
+class Element:
     """
     Class for a PCB component.
     In most cases it has a number of pins
@@ -13,7 +13,6 @@ class Element:
     def __init__(self, pins: List[Pin] = []):
         logging.debug("New element!")
         self.pins = pins
-
 
     def to_json_dict(self) -> dict:
         """
@@ -25,7 +24,6 @@ class Element:
         for p in self.pins:
             json_data["pins"].append(p.to_json_dict())
         return json_data
-
 
     @classmethod
     def create_from_json_dict(cls, json_data: dict) -> "Element":

@@ -1,6 +1,7 @@
 from typing import List
 import logging
 
+
 class MeasurementSettings:
     """
     Basic settings for IV Curve measurement.
@@ -8,14 +9,12 @@ class MeasurementSettings:
     def __init__(self):
         pass
 
-
     def to_json_dict(self) -> dict:
         """
         Return object as dict with structure
         compatible with UFIV JSON file schema
         """
         return {}
-
 
     @classmethod
     def create_from_json_dict(cls, json_data: dict) -> "MeasurementSettings":
@@ -35,7 +34,6 @@ class IVCurve:
         self.currents = currents
         self.voltages = voltages
 
-
     def to_json_dict(self) -> dict:
         """
         Return object as dict with structure
@@ -45,7 +43,6 @@ class IVCurve:
         json_data["voltage"] = self.voltages
         json_data["current"] = self.currents
         return json_data
-
 
     @classmethod
     def create_from_json_dict(cls, json_data: dict) -> "IVCurve":
@@ -63,15 +60,14 @@ class Measurement:
     """
     Class for a single electrical IV-curve measurement.
     """
-    def __init__(self, 
-                 is_reference: bool=False,
-                 settings: MeasurementSettings=MeasurementSettings(),
-                 iv_curve: IVCurve=IVCurve()):
+    def __init__(self,
+                 is_reference: bool = False,
+                 settings: MeasurementSettings = MeasurementSettings(),
+                 iv_curve: IVCurve = IVCurve()):
         logging.debug("New measurement created")
         self.is_reference = is_reference
         self.settings = settings
         self.iv_curve = iv_curve
-
 
     def to_json_dict(self) -> dict:
         """
@@ -85,7 +81,6 @@ class Measurement:
         json_data["iv_array"].append(self.iv_curve.to_json_dict())
         return json_data
 
-
     @classmethod
     def create_from_json_dict(cls, json_data: dict) -> "Measurement":
         """
@@ -94,6 +89,7 @@ class Measurement:
         """
         return Measurement(
             is_reference=json_data["is_reference"],
-            settings=MeasurementSettings.create_from_json_dict(["measurement_settings"]),
+            settings=MeasurementSettings.create_from_json_dict(
+                json_data["measurement_settings"]),
             iv_curve=IVCurve.create_from_json_dict(json_data["iv_array"][0])
         )

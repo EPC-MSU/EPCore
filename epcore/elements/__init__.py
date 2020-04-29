@@ -10,9 +10,10 @@ There is an object hierarchy:
         - MeasurementSettings
         - IVCurve
 
-Upper objects (starting from board) can contain lower elements (some elements can be empty).
-Lower elements should be completely independent from upper elements. 
-For example pin shouldn’t use any Element methods and shouldn’t know about such objects.
+Upper objects (starting from board) can contain lower elements
+(some elements can be empty). Lower elements should be completely
+independent from upper elements. For example pin shouldn’t use
+any Element methods and shouldn’t know about such objects.
 
 To run example:
 cd <to root epcore directory>
@@ -22,12 +23,12 @@ To build documentaion:
 pydoc -w epcore.elements
 """
 
-from .measurement import Measurement, MeasurementSettings, IVCurve 
+from .measurement import Measurement, MeasurementSettings, IVCurve
 from .pin import Pin
 from .element import Element
 from .board import Board
 
-__all__ = ["IVCurve", 
+__all__ = ["IVCurve",
            "MeasurementSettings",
            "Measurement",
            "Pin",

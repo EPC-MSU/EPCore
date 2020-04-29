@@ -4,16 +4,16 @@ from .measurement import Measurement
 from .pin import Pin
 from .element import Element
 
+
 class Board:
     """
     Printed circuit board class.
-    Normally board contain a number of components, 
+    Normally board contain a number of components,
     which can be tested.
     """
     def __init__(self, elements: List[Element] = []):
         logging.debug("New board!")
         self.elements = elements
-
 
     def to_json_dict(self) -> dict:
         """
@@ -38,4 +38,3 @@ class Board:
         return Board(
             elements=elements
         )
-

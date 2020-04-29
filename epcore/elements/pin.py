@@ -2,15 +2,17 @@ from typing import List
 import logging
 from .measurement import Measurement
 
+
 class Pin:
     """
     Class for a pin of electric component.
     """
-    def __init__(self, measurements: List[Measurement] = [], comment: str = ""):
+    def __init__(self,
+                 measurements: List[Measurement] = [],
+                 comment: str = ""):
         logging.debug("New pin!")
         self.measurements = measurements
         self.comment = comment
-
 
     def to_json_dict(self) -> dict:
         """
