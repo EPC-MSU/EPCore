@@ -13,6 +13,7 @@ class Board(JsonConvertible):
     """
 
     elements: List[Element]
+    version: str
 
     def to_json(self) -> Dict:
         """
@@ -21,7 +22,8 @@ class Board(JsonConvertible):
         """
 
         json_data = {
-            "elements": [el.to_json() for el in self.elements]
+            "elements": [el.to_json() for el in self.elements],
+            "version": self.version
         }
 
         return json_data
@@ -33,5 +35,6 @@ class Board(JsonConvertible):
         compatible with UFIV JSON file schema
         """
         return Board(
-            elements=[Element.create_from_json(el) for el in json["elements"]]
+            elements=[Element.create_from_json(el) for el in json["elements"]],
+            version=json["version"]
         )

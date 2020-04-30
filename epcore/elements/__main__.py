@@ -36,7 +36,7 @@ if __name__ == "__main__":
     )
 
     # Board
-    board = Board([e1, e2])
+    board = Board([e1, e2], version="1.0.0")
     print(board)
 
     # json conversion
