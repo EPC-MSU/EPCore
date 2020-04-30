@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Dict
+from warnings import warn
 from .element import Element
 from .abstract import JsonConvertible
 
@@ -35,6 +36,8 @@ class Board(JsonConvertible):
         Create object from dict with structure
         compatible with UFIV JSON file schema
         """
+        if json["version"] != version:
+            warn(f"Module version {version} does not match version of file {json['version']}")
         return Board(
             elements=[Element.create_from_json(el) for el in json["elements"]]
         )
