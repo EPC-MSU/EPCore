@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import logging
 from .measurement import Measurement
 
@@ -14,12 +14,12 @@ class Pin:
         self.measurements = measurements
         self.comment = comment
 
-    def to_json_dict(self) -> dict:
+    def to_json_dict(self) -> Dict:
         """
         Return object as dict with structure
         compatible with UFIV JSON file schema
         """
-        json_data = {}
+        json_data = dict()
         json_data["comment"] = self.comment
         json_data["ivc"] = []
         for m in self.measurements:
@@ -27,7 +27,7 @@ class Pin:
         return json_data
 
     @classmethod
-    def create_from_json_dict(cls, json_data: dict) -> "Pin":
+    def create_from_json_dict(cls, json_data: Dict) -> "Pin":
         """
         Create object from dict with structure
         compatible with UFIV JSON file schema
