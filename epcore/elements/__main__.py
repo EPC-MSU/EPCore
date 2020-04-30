@@ -1,6 +1,6 @@
 import logging
 
-from .measurement import Measurement
+from .measurement import Measurement, Point, MeasurementSettings
 from .pin import Pin
 from .element import Element
 from .board import Board
@@ -10,20 +10,38 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
     # Create board with elements with pins
+
     # Element 1
-    e_1 = Element([Pin([Measurement()], "E1 Pin 1"),
-                   Pin([Measurement()], "E1 Pin 2"),
-                   Pin([Measurement()], "E1 Pin 3")])
+    e1 = Element(
+        pins=[
+            Pin(0.0, 0.0, [
+                Measurement(
+                    MeasurementSettings(0, 0, 0, 0),
+                    ivc=[Point(0, 0), Point(1, 1)]
+                ),
+            ])
+        ]
+    )
 
     # Element 2
-    e_2 = Element([Pin([Measurement()], "E2 Pin 1"),
-                   Pin([Measurement()], "E2 Pin 2")])
+    e2 = Element(
+        pins=[
+            Pin(1.0, 1.0, [
+                Measurement(
+                    MeasurementSettings(1, 1, 1, 1),
+                    ivc=[Point(6, 5), Point(4, 3)]
+                ),
+            ], comment="hi here")
+        ]
+    )
 
     # Board
-    board = Board([e_1, e_2])
+    board = Board([e1, e2])
+    print(board)
 
     # json conversion
-    board_json = board.to_json_dict()
+    board_json = board.to_json()
     print(board_json)
 
-    board_2 = Board.create_from_json_dict(board_json)
+    board_2 = Board.create_from_json(board_json)
+    print(board)

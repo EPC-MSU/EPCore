@@ -8,7 +8,7 @@ There is an object hierarchy:
     - Pin
       - Measurement
         - MeasurementSettings
-        - IVCurve
+        - [Point] array
 
 Upper objects (starting from board) can contain lower elements
 (some elements can be empty). Lower elements should be completely
@@ -21,19 +21,22 @@ python -m epcore.elements
 
 To build documentaion:
 pydoc -w epcore.elements
+
+To run tests:
+pytest epcore/elements/tests/*.py
 """
 
-from .measurement import Measurement, MeasurementSettings, IVCurve
+from .measurement import Measurement, MeasurementSettings, Point
 from .pin import Pin
 from .element import Element
 from .board import Board
 
-__all__ = ["IVCurve",
+__all__ = ["Point",
            "MeasurementSettings",
            "Measurement",
            "Pin",
            "Element",
            "Board"]
 
-__author__ = ""
-__email__ = ""
+__author__ = "mihalin"
+__email__ = "mihalin@pysabphyslab.ru"
