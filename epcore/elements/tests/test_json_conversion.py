@@ -1,17 +1,11 @@
-import logging
+from ..measurement import Measurement, Point, MeasurementSettings
+from ..pin import Pin
+from ..element import Element
+from ..board import Board
 
-from .measurement import Measurement, Point, MeasurementSettings
-from .pin import Pin
-from .element import Element
-from .board import Board
 
-if __name__ == "__main__":
-
-    logging.basicConfig(level=logging.DEBUG)
-
-    # Create board with elements with pins
-
-    # Element 1
+def test_json_conversion():
+    # Create some elements
     e1 = Element(
         pins=[
             Pin(0.0, 0.0, [
@@ -23,7 +17,6 @@ if __name__ == "__main__":
         ]
     )
 
-    # Element 2
     e2 = Element(
         pins=[
             Pin(1.0, 1.0, [
@@ -36,12 +29,15 @@ if __name__ == "__main__":
     )
 
     # Board
-    board = Board([e1, e2])
-    print(board)
+    board1 = Board([e1, e2])
 
-    # json conversion
-    board_json = board.to_json()
-    print(board_json)
+    # convert board to json
+    output_json_1 = board1.to_json()
 
-    board_2 = Board.create_from_json(board_json)
-    print(board)
+    # create board from json!
+    board2 = Board.create_from_json(output_json_1)
+
+    # ... and another one!
+    output_json_2 = board2.to_json()
+
+    assert (output_json_1 == output_json_2)

@@ -23,17 +23,17 @@ To build documentaion:
 pydoc -w epcore.elements
 """
 
-from .measurement import Measurement, MeasurementSettings, IVCurve
+from .measurement import Measurement, MeasurementSettings, Point
 from .pin import Pin
 from .element import Element
 from .board import Board
 
-__all__ = ["IVCurve",
+__all__ = ["Point",
            "MeasurementSettings",
            "Measurement",
            "Pin",
            "Element",
            "Board"]
 
-__author__ = ""
-__email__ = ""
+__author__ = "mihalin"
+__email__ = "mihalin@pysabphyslab.ru"
