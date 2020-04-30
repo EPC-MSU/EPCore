@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Optional
+from PyQt5.QtGui import QPixmap
 from .element import Element
 from .abstract import JsonConvertible
 
@@ -13,6 +14,7 @@ class Board(JsonConvertible):
     """
 
     elements: List[Element]
+    image: Optional[QPixmap] = None
 
     def to_json(self) -> Dict:
         """

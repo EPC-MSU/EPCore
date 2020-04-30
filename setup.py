@@ -6,6 +6,7 @@ setup(
     name='epcore',
     packages=find_packages(),
     install_requires=[
-        "dataclasses"  # for elements module
+        "dataclasses",  # for elements module
+        "PyQt5>=5.8.2, <=5.14.0",  # for QPixmap and other ...
     ]
 )
