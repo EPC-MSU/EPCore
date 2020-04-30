@@ -3,41 +3,20 @@ from ..pin import Pin
 from ..element import Element
 from ..board import Board
 
+from os.path import dirname, join as join_path
+
+from json import load
+
+testfile = join_path(dirname(__file__), "testboard.json")
+
 
 def test_json_conversion():
-    # Create some elements
-    e1 = Element(
-        pins=[
-            Pin(0.0, 0.0, [
-                Measurement(
-                    MeasurementSettings(0, 0, 0, 0),
-                    ivc=[Point(0, 0), Point(1, 1)]
-                ),
-            ])
-        ]
-    )
+    # load board
+    with open(testfile, "r") as json_source:
+        json_dict = load(json_source)
+        board = Board.create_from_json(json_dict)
 
-    e2 = Element(
-        pins=[
-            Pin(1.0, 1.0, [
-                Measurement(
-                    MeasurementSettings(1, 1, 1, 1),
-                    ivc=[Point(6, 5), Point(4, 3)]
-                ),
-            ], comment="hi here")
-        ]
-    )
+    # save to dict
+    new_json_dict = board.to_json()
 
-    # Board
-    board1 = Board([e1, e2])
-
-    # convert board to json
-    output_json_1 = board1.to_json()
-
-    # create board from json!
-    board2 = Board.create_from_json(output_json_1)
-
-    # ... and another one!
-    output_json_2 = board2.to_json()
-
-    assert (output_json_1 == output_json_2)
+    assert new_json_dict == json_dict

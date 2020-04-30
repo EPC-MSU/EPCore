@@ -23,7 +23,7 @@ To build documentaion:
 pydoc -w epcore.elements
 
 To run tests:
-pytest epcore/elements/tests/*
+pytest epcore/elements/tests/*.py
 """
 
 from .measurement import Measurement, MeasurementSettings, Point
