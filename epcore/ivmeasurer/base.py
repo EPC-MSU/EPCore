@@ -1,16 +1,21 @@
 import logging
 import time
+from dataclasses import dataclass
 
 from ..elements import MeasurementSettings, IVCurve
 
+@dataclass
 class IVMeasurerIdentityInformation:
     """
     Class for hardware identity information
     in unified format
     """
-    def __init__(self):
-        pass
-
+    manufacturer: str
+    device_class: str
+    device_name: str
+    hardware_version: tuple
+    firmware_version: tuple
+    name: str
 
 class IVMeasurerBase:
     """
@@ -30,7 +35,12 @@ class IVMeasurerBase:
         pass
 
     def get_settings(self) -> MeasurementSettings:
-        return MeasurementSettings()
+        return MeasurementSettings(
+            sampling_rate=0,
+            internal_resistance=0,
+            probe_signal_frequency=0,
+            max_voltage=0
+        )
 
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
         return IVMeasurerIdentityInformation()

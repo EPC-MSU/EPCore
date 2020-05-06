@@ -18,8 +18,10 @@ pydoc -w epcore.ivmeasurer
 """
 
 from .base import IVMeasurerBase, IVMeasurerIdentityInformation
+from .virtual import IVMeasurerVirtual
 
 __all__ = ["IVMeasurerBase",
+           "IVMeasurerVirtual",
            "IVMeasurerIdentityInformation"]
 
 __author__ = ""

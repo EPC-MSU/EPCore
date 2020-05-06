@@ -27,7 +27,7 @@ To run tests:
 pytest epcore/elements/tests/*.py
 """
 
-from .measurement import Measurement, MeasurementSettings, Point
+from .measurement import Measurement, MeasurementSettings, IVCurve, Point
 from .pin import Pin
 from .element import Element
 from .board import Board
@@ -37,6 +37,7 @@ __all__ = ["Point",
            "Measurement",
            "Pin",
            "Element",
+           "IVCurve",
            "Board"]
 
 __author__ = "mihalin"
