@@ -47,19 +47,9 @@ class MeasurementSettings(JsonConvertible):
 
 
 @dataclass
-class Point(JsonConvertible):
-    current: float
-    voltage: float
-
-    def to_json(self) -> Dict:
-        return {
-            "current": self.current,
-            "voltage": self.voltage
-        }
-
-    @classmethod
-    def create_from_json(cls, json: Dict) -> "Point":
-        return Point(current=json["current"], voltage=json["voltage"])
+class IVCurve:
+    currents: List[float]
+    voltages: List[float]
 
 
 @dataclass
@@ -69,7 +59,7 @@ class Measurement(JsonConvertible):
     """
 
     settings: MeasurementSettings
-    ivc: List[Point]
+    ivc: IVCurve
     comment: Optional[str] = None
     is_dynamic: Optional[bool] = None
     is_reference: Optional[bool] = None
@@ -82,7 +72,8 @@ class Measurement(JsonConvertible):
 
         json_data = {
             "measurement_settings": self.settings.to_json(),
-            "iv_array": [p.to_json() for p in self.ivc],
+            "voltages": self.ivc.voltages,
+            "currents": self.ivc.currents,
             "comment": self.comment,
             "is_dynamic": self.is_dynamic,
             "is_reference": self.is_reference,
@@ -97,7 +88,7 @@ class Measurement(JsonConvertible):
         """
         return Measurement(
             settings=MeasurementSettings.create_from_json(json_data["measurement_settings"]),
-            ivc=[Point.create_from_json(p) for p in json_data["iv_array"]],
+            ivc=IVCurve(currents=json_data["currents"], voltages=json_data["voltages"]),
             comment=json_data.get("comment"),
             is_dynamic=json_data.get("is_dynamic"),
             is_reference=json_data.get("is_reference")

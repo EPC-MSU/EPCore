@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "elements": [
     {
       "pins": [
@@ -14,16 +14,8 @@
                 "max_voltage": 0,
                 "probe_signal_frequency": 0
               },
-              "iv_array": [
-                {
-                  "current": 0,
-                  "voltage": 0
-                },
-                {
-                  "current": 1,
-                  "voltage": 1
-                }
-              ]
+              "currents": [0, 0, 0],
+              "voltages": [1, 1, 1]
             }
           ]
         }
@@ -43,16 +35,8 @@
                 "max_voltage": 1,
                 "probe_signal_frequency": 1
               },
-              "iv_array": [
-                {
-                  "current": 6,
-                  "voltage": 5
-                },
-                {
-                  "current": 4,
-                  "voltage": 3
-                }
-              ]
+              "currents": [6, 5, 4],
+              "voltages": [3, 2, 1]
             }
           ]
         }

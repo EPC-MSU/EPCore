@@ -3,7 +3,7 @@ Operations with UFIV JSON files
 UFIV - Universal file format for IV-curve measurements.
 """
 from ..elements import Board
-from os.path import isdir, isfile, join as join_path
+from os.path import isfile
 from json import load, dump
 from PyQt5.QtGui import QImage
 

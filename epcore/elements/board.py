@@ -5,7 +5,7 @@ from PyQt5.QtGui import QImage
 from .element import Element
 from .abstract import JsonConvertible
 
-version = "1.0.0"
+version = "1.1.0"
 
 
 @dataclass
