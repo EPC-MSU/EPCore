@@ -26,27 +26,26 @@ def _convert_measurement_settings(settings: Dict) -> Dict:
 def _convert_ivc(ivc: Dict, is_reference: bool = False, is_dynamic: bool = False) -> Dict:
     new_ivc = {
         "measurement_settings": _convert_measurement_settings(ivc["measure_settings"]),
-        "iv_array": []
     }
     if is_reference:
-        ivc["is_reference"] = True
+        new_ivc["is_reference"] = True
     if is_dynamic:
-        ivc["is_dynamic"] = True
+        new_ivc["is_dynamic"] = True
 
-    for current, voltage in zip(ivc["current"], ivc["voltage"]):
-        new_ivc["iv_array"].append({"current": current,
-                                    "voltage": voltage})
+    new_ivc["currents"] = ivc["current"]
+    new_ivc["voltages"] = ivc["voltage"]
+
     return new_ivc
 
 
 def _convert_pin(pin: Dict) -> Dict:
-    remove_pin_keys = ["score", "reference_ivc", "is_dynamic", "cluster_id"]
+    remove_pin_keys = ["score", "reference_ivc", "is_dynamic", "cluster_id", "ivc"]
 
     is_dynamic = pin.get("is_dynamic", False)
 
-    pin["ivc"] = [_convert_ivc(pin["ivc"], is_dynamic=is_dynamic)]
+    pin["iv_curves"] = [_convert_ivc(pin["ivc"], is_dynamic=is_dynamic)]
     if pin.get("reference_ivc", None):
-        pin["ivc"].append(_convert_ivc(pin["reference_ivc"], is_reference=True, is_dynamic=is_dynamic))
+        pin["iv_curves"].append(_convert_ivc(pin["reference_ivc"], is_reference=True, is_dynamic=is_dynamic))
 
     for key in remove_pin_keys:
         pin.pop(key, None)
