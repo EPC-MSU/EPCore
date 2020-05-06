@@ -8,6 +8,7 @@ There is an object hierarchy:
     - Pin
       - Measurement
         - MeasurementSettings
+        - IVCurve
         - [Point] array
 
 Upper objects (starting from board) can contain lower elements

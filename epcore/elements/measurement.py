@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from .abstract import JsonConvertible
 
@@ -60,6 +60,48 @@ class Point(JsonConvertible):
     @classmethod
     def create_from_json(cls, json: Dict) -> "Point":
         return Point(current=json["current"], voltage=json["voltage"])
+
+
+@dataclass
+class IVCurve(JsonConvertible):
+    """
+    IVCurve data.
+    Measurement results only.
+    """
+    @staticmethod
+    def curve_arr_default_factory() -> List[float]:
+        # This is default factory for currents and voltages array
+        # IV curve should contain at lease two points for correct operation.
+        # More details about default_factories:
+        # https://stackoverflow.com/questions/53632152
+        return [0., 0.]
+
+    currents: List[float] = field(default_factory=curve_arr_default_factory.__func__)
+    voltages: List[float] = field(default_factory=curve_arr_default_factory.__func__)
+
+    def __post_init__(self):
+        if len(self.currents) != len(self.voltages):
+            raise ValueError("""Currents and voltages array lengths should be equal.
+                                Got len(currents) = {}. len(voltages) = {}""".format(
+                                    len(self.currents), len(self.voltages)
+                                ))
+        
+        if len(self.currents) < 2:
+            raise ValueError("""IV curve should contain at lease 2 points 
+                                for correct operation, got {}""".format(
+                                    len(self.currents)
+                                ))
+
+
+    def to_json(self) -> Dict:
+        return {
+            "currents": self.currents,
+            "voltages": self.voltages
+        }
+
+    @classmethod
+    def create_from_json(cls, json: Dict) -> "iv_curve":
+        return Point(current=json["currents"], voltage=json["voltages"])
 
 
 @dataclass
