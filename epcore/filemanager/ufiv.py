@@ -5,7 +5,7 @@ UFIV - Universal file format for IV-curve measurements.
 from ..elements import Board
 from os.path import isdir, isfile, join as join_path
 from json import load, dump
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QImage
 
 
 def load_board_from_ufiv(path: str) -> Board:
@@ -20,7 +20,7 @@ def load_board_from_ufiv(path: str) -> Board:
 
     image_path = path.replace(".json", ".png")
     if isfile(image_path):
-        board.image = QPixmap(image_path)
+        board.image = QImage(image_path)
 
     return board
 
