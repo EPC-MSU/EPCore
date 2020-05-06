@@ -17,7 +17,7 @@ class LoadSaveTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             load_board_from_ufiv(dummy_path)
 
-    def test_normal_board(self):
+    def test_load_board(self):
         board = load_board_from_ufiv(board_path)
         self.assertTrue(board.image is not None)
         self.assertTrue(board.image.width() == 100)
