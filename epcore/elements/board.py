@@ -1,40 +1,43 @@
-from typing import List
-import logging
-from .measurement import Measurement
-from .pin import Pin
+from dataclasses import dataclass
+from typing import List, Dict
+from warnings import warn
 from .element import Element
+from .abstract import JsonConvertible
+
+version = "1.0.0"
 
 
-class Board:
+@dataclass
+class Board(JsonConvertible):
     """
     Printed circuit board class.
     Normally board contain a number of components,
     which can be tested.
     """
-    def __init__(self, elements: List[Element] = []):
-        logging.debug("New board!")
-        self.elements = elements
 
-    def to_json_dict(self) -> dict:
+    elements: List[Element]
+
+    def to_json(self) -> Dict:
         """
         Return object as dict with structure
         compatible with UFIV JSON file schema
         """
-        json_data = {}
-        json_data["elements"] = []
-        for el in self.elements:
-            json_data["elements"].append(el.to_json_dict())
+
+        json_data = {
+            "elements": [el.to_json() for el in self.elements],
+            "version": version
+        }
+
         return json_data
 
     @classmethod
-    def create_from_json_dict(cls, json_data: dict) -> "Board":
+    def create_from_json(cls, json: Dict) -> "Board":
         """
         Create object from dict with structure
         compatible with UFIV JSON file schema
         """
-        elements = []
-        for el in json_data["elements"]:
-            elements.append(Element.create_from_json_dict(el))
+        if json["version"] != version:
+            warn(f"Module version {version} does not match version of file {json['version']}")
         return Board(
-            elements=elements
+            elements=[Element.create_from_json(el) for el in json["elements"]]
         )
