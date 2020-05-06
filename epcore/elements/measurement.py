@@ -68,16 +68,8 @@ class IVCurve(JsonConvertible):
     IVCurve data.
     Measurement results only.
     """
-    @staticmethod
-    def curve_arr_default_factory() -> List[float]:
-        # This is default factory for currents and voltages array
-        # IV curve should contain at lease two points for correct operation.
-        # More details about default_factories:
-        # https://stackoverflow.com/questions/53632152
-        return [0., 0.]
-
-    currents: List[float] = field(default_factory=curve_arr_default_factory.__func__)
-    voltages: List[float] = field(default_factory=curve_arr_default_factory.__func__)
+    currents: List[float] = field(default_factory=lambda: [0., 0.])
+    voltages: List[float] = field(default_factory=lambda: [0., 0.])
 
     def __post_init__(self):
         if len(self.currents) != len(self.voltages):
