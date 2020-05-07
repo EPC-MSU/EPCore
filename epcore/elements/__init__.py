@@ -24,7 +24,7 @@ To build documentaion:
 pydoc -w epcore.elements
 
 To run tests:
-pytest epcore/elements/tests/*.py
+python -m unittest discover epcore/elements
 """
 
 from .measurement import Measurement, MeasurementSettings, IVCurve, Point
@@ -32,7 +32,7 @@ from .pin import Pin
 from .element import Element
 from .board import Board
 
-__all__ = ["Point",
+__all__ = ["IVCurve",
            "MeasurementSettings",
            "Measurement",
            "Pin",

@@ -1,19 +1,20 @@
-from ..board import Board
-
+import unittest
 from os.path import dirname, join as join_path
-
 from json import load
+from epcore.elements.board import Board
+
 
 testfile = join_path(dirname(__file__), "testboard.json")
 
 
-def test_json_conversion():
-    # load board
-    with open(testfile, "r") as json_source:
-        json_dict = load(json_source)
-        board = Board.create_from_json(json_dict)
+class JsonConversionTest(unittest.TestCase):
+    def test_json_conversion(self):
+        # load board
+        with open(testfile, "r") as json_source:
+            json_dict = load(json_source)
+            board = Board.create_from_json(json_dict)
 
-    # save to dict
-    new_json_dict = board.to_json()
+        # save to dict
+        new_json_dict = board.to_json()
 
-    assert new_json_dict == json_dict
+        self.assertTrue(new_json_dict == json_dict)

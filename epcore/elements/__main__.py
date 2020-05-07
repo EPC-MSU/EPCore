@@ -1,14 +1,10 @@
-import logging
-
-from .measurement import Measurement, Point, MeasurementSettings
+from .measurement import Measurement, IVCurve, MeasurementSettings
 from .pin import Pin
 from .element import Element
 from .board import Board
 
+
 if __name__ == "__main__":
-
-    logging.basicConfig(level=logging.DEBUG)
-
     # Create board with elements with pins
 
     # Element 1
@@ -17,7 +13,7 @@ if __name__ == "__main__":
             Pin(0.0, 0.0, [
                 Measurement(
                     MeasurementSettings(0, 0, 0, 0),
-                    ivc=[Point(0, 0), Point(1, 1)]
+                    ivc=IVCurve(currents=[1, 2, 3], voltages=[4, 5, 6])
                 ),
             ])
         ]
@@ -29,7 +25,7 @@ if __name__ == "__main__":
             Pin(1.0, 1.0, [
                 Measurement(
                     MeasurementSettings(1, 1, 1, 1),
-                    ivc=[Point(6, 5), Point(4, 3)]
+                    ivc=IVCurve(currents=[1, 2, 3], voltages=[6, 4, 2])
                 ),
             ], comment="hi here")
         ]

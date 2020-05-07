@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Optional
 from warnings import warn
+from PyQt5.QtGui import QImage
 from .element import Element
 from .abstract import JsonConvertible
 
-version = "1.0.0"
+version = "1.1.0"
 
 
 @dataclass
@@ -16,6 +17,7 @@ class Board(JsonConvertible):
     """
 
     elements: List[Element]
+    image: Optional[QImage] = None
 
     def to_json(self) -> Dict:
         """
