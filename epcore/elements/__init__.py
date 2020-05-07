@@ -9,7 +9,6 @@ There is an object hierarchy:
       - Measurement
         - MeasurementSettings
         - IVCurve
-        - [Point] array
 
 Upper objects (starting from board) can contain lower elements
 (some elements can be empty). Lower elements should be completely

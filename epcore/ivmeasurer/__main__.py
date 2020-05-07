@@ -9,11 +9,21 @@ if __name__ == "__main__":
 
     logging.debug("IVMeasurere example")
     
+
     m = IVMeasurerVirtual()
     info = m.get_identity_information()
-    print(info)
+    logging.debug("Device info: " + str(info))
+
     s = m.get_settings()
     m.set_settings(s)
-    print(s)
+    logging.debug("Settings: " + str(s))
+    
+    logging.debug("Test virtual resistor")
+    ivc = m.measure_iv_curve()
+    plot_curve(ivc)
+
+    logging.debug("Test virtual capacitor")
+    m.model = "capacitor"
+    m.nominal = 0.0001
     ivc = m.measure_iv_curve()
     plot_curve(ivc)
