@@ -4,7 +4,7 @@ Some implementations has additional methods and data structures. But they should
 
 Implementations in plan:
 * IVMeasurerBase
-* IVMeasurerVirtual
+* IVMeasurerVirtual - Virtual measurer. You can use it without any hardware.
 * IVMeasurerIVM03
 * IVMeasurerNetClient
 
