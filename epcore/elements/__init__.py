@@ -27,7 +27,7 @@ To run tests:
 python -m unittest discover epcore/elements
 """
 
-from .measurement import Measurement, MeasurementSettings, IVCurve, Point
+from .measurement import Measurement, MeasurementSettings, IVCurve
 from .pin import Pin
 from .element import Element
 from .board import Board
