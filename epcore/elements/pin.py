@@ -25,7 +25,7 @@ class Pin(JsonConvertible):
             "comment": self.comment,
             "x": self.x,
             "y": self.y,
-            "ivc": [measure.to_json() for measure in self.measurements]
+            "iv_curves": [measure.to_json() for measure in self.measurements]
         }
 
         return self.remove_unused(json_data)
@@ -40,5 +40,5 @@ class Pin(JsonConvertible):
             comment=json_data.get("comment"),
             x=json_data["x"],
             y=json_data["y"],
-            measurements=[Measurement.create_from_json(measure) for measure in json_data["ivc"]]
+            measurements=[Measurement.create_from_json(measure) for measure in json_data["iv_curves"]]
         )
