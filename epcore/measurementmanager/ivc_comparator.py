@@ -1,5 +1,6 @@
-from ctypes import CDLL, c_double, c_size_t, POINTER
+from ctypes import CDLL, c_double, c_size_t, POINTER, Array
 from platform import system
+from typing import List
 from ..elements import IVCurve
 
 
@@ -15,6 +16,10 @@ def _get_dll():
         return CDLL(_fullpath_lib("ivcmp.dll"))
     else:
         raise NotImplementedError("Unsupported platform {0}".format(system()))
+
+
+def _to_c_array(arr: List[float]) -> Array:
+    return (c_double * len(arr))(*arr)
 
 
 class IVCComparator:
@@ -36,6 +41,9 @@ class IVCComparator:
         self._lib.SetMinVC(min_var_v, min_var_c)
 
     def compare_ivc(self, first_ivc: IVCurve, second_ivc: IVCurve) -> float:
-        res = self._lib.CompareIVC(first_ivc.voltages, first_ivc.currents, second_ivc.voltages, second_ivc.currents,
+        res = self._lib.CompareIVC(_to_c_array(first_ivc.voltages),
+                                   _to_c_array(first_ivc.currents),
+                                   _to_c_array(second_ivc.voltages),
+                                   _to_c_array(second_ivc.currents),
                                    len(first_ivc.voltages))
         return float(res)

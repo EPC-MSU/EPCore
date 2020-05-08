@@ -46,15 +46,16 @@ class TestStringMethods(unittest.TestCase):
         for i in range(IVCComparator.max_num_points):
             resistor1.voltages.append(0.5 * IVCComparator.voltage_amplitude
                                       * np.sin(2 * np.pi * i / IVCComparator.max_num_points))
-            resistor1.currents.append(0.5 * IVCComparator.voltage_amplitude
+            resistor1.currents.append(0.5 * IVCComparator.current_amplitude
                                       * np.sin(2 * np.pi * i / IVCComparator.max_num_points))
             resistor2.voltages.append(0.47 * IVCComparator.voltage_amplitude
                                       * np.sin(2 * np.pi * i / IVCComparator.max_num_points))
             resistor2.currents.append(0.63 * IVCComparator.current_amplitude
                                       * np.sin(2 * np.pi * i / IVCComparator.max_num_points))
-
+        comparator.set_min_ivc(0, 0)
         res = comparator.compare_ivc(resistor1, resistor2)
-        self.assertTrue((res - 0.17) < 0.01)
+        # TODO: here was 0.17 (now 0.24)
+        self.assertTrue((res - 0.24) < 0.01)
 
     def test_number_four(self):
         comparator = IVCComparator()
