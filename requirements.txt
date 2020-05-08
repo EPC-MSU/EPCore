@@ -1,3 +1,4 @@
 dataclasses
 PyQt5==5.14.0
 jsonschema
+numpy

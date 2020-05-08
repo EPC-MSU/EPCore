@@ -1,6 +1,7 @@
 import logging
 import time
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 from ..elements import MeasurementSettings, IVCurve
 
@@ -19,12 +20,12 @@ class IVMeasurerIdentityInformation:
     name: str
 
 
-class IVMeasurerBase:
+class IVMeasurerBase(ABC):
     """
     Base class, which implements standard interface for
     all IVMeasurers
     """
-    def __init__(self, url: str = "") -> "IVMeasurerBase":
+    def __init__(self, url: str = ""):
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
@@ -33,38 +34,39 @@ class IVMeasurerBase:
         self.url = url
         logging.debug("IVMeasurerBase created")
 
+    @abstractmethod
     def set_settings(self, settings: MeasurementSettings):
-        pass
+        raise NotImplementedError()
 
+    @abstractmethod
     def get_settings(self) -> MeasurementSettings:
-        return MeasurementSettings(
-            sampling_rate=0,
-            internal_resistance=0,
-            probe_signal_frequency=0,
-            max_voltage=0
-        )
+        raise NotImplementedError()
 
+    @abstractmethod
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
-        return IVMeasurerIdentityInformation()
+        raise NotImplementedError()
 
+    @abstractmethod
     def trigger_measurement(self):
         """
         Trigger measurement manually.
         You don’t need this if the hardware is in continuous mode.
         """
-        pass
+        raise NotImplementedError()
 
+    @abstractmethod
     def measurement_is_ready(self) -> bool:
         """
         Return true if new measurement is ready
         """
-        return True
+        raise NotImplementedError()
 
+    @abstractmethod
     def get_last_iv_curve(self) -> IVCurve:
         """
         Return result of the last measurement.
         """
-        return IVCurve()
+        raise NotImplementedError()
 
     def measure_iv_curve(self) -> IVCurve:
         """
