@@ -8,7 +8,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
     logging.debug("IVMeasurere example")
-    
 
     m = IVMeasurerVirtual()
     info = m.get_identity_information()

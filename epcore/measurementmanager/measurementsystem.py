@@ -1,4 +1,5 @@
 from typing import List
+import time
 from ..elements import Measurement, MeasurementSettings, IVCurve
 from ..ivmeasurer import IVMeasurerBase
 
@@ -12,11 +13,35 @@ class MeasurementSystem:
     def __init__(self, measurers: List[IVMeasurerBase] = []):
         self.measurers = measurers
 
-    def get_iv_curves(self) -> List[IVCurve]:
+    def trigger_measurements(self):
         """
-        Get curves from all devices.
+        Trigger measurements on all devices
         """
-        return []
+        for m in self.measurers:
+            m.trigger_measurement()
+
+    def measurements_are_ready(self) -> bool:
+        """
+        Return True if all measurers
+        have done their Job
+        """
+        for m in self.measurers:
+            if not m.measurement_is_ready():
+                return False
+        
+        return True
+
+    def measure_iv_curves(self) -> List[IVCurve]:
+        """
+        Make measurements and
+        get new curves from all devices.
+        """
+        self.trigger_measurements()
+
+        while not self.measurements_are_ready():
+            time.sleep(0.05)
+
+        return [m.get_last_iv_curve() for m in self.measurers]
 
     def set_settings(self, settings:MeasurementSettings):
         """
