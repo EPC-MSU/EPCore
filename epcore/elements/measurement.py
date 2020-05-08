@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from .abstract import JsonConvertible
-from .point import Point
 
 
 @dataclass
@@ -77,7 +76,7 @@ class IVCurve(JsonConvertible):
 
     @classmethod
     def create_from_json(cls, json: Dict) -> "IVCurve":
-        return Point(current=json["currents"], voltage=json["voltages"])
+        return IVCurve(currents=json["currents"], voltages=json["voltages"])
 
 
 @dataclass

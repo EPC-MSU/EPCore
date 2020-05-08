@@ -11,7 +11,7 @@ def test_default_arrays():
 
 def test_lehgth_mismatch():
     try:
-        _ = IVCurve(
+        IVCurve(
             currents=[1, 2, 3],
             voltages=[1, 2]
         )
@@ -25,7 +25,7 @@ def test_lehgth_mismatch():
 
 def test_incorrent_length():
     try:
-        _ = IVCurve(
+        IVCurve(
             currents=[1],
             voltages=[1]
         )
