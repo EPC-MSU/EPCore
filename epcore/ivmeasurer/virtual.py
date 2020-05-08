@@ -11,7 +11,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
     Base class, which implements standard interface for
     all IVMeasurers
     """
-    def __init__(self, url: str = "") -> "IVMeasurerVirtual":
+    def __init__(self, url: str = ""):
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
@@ -31,6 +31,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.nominal = 100
         self.noise_factor = 0.05
         logging.debug("IVMeasurerVirtual created")
+        super(IVMeasurerVirtual, self).__init__(url)
 
     def set_settings(self, settings: MeasurementSettings):
         self.__settings = settings

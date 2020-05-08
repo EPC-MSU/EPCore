@@ -8,6 +8,12 @@ from ctypes import c_ubyte, c_byte, c_ushort, c_short, c_uint, c_int, c_ulonglon
      c_void_p, c_char_p, c_wchar_p, c_size_t
 from ctypes.util import find_library
 import atexit
+
+# Add current script path to dll import path
+import os
+from os.path import dirname
+os.environ['PATH'] = dirname(__file__) + os.pathsep + os.environ['PATH']
+
 try:
     from typing import overload, Union, Sequence, Optional
 except ImportError:
