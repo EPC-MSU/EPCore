@@ -1,7 +1,8 @@
 from typing import List
 import time
-from ..elements import Measurement, MeasurementSettings, IVCurve
+from ..elements import MeasurementSettings, IVCurve
 from ..ivmeasurer import IVMeasurerBase
+
 
 class MeasurementSystem:
     """
@@ -28,7 +29,7 @@ class MeasurementSystem:
         for m in self.measurers:
             if not m.measurement_is_ready():
                 return False
-        
+
         return True
 
     def measure_iv_curves(self) -> List[IVCurve]:
@@ -43,7 +44,7 @@ class MeasurementSystem:
 
         return [m.get_last_iv_curve() for m in self.measurers]
 
-    def set_settings(self, settings:MeasurementSettings):
+    def set_settings(self, settings: MeasurementSettings):
         """
         Assign same settings for all measurers.
         """

@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from .abstract import JsonConvertible
+from .point import Point
 
 
 @dataclass
@@ -47,12 +48,6 @@ class MeasurementSettings(JsonConvertible):
 
 
 @dataclass
-class IVCurve:
-    currents: List[float]
-    voltages: List[float]
-
-
-@dataclass
 class IVCurve(JsonConvertible):
     """
     IVCurve data.
@@ -67,13 +62,12 @@ class IVCurve(JsonConvertible):
                                 Got len(currents) = {}. len(voltages) = {}""".format(
                                     len(self.currents), len(self.voltages)
                                 ))
-        
+
         if len(self.currents) < 2:
-            raise ValueError("""IV curve should contain at lease 2 points 
+            raise ValueError("""IV curve should contain at lease 2 points
                                 for correct operation, got {}""".format(
                                     len(self.currents)
                                 ))
-
 
     def to_json(self) -> Dict:
         return {
@@ -82,7 +76,7 @@ class IVCurve(JsonConvertible):
         }
 
     @classmethod
-    def create_from_json(cls, json: Dict) -> "iv_curve":
+    def create_from_json(cls, json: Dict) -> "IVCurve":
         return Point(current=json["currents"], voltage=json["voltages"])
 
 

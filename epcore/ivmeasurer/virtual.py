@@ -5,17 +5,17 @@ import numpy as np
 from .base import IVMeasurerBase, IVMeasurerIdentityInformation
 from ..elements import MeasurementSettings, IVCurve
 
+
 class IVMeasurerVirtual(IVMeasurerBase):
     """
-    Base class, which implements standard interface for 
+    Base class, which implements standard interface for
     all IVMeasurers
     """
-    logging.debug("IVMeasurerVirtual created")
     def __init__(self, url: str = "") -> "IVMeasurerVirtual":
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
-        or "com:///dev/tty/ttyACMx" 
+        or "com:///dev/tty/ttyACMx"
         """
         self.url = url
         self.__settings = MeasurementSettings(
@@ -30,6 +30,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.model = "resistor"
         self.nominal = 100
         self.noise_factor = 0.05
+        logging.debug("IVMeasurerVirtual created")
 
     def set_settings(self, settings: MeasurementSettings):
         self.__settings = settings
@@ -39,17 +40,17 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
         return IVMeasurerIdentityInformation(
-                manufacturer = "EPC MSU",
-                device_class = "EyePoint virtual device",
-                device_name = "Virtual IV Measurer",
-                hardware_version = (0, 0, 0),
-                firmware_version = (0, 0, 0),
-                name = "Virtual"
+                manufacturer="EPC MSU",
+                device_class="EyePoint virtual device",
+                device_name="Virtual IV Measurer",
+                hardware_version=(0, 0, 0),
+                firmware_version=(0, 0, 0),
+                name="Virtual"
         )
 
     def trigger_measurement(self):
         """
-        Trigger measurement manually. 
+        Trigger measurement manually.
         You don’t need this if the hardware is in continuous mode.
         """
         self.__measurement_is_ready = False
@@ -83,7 +84,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         Blocking function. May take some time.
         """
         self.trigger_measurement()
-        # In ideal case it should be 1, 
+        # In ideal case it should be 1,
         # but we set 5 to consider worst case
         self.__measurement_is_ready = False
         time.sleep(5. / (2 * np.pi * self.__settings.probe_signal_frequency))
@@ -95,7 +96,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
     def __add_noise(self, voltages_arr, currents_arr):
         voltage_noise_ampl = self.__settings.max_voltage * self.noise_factor
         voltages_arr = np.array(voltages_arr) + voltage_noise_ampl * np.random.random(len(voltages_arr))
-        
+
         current_noise_ampl = (self.__settings.max_voltage / (self.__settings.internal_resistance + 100) *
                               self.noise_factor)
         currents_arr = np.array(currents_arr) + current_noise_ampl * np.random.random(len(currents_arr))
@@ -125,7 +126,6 @@ class IVMeasurerVirtual(IVMeasurerBase):
             currents=i_out.tolist(),
             voltages=v_out.tolist()
         )
-        
 
     def __calculate_c_iv(self):
         """
@@ -144,9 +144,8 @@ class IVMeasurerVirtual(IVMeasurerBase):
         i_out = np.zeros(n_points)
 
         for i in range(1, n_points):
-            v_out[i] = (v_out[i - 1] - v_in[i - 1]) * np.exp(-(t[i] - t[i - 1]) /
-                                                            (self.nominal * r_lim))
-            v_out[i] += v_in[i - 1] # <----- Check this
+            v_out[i] = (v_out[i - 1] - v_in[i - 1]) * np.exp(-(t[i] - t[i - 1]) / (self.nominal * r_lim))
+            v_out[i] += v_in[i - 1]  # <----- Check this
             i_out[i] = (v_in[i] - v_out[i]) / r_lim
 
         v_out, i_out = self.__add_noise(v_out, i_out)

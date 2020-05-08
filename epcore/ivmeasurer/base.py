@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from ..elements import MeasurementSettings, IVCurve
 
+
 @dataclass
 class IVMeasurerIdentityInformation:
     """
@@ -17,19 +18,20 @@ class IVMeasurerIdentityInformation:
     firmware_version: tuple
     name: str
 
+
 class IVMeasurerBase:
     """
-    Base class, which implements standard interface for 
+    Base class, which implements standard interface for
     all IVMeasurers
     """
-    logging.debug("IVMeasurerBase created")
     def __init__(self, url: str = "") -> "IVMeasurerBase":
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
-        or "com:///dev/tty/ttyACMx" 
+        or "com:///dev/tty/ttyACMx"
         """
         self.url = url
+        logging.debug("IVMeasurerBase created")
 
     def set_settings(self, settings: MeasurementSettings):
         pass
@@ -47,7 +49,7 @@ class IVMeasurerBase:
 
     def trigger_measurement(self):
         """
-        Trigger measurement manually. 
+        Trigger measurement manually.
         You don’t need this if the hardware is in continuous mode.
         """
         pass

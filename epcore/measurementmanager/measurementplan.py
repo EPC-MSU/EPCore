@@ -1,14 +1,15 @@
 from ..elements import Board, Pin, Measurement
 from ..ivmeasurer import IVMeasurerBase
 
+
 class MeasurementPlan(Board):
     """
     Measurement plan (test plan) – it is a linear series of measurements.
-    It is a simple state machiine. 
-    All board points should be aggregated in a series. 
-    This series is virtual and it is not stored anywhere. 
-    But for every point (except the first and the last) 
-    there is a single next point and a single previous point. 
+    It is a simple state machiine.
+    All board points should be aggregated in a series.
+    This series is virtual and it is not stored anywhere.
+    But for every point (except the first and the last)
+    there is a single next point and a single previous point.
     The initial board structure should be saved.
     """
     def __init__(self, board: Board = Board()):
@@ -41,7 +42,7 @@ class MeasurementPlan(Board):
         You can get the result
         by calling get_current_pin()
         """
-    
+
     def assign_measurement(self, measurement: Measurement):
         """
         Assign measurement for current pin.
@@ -56,4 +57,3 @@ class MeasurementPlan(Board):
 
     def export_to_board(self) -> Board:
         return Board()
-     

@@ -1,6 +1,7 @@
 import numpy as np
 from ..measurement import IVCurve
 
+
 def test_default_arrays():
     test_curve = IVCurve()
 
@@ -11,8 +12,8 @@ def test_default_arrays():
 def test_lehgth_mismatch():
     try:
         _ = IVCurve(
-            currents = [1, 2, 3],
-            voltages = [1, 2]
+            currents=[1, 2, 3],
+            voltages=[1, 2]
         )
 
         # If we are here, no exception occurred,
@@ -25,8 +26,8 @@ def test_lehgth_mismatch():
 def test_incorrent_length():
     try:
         _ = IVCurve(
-            currents = [1],
-            voltages = [1]
+            currents=[1],
+            voltages=[1]
         )
 
         # If we are here, no exception occurred,
