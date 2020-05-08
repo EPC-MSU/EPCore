@@ -6,7 +6,7 @@
         {
           "x": 0,
           "y": 0,
-          "ivc": [
+          "iv_curves": [
             {
               "measurement_settings": {
                 "sampling_rate": 0,
@@ -27,7 +27,7 @@
           "comment": "hi here",
           "x": 1,
           "y": 1,
-          "ivc": [
+          "iv_curves": [
             {
               "measurement_settings": {
                 "sampling_rate": 1,
