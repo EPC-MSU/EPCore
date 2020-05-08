@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from warnings import warn
 from PyQt5.QtGui import QImage
@@ -16,7 +16,7 @@ class Board(JsonConvertible):
     which can be tested.
     """
 
-    elements: List[Element]
+    elements: List[Element] = field(default_factory=lambda: [])
     image: Optional[QImage] = None
 
     def to_json(self) -> Dict:

@@ -8,7 +8,7 @@ There is an object hierarchy:
     - Pin
       - Measurement
         - MeasurementSettings
-        - [Point] array
+        - IVCurve
 
 Upper objects (starting from board) can contain lower elements
 (some elements can be empty). Lower elements should be completely
@@ -36,6 +36,7 @@ __all__ = ["IVCurve",
            "Measurement",
            "Pin",
            "Element",
+           "IVCurve",
            "Board"]
 
 __author__ = "mihalin"
