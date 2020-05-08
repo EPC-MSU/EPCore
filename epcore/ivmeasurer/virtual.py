@@ -5,7 +5,7 @@ import numpy as np
 from .base import IVMeasurerBase, IVMeasurerIdentityInformation
 from ..elements import MeasurementSettings, IVCurve
 
-class IVMeasurerVirtual():
+class IVMeasurerVirtual(IVMeasurerBase):
     """
     Base class, which implements standard interface for 
     all IVMeasurers
