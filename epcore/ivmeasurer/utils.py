@@ -9,6 +9,7 @@ def plot_curve(ivc: IVCurve):
     plt.title("Сигналы")
     plt.plot(ivc.voltages, linestyle="None", marker="o", label="Напряжение, В")
     plt.plot(np.array(ivc.currents) * 1000, linestyle="None", marker="o", label="Ток, мА")
+    plt.legend()
 
     plt.subplot(1, 2, 2)
     plt.title("ВАХ")

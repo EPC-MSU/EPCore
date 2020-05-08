@@ -29,6 +29,7 @@ class IVMeasurerVirtual():
         self.phase = 0
         self.model = "resistor"
         self.nominal = 100
+        self.noise_factor = 0.05
 
     def set_settings(self, settings: MeasurementSettings):
         self.__settings = settings
@@ -91,6 +92,16 @@ class IVMeasurerVirtual():
         return self.get_last_iv_curve()
 
     # =================== Internal methods =================================
+    def __add_noise(self, voltages_arr, currents_arr):
+        voltage_noise_ampl = self.__settings.max_voltage * self.noise_factor
+        voltages_arr = np.array(voltages_arr) + voltage_noise_ampl * np.random.random(len(voltages_arr))
+        
+        current_noise_ampl = (self.__settings.max_voltage / (self.__settings.internal_resistance + 100) *
+                              self.noise_factor)
+        currents_arr = np.array(currents_arr) + current_noise_ampl * np.random.random(len(currents_arr))
+
+        return (voltages_arr, currents_arr)
+
     def __calculate_r_iv(self) -> IVCurve:
         """
         This function calculated current and
@@ -107,6 +118,8 @@ class IVMeasurerVirtual():
         v_out = v_in * self.nominal / (self.nominal + self.__settings.internal_resistance)
         # I_out = V_out / R
         i_out = v_out / self.nominal
+
+        v_out, i_out = self.__add_noise(v_out, i_out)
 
         return IVCurve(
             currents=i_out.tolist(),
@@ -135,6 +148,8 @@ class IVMeasurerVirtual():
                                                             (self.nominal * r_lim))
             v_out[i] += v_in[i - 1] # <----- Check this
             i_out[i] = (v_in[i] - v_out[i]) / r_lim
+
+        v_out, i_out = self.__add_noise(v_out, i_out)
 
         return IVCurve(
             currents=i_out.tolist(),

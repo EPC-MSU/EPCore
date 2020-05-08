@@ -24,6 +24,6 @@ if __name__ == "__main__":
 
     logging.debug("Test virtual capacitor")
     m.model = "capacitor"
-    m.nominal = 0.0001
+    m.nominal = 0.000001
     ivc = m.measure_iv_curve()
     plot_curve(ivc)
