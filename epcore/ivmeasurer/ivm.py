@@ -9,11 +9,6 @@ from ctypes import c_ubyte, c_byte, c_ushort, c_short, c_uint, c_int, c_ulonglon
 from ctypes.util import find_library
 import atexit
 
-# Add current script path to dll import path
-import os
-from os.path import dirname
-os.environ['PATH'] = dirname(__file__) + os.pathsep + os.environ['PATH']
-
 try:
     from typing import overload, Union, Sequence, Optional
 except ImportError:
@@ -67,20 +62,27 @@ def _normalize_arg(value, desired_ctype):
         return desired_ctype(value)
 
 
+def _fullpath_lib(name: str) -> str:
+    from os.path import dirname, join
+    return join(dirname(__file__), name)
+
+
 def _load_lib():
     from platform import system
+
     lib = None
     os_kind = system().lower()
     if os_kind == "windows":
-        lib = CDLL("ivm.dll")
+        lib = CDLL(_fullpath_lib("ivm.dll"))
     elif os_kind == "darwin":
-        lib = CDLL("libivm.dylib")
+        lib = CDLL(_fullpath_lib("libivm.dylib"))
     elif os_kind == "freebsd" or "linux" in os_kind:
-        lib = CDLL("libivm.so")
+        lib = CDLL(_fullpath_lib("libivm.so"))
     else:
         raise RuntimeError("unexpected OS")
 
     return lib
+
 
 _lib = _load_lib()
 
