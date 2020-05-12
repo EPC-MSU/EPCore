@@ -8,8 +8,9 @@ python -m epcore.measurementmanager
 
 from .measurementplan import MeasurementPlan
 from .measurementsystem import MeasurementSystem
+from .ivc_comparator import IVCComparator
 
-__all__ = ["MeasurementPlan", "MeasurementSystem"]
+__all__ = ["MeasurementPlan", "MeasurementSystem", "IVCComparator"]
 
 __author__ = ""
 __email__ = ""

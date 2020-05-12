@@ -8,12 +8,16 @@ The standard interface should be sufficient for performing basic measurements
 Implementations in plan:
 * IVMeasurerBase
 * IVMeasurerVirtual - Virtual measurer. You can use it without any hardware.
-* IVMeasurerIVM03
+* IVMeasurerIVM10
 * IVMeasurerNetClient
 
 To run example:
 cd <to root epcore directory>
 python -m epcore.ivmeasurer
+
+Virtual measurer is used by default.
+To run example with real device set device url through –p argument:
+python -m epcore.ivmeasurer -p com:\\\\.\\COM28
 
 To build documentaion:
 pydoc -w epcore.ivmeasurer
@@ -22,11 +26,11 @@ pydoc -w epcore.ivmeasurer
 
 from .base import IVMeasurerBase, IVMeasurerIdentityInformation
 from .virtual import IVMeasurerVirtual
-from .measurerivm import IVMeasurerIVM03
+from .measurerivm import IVMeasurerIVM10
 
 __all__ = ["IVMeasurerBase",
            "IVMeasurerVirtual",
-           "IVMeasurerIVM03",
+           "IVMeasurerIVM10",
            "IVMeasurerIdentityInformation"]
 
 __author__ = ""

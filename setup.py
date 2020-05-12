@@ -14,6 +14,8 @@ setup(
     package_data={
         "epcore.ivmeasurer": ["ivmeasurer/ivm.dll",
                               "ivmeasurer/ivm.lib",
-                              "ivmeasurer/libivm.so"]  # for ivmeasurer module (ivm library)
+                              "ivmeasurer/libivm.so"],  # for ivmeasurer module (ivm library)
+        "epcore.measurementmanager": ["measurementmanager/ivcmp.dll",
+                                      "measurementmanager/libivcmp.so"]
     }
 )
