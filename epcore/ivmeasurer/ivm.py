@@ -8,6 +8,7 @@ from ctypes import c_ubyte, c_byte, c_ushort, c_short, c_uint, c_int, c_ulonglon
      c_void_p, c_char_p, c_wchar_p, c_size_t
 from ctypes.util import find_library
 import atexit
+import struct
 
 try:
     from typing import overload, Union, Sequence, Optional
@@ -73,11 +74,14 @@ def _load_lib():
     lib = None
     os_kind = system().lower()
     if os_kind == "windows":
-        lib = CDLL(_fullpath_lib("ivm.dll"))
+        if 8 * struct.calcsize("P") == 32:
+            lib = CDLL(_fullpath_lib("ivm-win32/ivm.dll"))
+        else:
+            lib = CDLL(_fullpath_lib("ivm-win64/ivm.dll"))
     elif os_kind == "darwin":
-        lib = CDLL(_fullpath_lib("libivm.dylib"))
+        lib = CDLL(_fullpath_lib("ivm-darwin/libivm.dylib"))
     elif os_kind == "freebsd" or "linux" in os_kind:
-        lib = CDLL(_fullpath_lib("libivm.so"))
+        lib = CDLL(_fullpath_lib("ivm-debian/libivm.so"))
     else:
         raise RuntimeError("unexpected OS")
 

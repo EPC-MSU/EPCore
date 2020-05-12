@@ -1,6 +1,7 @@
 from ctypes import CDLL, c_double, c_size_t, POINTER, Array
 from platform import system
 from typing import List
+import struct
 from ..elements import IVCurve
 
 
@@ -11,9 +12,12 @@ def _fullpath_lib(name: str) -> str:
 
 def _get_dll():
     if system() == "Linux":
-        return CDLL(_fullpath_lib("libivcmp.so"))
+        return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
     elif system() == "Windows":
-        return CDLL(_fullpath_lib("ivcmp.dll"))
+        if 8 * struct.calcsize("P") == 32:
+            return CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
+        else:
+            return CDLL(_fullpath_lib("ivcmp-win64/ivcmp.dll"))
     else:
         raise NotImplementedError("Unsupported platform {0}".format(system()))
 
@@ -34,7 +38,7 @@ class IVCComparator:
         self._lib.SetMinVC.argtype = c_double, c_double
 
         self._lib.CompareIVC.argtype = POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double), \
-                                       c_size_t
+            c_size_t
         self._lib.CompareIVC.restype = c_double
 
     def set_min_ivc(self, min_var_v: float, min_var_c: float):
