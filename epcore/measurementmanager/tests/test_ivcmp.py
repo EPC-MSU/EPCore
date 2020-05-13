@@ -4,7 +4,7 @@ from epcore.elements import IVCurve
 import numpy as np
 
 
-class TestStringMethods(unittest.TestCase):
+class TestIVCmpMethods(unittest.TestCase):
 
     def test_number_one(self):
         comparator = IVCComparator()

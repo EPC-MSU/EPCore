@@ -8,8 +8,7 @@ from ..elements import MeasurementSettings, IVCurve
 
 class IVMeasurerVirtual(IVMeasurerBase):
     """
-    Base class, which implements standard interface for
-    all IVMeasurers
+    Virtual IVMeasurer
     """
     def __init__(self, url: str = ""):
         """
