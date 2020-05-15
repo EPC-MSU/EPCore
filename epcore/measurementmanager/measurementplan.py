@@ -62,7 +62,7 @@ class MeasurementPlan(Board):
         Turn last measurement for current pin
         to a reference measurement.
         """
-        curve = self.measurer.get_last_iv_curve()
+        curve = self.measurer.get_last_cached_iv_curve()
         settings = self.measurer.get_settings()
         measurement = Measurement(settings=settings, ivc=curve, is_reference=True)
         pin = self.get_current_pin()
