@@ -15,6 +15,24 @@ class Pin(JsonConvertible):
     measurements: List[Measurement]
     comment: Optional[str] = None
 
+    def get_reference_measurement(self) -> Optional[Measurement]:
+        reference_measures = [m for m in self.measurements if m.is_reference]
+        if not reference_measures:
+            return None
+        if len(reference_measures) > 2:
+            raise ValueError("Too many reference curves; can't choose")
+        return reference_measures[0]
+
+    def set_reference_measurement(self, measurement: Measurement):
+        # First, remove all reference measurements
+        self.measurements = [m for m in self.measurements if not m.is_reference]
+
+        if not measurement.is_reference:
+            raise ValueError("It must be reference measurement")
+
+        # Add reference measurement
+        self.measurements.append(measurement)
+
     def to_json(self) -> Dict:
         """
         Return object as dict with structure
