@@ -66,11 +66,7 @@ class MeasurementPlan(Board):
         settings = self.measurer.get_settings()
         measurement = Measurement(settings=settings, ivc=curve, is_reference=True)
         pin = self.get_current_pin()
-        if not pin.measurements:
-            pin.measurements.append(measurement)
-        else:
-            # TODO: zero? Reference measure is always zero index?
-            pin.measurements[0] = measurement
+        pin.set_reference_measurement(measurement)
 
     def restore_original_board(self):
         """
