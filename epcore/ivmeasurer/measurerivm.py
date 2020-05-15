@@ -2,7 +2,7 @@
 IVMeasurer Implementation for EyePoint IVM hardware measurer.
 """
 from . import IVMeasurerIdentityInformation
-from .base import IVMeasurerBase
+from .base import IVMeasurerBase, cache_curve
 from .ivm import IvmDeviceHandle
 from ..elements import IVCurve, MeasurementSettings
 import numpy as np
@@ -113,6 +113,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
     def measurement_is_ready(self) -> bool:
         return bool(self._device.check_measurement_status().ready_status.measurement_complete)
 
+    @cache_curve
     def get_last_iv_curve(self) -> IVCurve:
         device_settings = self._device.get_measurement_settings()
         voltages = []

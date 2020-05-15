@@ -2,7 +2,7 @@ import logging
 import time
 import numpy as np
 
-from .base import IVMeasurerBase, IVMeasurerIdentityInformation
+from .base import IVMeasurerBase, IVMeasurerIdentityInformation, cache_curve
 from ..elements import MeasurementSettings, IVCurve
 
 
@@ -73,6 +73,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
         return self.__measurement_is_ready
 
+    @cache_curve
     def get_last_iv_curve(self) -> IVCurve:
         """
         Return result of the last measurement.

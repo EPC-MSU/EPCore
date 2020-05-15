@@ -3,6 +3,8 @@ import time
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 
+from typing import Callable
+
 from ..elements import MeasurementSettings, IVCurve
 
 
@@ -32,6 +34,7 @@ class IVMeasurerBase(ABC):
         or "com:///dev/tty/ttyACMx"
         """
         self.url = url
+        self._cashed_curve = None
         logging.debug("IVMeasurerBase created")
 
     @abstractmethod
@@ -68,6 +71,16 @@ class IVMeasurerBase(ABC):
         """
         raise NotImplementedError()
 
+    def get_last_cached_iv_curve(self) -> IVCurve:
+        """
+        Return result of the last measurement
+        Even if the result is not yet ready, the previous result will be returned
+        :return:
+        """
+        if self._cashed_curve is None:
+            raise ValueError("Cache is empty")
+        return self._cashed_curve
+
     def measure_iv_curve(self) -> IVCurve:
         """
         Perform measurement and return result for the measurement, which was made.
@@ -77,3 +90,11 @@ class IVMeasurerBase(ABC):
         while not self.measurement_is_ready():
             time.sleep(0.05)
         return self.get_last_iv_curve()
+
+
+def cache_curve(function: Callable) -> Callable:
+    def wrap(self, *args, **kwargs):
+        curve = function(self, *args, **kwargs)
+        self._cashed_curve = curve
+        return curve
+    return wrap
