@@ -3,6 +3,8 @@ from ..ivmeasurer import IVMeasurerBase
 
 from copy import deepcopy
 
+from typing import Iterable, Tuple
+
 
 class MeasurementPlan(Board):
     """
@@ -76,3 +78,6 @@ class MeasurementPlan(Board):
         :return:
         """
         self.elements = deepcopy(self._original_elements)
+
+    def all_pins_iterator(self) -> Iterable[Tuple[int, Pin]]:
+        yield from enumerate(self._all_pins)
