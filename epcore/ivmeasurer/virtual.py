@@ -24,6 +24,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
             probe_signal_frequency=100
         )
         self.__last_curve = IVCurve()
+        self.__ready_time = 0
         self.__measurement_is_ready = False
         self.phase = 0
         self.model = "resistor"
@@ -60,13 +61,16 @@ class IVMeasurerVirtual(IVMeasurerBase):
             self.__last_curve = self.__calculate_c_iv()
         else:
             raise NotImplementedError
-
-        self.__measurement_is_ready = True
+        self.__measurement_is_ready = False
+        self.__ready_time = time.time() + 2. / self.__settings.probe_signal_frequency
 
     def measurement_is_ready(self) -> bool:
         """
         Return true if new measurement is ready
         """
+        if time.time() > self.__ready_time:
+            self.__measurement_is_ready = True
+
         return self.__measurement_is_ready
 
     def get_last_iv_curve(self) -> IVCurve:
@@ -77,20 +81,6 @@ class IVMeasurerVirtual(IVMeasurerBase):
             return self.__last_curve
         else:
             raise RuntimeError("Measurement is not ready")
-
-    def measure_iv_curve(self) -> IVCurve:
-        """
-        Perform measurement and return result for the measurement, which was made.
-        Blocking function. May take some time.
-        """
-        self.trigger_measurement()
-        # In ideal case it should be 1,
-        # but we set 5 to consider worst case
-        self.__measurement_is_ready = False
-        time.sleep(5. / (2 * np.pi * self.__settings.probe_signal_frequency))
-        self.__measurement_is_ready = True
-
-        return self.get_last_iv_curve()
 
     # =================== Internal methods =================================
     def __add_noise(self, voltages_arr, currents_arr):
