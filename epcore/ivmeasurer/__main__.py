@@ -6,7 +6,7 @@ from .utils import plot_curve
 
 if __name__ == "__main__":
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)-8s %(message)s")
 
     logging.debug("IVMeasurere example")
 
@@ -38,7 +38,12 @@ if __name__ == "__main__":
         plot_curve(ivc)
 
         logging.debug("Test virtual capacitor")
+        s = m.get_settings()
+        s.probe_signal_frequency = 1  # 1 Hz
+        s.sampling_rate = 100         # We want single period with 100 points
         m.model = "capacitor"
         m.nominal = 0.000001
+        logging.debug("Start measurement with low frequency...")
         ivc = m.measure_iv_curve()
+        logging.debug("Measurement finished")
         plot_curve(ivc)
