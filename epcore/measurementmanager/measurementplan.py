@@ -4,7 +4,7 @@ from ..ivmeasurer import IVMeasurerBase
 from copy import deepcopy
 
 
-class MeasurementPlan:
+class MeasurementPlan(Board):
     """
     Measurement plan (test plan) – it is a linear series of measurements.
     It is a simple state machine.
@@ -15,10 +15,13 @@ class MeasurementPlan:
     The initial board structure should be saved.
     """
     def __init__(self, board: Board, measurer: IVMeasurerBase):
-        self._board = deepcopy(board)
+        super(MeasurementPlan, self).__init__(elements=board.elements)
+
+        self._original_elements = deepcopy(board.elements)
+
         self.measurer = measurer
         self._all_pins = []
-        for element in board.elements:
+        for element in self.elements:
             for pin in element.pins:
                 self._all_pins.append(pin)
 
@@ -29,6 +32,9 @@ class MeasurementPlan:
 
     def append_pin(self, pin: Pin):
         self._all_pins.append(pin)
+        if not self.elements:
+            self.elements.append(Element(pins=[]))
+        self.elements[-1].pins.append(pin)
 
     def go_next_pin(self):
         self._current_pin_index += 1
@@ -60,10 +66,9 @@ class MeasurementPlan:
             # TODO: zero? Reference measure is always zero index?
             pin.measurements[0] = measurement
 
-    def export_to_board(self) -> Board:
-        new_board = deepcopy(self._board)
-
-        # TODO: don't unite all pins in one element
-        element = Element(pins=self._all_pins)
-        new_board.elements = [element]
-        return new_board
+    def restore_original_board(self):
+        """
+        Remove all changes in board like: adding new pins, measures, etc
+        :return:
+        """
+        self.elements = deepcopy(self._original_elements)

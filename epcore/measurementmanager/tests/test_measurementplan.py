@@ -32,7 +32,5 @@ class TestPlan(unittest.TestCase):
         # Add new pin
         plan.append_pin(Pin(5, 5, measurements=[]))
 
-        new_board = plan.export_to_board()
-
         # Check that here are 3 pins
-        self.assertTrue(len(new_board.elements[0].pins) == 3)
+        self.assertTrue(len(plan.elements[0].pins) == 3)
