@@ -38,6 +38,7 @@ class MeasurementPlan(Board):
         if not self.elements:
             self.elements.append(Element(pins=[]))
         self.elements[-1].pins.append(pin)
+        self._current_pin_index = len(self._all_pins) - 1
 
     def go_next_pin(self):
         self._current_pin_index += 1
