@@ -17,7 +17,7 @@ class MeasurementPlan(Board):
     The initial board structure should be saved.
     """
     def __init__(self, board: Board, measurer: IVMeasurerBase):
-        super(MeasurementPlan, self).__init__(elements=board.elements)
+        super(MeasurementPlan, self).__init__(elements=board.elements, image=board.image)
 
         self._original_elements = deepcopy(board.elements)
 
