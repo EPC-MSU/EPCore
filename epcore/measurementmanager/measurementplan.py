@@ -27,6 +27,9 @@ class MeasurementPlan(Board):
 
         self._current_pin_index = 0
 
+    def get_current_index(self) -> int:
+        return self._current_pin_index
+
     def get_current_pin(self) -> Pin:
         return self._all_pins[self._current_pin_index]
 
