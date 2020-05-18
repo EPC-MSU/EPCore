@@ -1,5 +1,6 @@
 from typing import List, Optional
 import time
+from copy import deepcopy
 from ..elements import MeasurementSettings, IVCurve
 from ..ivmeasurer import IVMeasurerBase
 
@@ -62,4 +63,4 @@ class MeasurementSystem:
         if not all(all_settings[0] == s for s in all_settings):
             raise ValueError("Settings are different for measurers")
 
-        return all_settings[0]
+        return deepcopy(all_settings[0])
