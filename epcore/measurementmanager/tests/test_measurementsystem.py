@@ -1,6 +1,7 @@
 import unittest
 
 from copy import deepcopy
+from time import sleep
 
 from epcore.measurementmanager import MeasurementSystem
 from epcore.ivmeasurer import IVMeasurerVirtual
@@ -36,3 +37,22 @@ class TestMeasurementSystem(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             system.get_settings()
+
+    def test_measurements_ready(self):
+        iv1 = IVMeasurerVirtual()
+        iv2 = IVMeasurerVirtual()
+
+        system = MeasurementSystem([iv1, iv2])
+
+        system.trigger_measurements()
+        sleep(2)
+        # Test that after some times all measurements are ready
+        self.assertTrue(system.measurements_are_ready())
+
+        # Let's freeze one measurer
+        iv1.freeze()
+
+        system.trigger_measurements()
+        sleep(2)
+        # Test that freezed measurers are ignored
+        self.assertTrue(system.measurements_are_ready())

@@ -29,7 +29,7 @@ class MeasurementSystem:
         Return True if all measurers
         have done their Job
         """
-        return all([m.measurement_is_ready() for m in self.measurers])
+        return all([m.measurement_is_ready() for m in self.measurers if not m.is_freezed()])
 
     def measure_iv_curves(self) -> List[IVCurve]:
         """
