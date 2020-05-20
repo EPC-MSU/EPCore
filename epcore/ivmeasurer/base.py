@@ -35,6 +35,7 @@ class IVMeasurerBase(ABC):
         """
         self.url = url
         self._cashed_curve = None
+        self._freeze = False
         logging.debug("IVMeasurerBase created")
 
     @abstractmethod
@@ -77,19 +78,33 @@ class IVMeasurerBase(ABC):
         Even if the result is not yet ready, the previous result will be returned
         :return:
         """
+        if self.measurement_is_ready():
+            return self.get_last_iv_curve()
         if self._cashed_curve is None:
             raise ValueError("Cache is empty")
         return self._cashed_curve
+
+    def freeze(self):
+        self._freeze = True
+
+    def unfreeze(self):
+        self._freeze = False
+
+    def is_freezed(self) -> bool:
+        return self._freeze
 
     def measure_iv_curve(self) -> IVCurve:
         """
         Perform measurement and return result for the measurement, which was made.
         Blocking function. May take some time.
         """
-        self.trigger_measurement()
-        while not self.measurement_is_ready():
-            time.sleep(0.05)
-        return self.get_last_iv_curve()
+        if self._freeze:
+            return self.get_last_cached_iv_curve()
+        else:
+            self.trigger_measurement()
+            while not self.measurement_is_ready():
+                time.sleep(0.05)
+            return self.get_last_iv_curve()
 
 
 def cache_curve(function: Callable) -> Callable:

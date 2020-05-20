@@ -54,6 +54,10 @@ class IVMeasurerVirtual(IVMeasurerBase):
         Trigger measurement manually.
         You don’t need this if the hardware is in continuous mode.
         """
+
+        if self.is_freezed():
+            return
+
         self.__measurement_is_ready = False
         if self.model == "resistor":
             self.__last_curve = self.__calculate_r_iv()
@@ -68,6 +72,9 @@ class IVMeasurerVirtual(IVMeasurerBase):
         """
         Return true if new measurement is ready
         """
+        if self.is_freezed():
+            return False
+
         if time.time() > self.__ready_time:
             self.__measurement_is_ready = True
 

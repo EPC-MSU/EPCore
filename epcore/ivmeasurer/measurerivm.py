@@ -108,9 +108,13 @@ class IVMeasurerIVM10(IVMeasurerBase):
                                              name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""))
 
     def trigger_measurement(self):
-        self._device.start_measurement()
+        if not self.is_freezed():
+            self._device.start_measurement()
 
     def measurement_is_ready(self) -> bool:
+        if self.is_freezed():
+            return False
+
         return bool(self._device.check_measurement_status().ready_status.measurement_complete)
 
     @cache_curve

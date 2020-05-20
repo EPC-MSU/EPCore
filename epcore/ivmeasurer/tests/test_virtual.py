@@ -1,5 +1,6 @@
 import unittest
 from epcore.ivmeasurer import IVMeasurerVirtual
+from time import sleep
 
 
 class TestVirtualIVC(unittest.TestCase):
@@ -32,3 +33,26 @@ class TestVirtualIVC(unittest.TestCase):
         # Last curve may not be ready...
         self.assertTrue(measurer.get_last_cached_iv_curve())
         # ...but the last measured curve must be alive
+
+    def test_freeze(self):
+        measurer = IVMeasurerVirtual()
+        # Read one curve and store to cash
+        measurer.measure_iv_curve()
+
+        measurer.freeze()
+        measurer.trigger_measurement()
+
+        sleep(2)
+        # Measurement must NOT be ready because measurer is in freeze mode
+        self.assertTrue(not measurer.measurement_is_ready())
+
+        # Cached curve must be alive in freeze mode
+        curve = measurer.get_last_cached_iv_curve()
+        self.assertTrue(curve)
+
+        measurer.unfreeze()
+        measurer.trigger_measurement()
+
+        sleep(2)
+        # Measurement must be ready because not we are not in freeze mode
+        self.assertTrue(measurer.measurement_is_ready())
