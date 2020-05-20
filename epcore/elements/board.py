@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
+from PIL.ImageQt import ImageQt
 from warnings import warn
-from PyQt5.QtGui import QImage
 from .element import Element
 from .abstract import JsonConvertible
 
@@ -17,7 +17,7 @@ class Board(JsonConvertible):
     """
 
     elements: List[Element] = field(default_factory=lambda: [])
-    image: Optional[QImage] = None
+    image: Optional[ImageQt] = None
 
     def to_json(self) -> Dict:
         """

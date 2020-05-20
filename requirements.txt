@@ -1,4 +1,4 @@
 dataclasses
-PyQt5==5.14.0
+Pillow
 jsonschema
 numpy
