@@ -3,7 +3,8 @@ from copy import deepcopy
 
 
 def _convert_measurement_settings(settings: Dict) -> Dict:
-    remove_settings_keys = ["flags", "reserved", "n_charge_points", "n_points", "max_current"]
+    remove_settings_keys = ["flags", "reserved", "n_charge_points", "n_points", "max_current", "number_points",
+                            "number_charge_points"]
     rename_settings_keys = {
         "desc_frequency": "sampling_rate",
     }
