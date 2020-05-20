@@ -64,3 +64,11 @@ class MeasurementSystem:
             raise ValueError("Settings are different for measurers")
 
         return deepcopy(all_settings[0])
+
+    def unfreeze(self):
+        """
+        Unfreeze all measurers
+        :return:
+        """
+        for m in self.measurers:
+            m.unfreeze()
