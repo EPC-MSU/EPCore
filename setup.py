@@ -12,11 +12,11 @@ setup(
         "numpy"  # for test_iv_curve
     ],
     package_data={
-        "epcore.ivmeasurer": ["ivmeasurer/ivm-debian/libivm.so",
-                              "ivmeasurer/ivm-win32/ivm.dll",
-                              "ivmeasurer/ivm-win64/ivm.dll"],
-        "epcore.measurementmanager": ["measurementmanager/ivcmp-debian/libivcmp.so",
-                                      "measurementmanager/ivcmp-win32/ivcmp.dll",
-                                      "measurementmanager/ivcmp-win64/ivcmp.dll"]
+        "epcore.ivmeasurer": ["ivm-debian/libivm.so",
+                              "ivm-win32/ivm.dll",
+                              "ivm-win64/ivm.dll"],
+        "epcore.measurementmanager": ["ivcmp-debian/libivcmp.so",
+                                      "ivcmp-win32/ivcmp.dll",
+                                      "ivcmp-win64/ivcmp.dll"]
     }
 )
