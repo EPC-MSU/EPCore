@@ -90,6 +90,14 @@ class IVMeasurerVirtual(IVMeasurerBase):
         else:
             raise RuntimeError("Measurement is not ready")
 
+    def calibrate(self, *args):
+        """
+        We don't need to calibrate virtual IVC
+        :param args:
+        :return:
+        """
+        pass
+
     # =================== Internal methods =================================
     def __add_noise(self, voltages_arr, currents_arr):
         voltage_noise_ampl = self.__settings.max_voltage * self.noise_factor

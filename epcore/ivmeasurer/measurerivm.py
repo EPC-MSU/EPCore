@@ -117,6 +117,15 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
         return bool(self._device.check_measurement_status().ready_status.measurement_complete)
 
+    def calibrate(self, *args):
+        """
+        Calibrate IVC
+        :param args:
+        :return:
+        """
+        # TODO: calibration settings?
+        self._device.start_autocalibration()
+
     @cache_curve
     def get_last_iv_curve(self) -> IVCurve:
         device_settings = self._device.get_measurement_settings()

@@ -66,6 +66,15 @@ class IVMeasurerBase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    def calibrate(self, *args):
+        """
+        Calibrate
+        :param args:
+        :return:
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
     def get_last_iv_curve(self) -> IVCurve:
         """
         Return result of the last measurement.
