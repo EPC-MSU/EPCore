@@ -3,13 +3,13 @@
     "product_mode": "virtual x2",
     "measurement_system": {
         "measurers": [{
-                "measurer_type": "IVMeasurerVirtual",
+                "measurer_type": "IVMeasurerIVM10",
                 "default_url": "",
                 "ask_user_for_url": true,
                 "label_ru": "Измеритель А",
                 "label_en": "Measurer A"
             }, {
-                "measurer_type": "IVMeasurerVirtual",
+                "measurer_type": "IVMeasurerIVM10",
                 "default_url": "",
                 "ask_user_for_url": true,
                 "label_ru": "Измеритель B",
