@@ -1,8 +1,8 @@
 import unittest
 from os.path import join as join_path, dirname
-from PyQt5.QtGui import QImage
 from tempfile import TemporaryDirectory
 from os.path import isfile
+from PIL import Image
 from epcore.filemanager import load_board_from_ufiv, save_board_to_ufiv
 from epcore.elements import Board
 
@@ -20,12 +20,12 @@ class LoadSaveTests(unittest.TestCase):
     def test_load_board(self):
         board = load_board_from_ufiv(board_path)
         self.assertTrue(board.image is not None)
-        self.assertTrue(board.image.width() == 100)
-        self.assertTrue(board.image.height() == 100)
+        self.assertTrue(board.image.width == 100)
+        self.assertTrue(board.image.height == 100)
 
     def test_save_board(self):
         board = Board([])
-        board.image = QImage(image_path)
+        board.image = Image.open(image_path)
 
         with TemporaryDirectory() as tempdir:
             save_board_to_ufiv(join_path(tempdir, "foo.json"), board)
