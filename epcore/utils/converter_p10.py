@@ -96,7 +96,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with open(args.source, "r") as source_file:
-        converted = convert_p10(json.load(source_file), "0.0.0")
+        converted = convert_p10(json.load(source_file), "1.1.0")
 
     with open(args.destination, "w") as dest_file:
         dest_file.write(json.dumps(converted, indent=1, sort_keys=True))

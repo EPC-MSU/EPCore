@@ -9,10 +9,10 @@ class MeasurementSettings(JsonConvertible):
     Basic settings for IV Curve measurement.
     """
 
-    sampling_rate: float
+    sampling_rate: int
     internal_resistance: float
     max_voltage: float
-    probe_signal_frequency: float
+    probe_signal_frequency: int
     precharge_delay: Optional[float] = None
 
     def to_json(self) -> Dict:
