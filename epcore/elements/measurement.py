@@ -15,6 +15,11 @@ class MeasurementSettings(JsonConvertible):
     probe_signal_frequency: int
     precharge_delay: Optional[float] = None
 
+    def __post_init__(self):
+        # Current EPCore version supports only integer rate\freq
+        self.sampling_rate = int(self.sampling_rate)
+        self.probe_signal_frequency = int(self.probe_signal_frequency)
+
     def to_json(self) -> Dict:
         """
         Return object as dict with structure
