@@ -72,3 +72,7 @@ class MeasurementSystem:
         """
         for m in self.measurers:
             m.unfreeze()
+
+    def calibrate(self):
+        for m in self.measurers:
+            m.calibrate()
