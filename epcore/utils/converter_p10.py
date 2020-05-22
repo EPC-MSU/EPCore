@@ -9,9 +9,9 @@ def _convert_measurement_settings(settings: Dict) -> Dict:
         "desc_frequency": "sampling_rate",
     }
     internal_resistance_map = {
-        3: 475,
-        2: 4750,
-        1: 47500
+        3: 475.0,
+        2: 4750.0,
+        1: 47500.0
     }
 
     settings["internal_resistance"] = internal_resistance_map.get(settings["flags"], 0)
