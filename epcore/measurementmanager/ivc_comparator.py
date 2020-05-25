@@ -42,7 +42,7 @@ class IVCComparator:
         self._lib.CompareIVC.restype = c_double
 
     def set_min_ivc(self, min_var_v: float, min_var_c: float):
-        self._lib.SetMinVC(min_var_v, min_var_c)
+        self._lib.SetMinVC(c_double(min_var_v), c_double(min_var_c))
 
     def compare_ivc(self, first_ivc: IVCurve, second_ivc: IVCurve) -> float:
         res = self._lib.CompareIVC(_to_c_array(first_ivc.voltages),
