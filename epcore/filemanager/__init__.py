@@ -11,10 +11,11 @@ To run tests:
 python -m unittest discover epcore/filemanager
 """
 
-from .ufiv import load_board_from_ufiv, save_board_to_ufiv
+from .ufiv import load_board_from_ufiv, save_board_to_ufiv, add_image_to_ufiv
 
 __all__ = ["load_board_from_ufiv",
-           "save_board_to_ufiv"]
+           "save_board_to_ufiv",
+           "add_image_to_ufiv"]
 
 __author__ = "mihalin"
 __email__ = "mihalin@physlab.ru"

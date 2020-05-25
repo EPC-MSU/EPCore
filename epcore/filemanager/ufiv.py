@@ -25,7 +25,7 @@ def load_board_from_ufiv(path: str) -> Board:
     return board
 
 
-def add_image_to_board(path: str, board: Board) -> Board:
+def add_image_to_ufiv(path: str, board: Board) -> Board:
     """
     Add board image to existing board
     :param path:
