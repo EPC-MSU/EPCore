@@ -10,7 +10,7 @@ from PIL import Image
 
 def load_board_from_ufiv(path: str) -> Board:
     """
-    Load board (json, png) from directory
+    Load board (json and png) from directory
     :param path: path to directory with board
     :return:
     """
@@ -22,6 +22,17 @@ def load_board_from_ufiv(path: str) -> Board:
     if isfile(image_path):
         board.image = Image.open(image_path)
 
+    return board
+
+
+def add_image_to_board(path: str, board: Board) -> Board:
+    """
+    Add board image to existing board
+    :param path:
+    :param board:
+    :return:
+    """
+    board.image = Image.open(path)
     return board
 
 
