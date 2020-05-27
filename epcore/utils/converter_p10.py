@@ -39,14 +39,21 @@ def _convert_ivc(ivc: Dict, is_reference: bool = False, is_dynamic: bool = False
     return new_ivc
 
 
-def _convert_pin(pin: Dict) -> Dict:
+def _convert_pin(pin: Dict, force_reference: bool = False) -> Dict:
     remove_pin_keys = ["score", "reference_ivc", "is_dynamic", "cluster_id", "ivc"]
 
     is_dynamic = pin.get("is_dynamic", False)
 
-    pin["iv_curves"] = [_convert_ivc(pin["ivc"], is_dynamic=is_dynamic)]
-    if pin.get("reference_ivc", None):
+    pin["iv_curves"] = []
+
+    has_reference = bool(pin.get("reference_ivc"))
+    if has_reference:  # reference curve should be first
         pin["iv_curves"].append(_convert_ivc(pin["reference_ivc"], is_reference=True, is_dynamic=is_dynamic))
+
+    # Set that curve as REFERENCE if here are no other reference curve and flag FORCE_REFERENCE passed
+    pin["iv_curves"].append(_convert_ivc(pin["ivc"],
+                                         is_dynamic=is_dynamic,
+                                         is_reference=force_reference and not has_reference))
 
     for key in remove_pin_keys:
         pin.pop(key, None)
@@ -54,11 +61,11 @@ def _convert_pin(pin: Dict) -> Dict:
     return pin
 
 
-def _convert_element(element: Dict) -> Dict:
+def _convert_element(element: Dict, force_reference: bool = False) -> Dict:
     remove_element_keys = ["side_indexes", "probability", "manual_name", "is_manual", "w_pins", "h_pins", "width",
                            "height"]
 
-    element["pins"] = [_convert_pin(pin) for pin in element["pins"]]
+    element["pins"] = [_convert_pin(pin, force_reference) for pin in element["pins"]]
 
     if not element["is_manual"]:
         element["set_automatically"] = True
@@ -71,10 +78,10 @@ def _convert_element(element: Dict) -> Dict:
     return element
 
 
-def convert_p10(source_json: Dict, version: str) -> Dict:
+def convert_p10(source_json: Dict, version: str, force_reference: bool = False) -> Dict:
     result = deepcopy(source_json)
 
-    result["elements"] = [_convert_element(element) for element in result["elements"]]
+    result["elements"] = [_convert_element(element, force_reference) for element in result["elements"]]
 
     if "version" not in result:
         result["version"] = version
@@ -92,11 +99,13 @@ if __name__ == "__main__":
     parser.add_argument("--destination", help="EPLab output json file", default="converted.json")
     parser.add_argument("--validate", help="Validate output file over this schema, optional parameter",
                         nargs="?", const="doc/elements.schema.json")
+    parser.add_argument("--reference", help="Set source file IVC curves as REFERENCE curves in output file",
+                        action="store_true")
 
     args = parser.parse_args()
 
     with open(args.source, "r") as source_file:
-        converted = convert_p10(json.load(source_file), "1.1.0")
+        converted = convert_p10(json.load(source_file), "1.1.0", force_reference=args.reference)
 
     with open(args.destination, "w") as dest_file:
         dest_file.write(json.dumps(converted, indent=1, sort_keys=True))
