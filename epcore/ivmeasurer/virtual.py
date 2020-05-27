@@ -33,6 +33,9 @@ class IVMeasurerVirtual(IVMeasurerBase):
         logging.debug("IVMeasurerVirtual created")
         super(IVMeasurerVirtual, self).__init__(url, name)
 
+    def reconnect(self):
+        pass
+
     def set_settings(self, settings: MeasurementSettings):
         self.__settings = settings
 

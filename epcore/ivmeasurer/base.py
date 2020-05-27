@@ -44,6 +44,10 @@ class IVMeasurerBase(ABC):
         return self._name
 
     @abstractmethod
+    def reconnect(self):
+        raise NotImplementedError()
+
+    @abstractmethod
     def set_settings(self, settings: MeasurementSettings):
         raise NotImplementedError()
 
