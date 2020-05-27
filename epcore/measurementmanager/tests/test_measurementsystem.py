@@ -21,6 +21,17 @@ class TestMeasurementSystem(unittest.TestCase):
 
         self.assertTrue(system.get_settings() == settings)
 
+    def test_map(self):
+        iv1 = IVMeasurerVirtual(name="foo")
+        iv2 = IVMeasurerVirtual(name="bar")
+        iv3 = IVMeasurerVirtual(name="spam")
+
+        system = MeasurementSystem([iv1, iv2, iv3])
+
+        self.assertTrue(system.measurers_map["foo"] is iv1)
+        self.assertTrue(system.measurers_map["bar"] is iv2)
+        self.assertTrue(system.measurers_map["spam"] is iv3)
+
     def test_raises(self):
         iv1 = IVMeasurerVirtual()
         iv2 = IVMeasurerVirtual()

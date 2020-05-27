@@ -16,7 +16,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
     Format for Windows: com:\\\\.\\COMx
     Format for Linux: /dev/ttyACMx
     """
-    def __init__(self, url: str = ""):
+    def __init__(self, url: str = "", name: str = ""):
         self._device = IvmDeviceHandle(url)
         self._FRAME_SIZE = 25
         default_settings = MeasurementSettings(
@@ -27,7 +27,14 @@ class IVMeasurerIVM10(IVMeasurerBase):
             precharge_delay=0
         )
         self.set_settings(default_settings)
-        super(IVMeasurerIVM10, self).__init__(url)
+        super(IVMeasurerIVM10, self).__init__(url, name)
+
+    def reconnect(self):
+        try:
+            self._device.close()
+        except RuntimeError:
+            pass
+        self._device.open()
 
     def set_settings(self, settings: MeasurementSettings):
         device_settings = self._device.get_measurement_settings()

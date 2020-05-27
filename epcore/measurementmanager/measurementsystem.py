@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 import time
 from copy import deepcopy
 from ..elements import MeasurementSettings, IVCurve
@@ -13,9 +13,11 @@ class MeasurementSystem:
 
     """
     measurers: List[IVMeasurerBase]
+    measurers_map: Dict[str, IVMeasurerBase]
 
     def __init__(self, measurers: Optional[List[IVMeasurerBase]] = None):
         self.measurers = measurers or []
+        self.measurers_map = {measurer.name: measurer for measurer in measurers if measurer.name}
 
     def trigger_measurements(self):
         """
