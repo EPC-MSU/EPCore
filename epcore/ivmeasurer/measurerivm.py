@@ -29,12 +29,16 @@ class IVMeasurerIVM10(IVMeasurerBase):
         self.set_settings(default_settings)
         super(IVMeasurerIVM10, self).__init__(url, name)
 
-    def reconnect(self):
+    def reconnect(self) -> bool:
         try:
             self._device.close()
         except RuntimeError:
             pass
-        self._device.open()
+        try:
+            self._device.open()
+            return True
+        except RuntimeError:
+            return False
 
     def set_settings(self, settings: MeasurementSettings):
         device_settings = self._device.get_measurement_settings()

@@ -44,7 +44,7 @@ class IVMeasurerBase(ABC):
         return self._name
 
     @abstractmethod
-    def reconnect(self):
+    def reconnect(self) -> bool:
         raise NotImplementedError()
 
     @abstractmethod
