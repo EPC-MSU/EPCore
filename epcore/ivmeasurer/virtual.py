@@ -34,6 +34,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         super(IVMeasurerVirtual, self).__init__(url, name)
 
     def reconnect(self) -> bool:
+        time.sleep(1)
         return True
 
     def set_settings(self, settings: MeasurementSettings):

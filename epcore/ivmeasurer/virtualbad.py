@@ -30,7 +30,7 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
     def reconnect(self) -> bool:
         if random() < 0.8:
             self._failed = False  # Reboot heals everything
-        return not self._failed
+        return super(IVMeasurerVirtualBad, self).reconnect() and not self._failed
 
     # Add fail chance to every virtual measurer method
     def set_settings(self, settings: MeasurementSettings):
