@@ -8,16 +8,17 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
     """
     Bad IVC Virtual Measurer with obvious connectivity issues
     """
-    def __init__(self, url: str = "", name: str = "", fail_chance: float = 0.01):
+    def __init__(self, url: str = "", name: str = "", defer_open: bool = False, fail_chance: float = 0.01):
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
         or "com:///dev/tty/ttyACMx"
         :param name: friendly name (for measurement system)
+        :param defer_open: don't open serial port during initialization
         :param fail_chance: how bad is that measurer (0 - good, 1 - each command will fail)
         """
         self._fail_chance = fail_chance
-        super(IVMeasurerVirtualBad, self).__init__(url, name)
+        super(IVMeasurerVirtualBad, self).__init__(url, name, defer_open)
 
         self._failed = False
 
@@ -33,6 +34,10 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
         return super(IVMeasurerVirtualBad, self).reconnect() and not self._failed
 
     # Add fail chance to every virtual measurer method
+    def open_device(self):
+        super(IVMeasurerVirtualBad, self).open_device()
+        self._random_fail()
+    
     def set_settings(self, settings: MeasurementSettings):
         self._random_fail()
         super(IVMeasurerVirtualBad, self).set_settings(settings)

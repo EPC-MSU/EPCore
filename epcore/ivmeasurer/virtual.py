@@ -10,11 +10,13 @@ class IVMeasurerVirtual(IVMeasurerBase):
     """
     Virtual IVMeasurer
     """
-    def __init__(self, url: str = "", name: str = ""):
+    def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
         or "com:///dev/tty/ttyACMx"
+        :param name: friendly name (for measurement system)
+        :param defer_open: don't open serial port during initialization
         """
         self.url = url
         self.__settings = MeasurementSettings(
@@ -31,11 +33,14 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.nominal = 100
         self.noise_factor = 0.05
         logging.debug("IVMeasurerVirtual created")
-        super(IVMeasurerVirtual, self).__init__(url, name)
+        super(IVMeasurerVirtual, self).__init__(url, name, defer_open)
 
     def reconnect(self) -> bool:
         time.sleep(1)
         return True
+
+    def open_device(self):
+        pass
 
     def set_settings(self, settings: MeasurementSettings):
         self.__settings = settings

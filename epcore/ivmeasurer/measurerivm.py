@@ -17,6 +17,13 @@ class IVMeasurerIVM10(IVMeasurerBase):
     Format for Linux: /dev/ttyACMx
     """
     def __init__(self, url: str = "", name: str = "", defer_open=False):
+        """
+        :param url: url for device identification in computer system.
+        For serial devices url will be "com:\\\\.\\COMx" (for Windows)
+        or "com:///dev/tty/ttyACMx"
+        :param name: friendly name (for measurement system)
+        :param defer_open: don't open serial port during initialization
+        """
         self._device = IvmDeviceHandle(url, defer_open=defer_open)
         self._FRAME_SIZE = 25
         default_settings = MeasurementSettings(
