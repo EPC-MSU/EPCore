@@ -37,7 +37,7 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
     def open_device(self):
         super(IVMeasurerVirtualBad, self).open_device()
         self._random_fail()
-    
+
     def set_settings(self, settings: MeasurementSettings):
         self._random_fail()
         super(IVMeasurerVirtualBad, self).set_settings(settings)
