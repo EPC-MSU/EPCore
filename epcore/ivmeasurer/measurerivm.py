@@ -16,8 +16,8 @@ class IVMeasurerIVM10(IVMeasurerBase):
     Format for Windows: com:\\\\.\\COMx
     Format for Linux: /dev/ttyACMx
     """
-    def __init__(self, url: str = "", name: str = ""):
-        self._device = IvmDeviceHandle(url)
+    def __init__(self, url: str = "", name: str = "", defer_open=False):
+        self._device = IvmDeviceHandle(url, defer_open=defer_open)
         self._FRAME_SIZE = 25
         default_settings = MeasurementSettings(
             sampling_rate=10000,
@@ -28,6 +28,9 @@ class IVMeasurerIVM10(IVMeasurerBase):
         )
         self.set_settings(default_settings)
         super(IVMeasurerIVM10, self).__init__(url, name)
+
+    def open_device(self):
+        self._device.open()
 
     def reconnect(self) -> bool:
         try:
