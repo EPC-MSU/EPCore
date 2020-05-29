@@ -6,6 +6,14 @@ from .base import IVMeasurerBase, IVMeasurerIdentityInformation, cache_curve
 from ..elements import MeasurementSettings, IVCurve
 
 
+def _check_open(func):
+    def handler(self: "IVMeasurerVirtual", *args, **kwargs):
+        if not self._open:
+            raise RuntimeError("Device is not opened")
+        return func(self, *args, **kwargs)
+    return handler
+
+
 class IVMeasurerVirtual(IVMeasurerBase):
     """
     Virtual IVMeasurer
@@ -28,6 +36,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.__last_curve = IVCurve()
         self.__ready_time = 0
         self.__measurement_is_ready = False
+        self._open = not defer_open
         self.phase = 0
         self.model = "resistor"
         self.nominal = 100
@@ -40,14 +49,17 @@ class IVMeasurerVirtual(IVMeasurerBase):
         return True
 
     def open_device(self):
-        pass
+        self._open = True
 
+    @_check_open
     def set_settings(self, settings: MeasurementSettings):
         self.__settings = settings
 
+    @_check_open
     def get_settings(self) -> MeasurementSettings:
         return self.__settings
 
+    @_check_open
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
         return IVMeasurerIdentityInformation(
                 manufacturer="EPC MSU",
@@ -58,6 +70,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
                 name="Virtual"
         )
 
+    @_check_open
     def trigger_measurement(self):
         """
         Trigger measurement manually.
@@ -77,6 +90,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.__measurement_is_ready = False
         self.__ready_time = time.time() + 2. / self.__settings.probe_signal_frequency
 
+    @_check_open
     def measurement_is_ready(self) -> bool:
         """
         Return true if new measurement is ready
@@ -89,6 +103,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
         return self.__measurement_is_ready
 
+    @_check_open
     @cache_curve
     def get_last_iv_curve(self) -> IVCurve:
         """
@@ -99,6 +114,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         else:
             raise RuntimeError("Measurement is not ready")
 
+    @_check_open
     def calibrate(self, *args):
         """
         We don't need to calibrate virtual IVC

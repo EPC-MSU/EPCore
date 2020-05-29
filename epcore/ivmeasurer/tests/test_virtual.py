@@ -56,3 +56,12 @@ class TestVirtualIVC(unittest.TestCase):
         sleep(2)
         # Measurement must be ready because not we are not in freeze mode
         self.assertTrue(measurer.measurement_is_ready())
+
+    def test_open_device(self):
+        measurer = IVMeasurerVirtual(defer_open=True)
+
+        with self.assertRaises(RuntimeError):
+            measurer.calibrate()  # Device closed, it must not work!
+
+        measurer.open_device()
+        measurer.calibrate()  # Now it must work fine
