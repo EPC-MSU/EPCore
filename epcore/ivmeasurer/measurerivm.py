@@ -26,18 +26,20 @@ class IVMeasurerIVM10(IVMeasurerBase):
         """
         self._device = IvmDeviceHandle(url, defer_open=defer_open)
         self._FRAME_SIZE = 25
-        default_settings = MeasurementSettings(
+        self._default_settings = MeasurementSettings(
             sampling_rate=10000,
             internal_resistance=475,
             max_voltage=5,
             probe_signal_frequency=100,
             precharge_delay=0
         )
-        self.set_settings(default_settings)
+        if not defer_open:
+            self.set_settings(self._default_settings)
         super(IVMeasurerIVM10, self).__init__(url, name)
 
     def open_device(self):
         self._device.open()
+        self.set_settings(self._default_settings)
 
     def reconnect(self) -> bool:
         try:
