@@ -6,6 +6,23 @@ from .base import IVMeasurerBase, cache_curve
 from .ivm import IvmDeviceHandle
 from ..elements import IVCurve, MeasurementSettings
 import numpy as np
+from typing import Callable
+
+
+def _close_on_error(func: Callable):
+    """
+    Due to the nature of the uRPC library
+    uRPC device must be immediately closed after first error
+    :param func: IVMeasurerIVM10 method
+    :return: ... IVMeasurerIVM10 decorated method
+    """
+    def handle(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except (RuntimeError, OSError) as err:
+            self.close_device()
+            raise err
+    return handle
 
 
 class IVMeasurerIVM10(IVMeasurerBase):
@@ -37,21 +54,26 @@ class IVMeasurerIVM10(IVMeasurerBase):
             self.open_device()
         super(IVMeasurerIVM10, self).__init__(url, name)
 
+    @_close_on_error
     def open_device(self):
         self._device.open()
         self.set_settings(self._default_settings)
 
-    def reconnect(self) -> bool:
+    def close_device(self):
         try:
             self._device.close()
         except (RuntimeError, OSError):
             pass
+
+    def reconnect(self) -> bool:
+        self.close_device()
         try:
             self.open_device()
             return True
         except (RuntimeError, OSError):
             return False
 
+    @_close_on_error
     def set_settings(self, settings: MeasurementSettings):
         device_settings = self._device.get_measurement_settings()
 
@@ -95,6 +117,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         device_settings.output_mode = device_settings.output_mode.OUT_MODE_PROBE_SIGNAL_CONTINUOUS
         self._device.set_measurement_settings(device_settings)
 
+    @_close_on_error
     def get_settings(self) -> MeasurementSettings:
         device_settings = self._device.get_measurement_settings()
 
@@ -119,6 +142,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
                                    probe_signal_frequency=device_settings.probe_signal_frequency,
                                    precharge_delay=precharge_delay)
 
+    @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
         inf = self._device.get_identity_information()
         return IVMeasurerIdentityInformation(manufacturer=bytes(inf.manufacturer).decode("utf-8").replace("\x00", ""),
@@ -130,16 +154,19 @@ class IVMeasurerIVM10(IVMeasurerBase):
                                                                inf.firmware_bugfix),
                                              name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""))
 
+    @_close_on_error
     def trigger_measurement(self):
         if not self.is_freezed():
             self._device.start_measurement()
 
+    @_close_on_error
     def measurement_is_ready(self) -> bool:
         if self.is_freezed():
             return False
 
         return bool(self._device.check_measurement_status().ready_status.measurement_complete)
 
+    @_close_on_error
     def calibrate(self, *args):
         """
         Calibrate IVC
@@ -150,6 +177,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         self._device.start_autocalibration()
 
     @cache_curve
+    @_close_on_error
     def get_last_iv_curve(self) -> IVCurve:
         device_settings = self._device.get_measurement_settings()
         voltages = []
