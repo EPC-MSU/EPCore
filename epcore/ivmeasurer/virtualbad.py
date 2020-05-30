@@ -18,9 +18,9 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
         :param fail_chance: how bad is that measurer (0 - good, 1 - each command will fail)
         """
         self._fail_chance = fail_chance
-        super(IVMeasurerVirtualBad, self).__init__(url, name, defer_open)
-
         self._failed = False
+
+        super(IVMeasurerVirtualBad, self).__init__(url, name, defer_open)
 
     def _random_fail(self):
         if random() < self._fail_chance:
@@ -29,9 +29,12 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
             raise RuntimeError()
 
     def reconnect(self) -> bool:
-        if random() < 0.8:
-            self._failed = False  # Reboot heals everything
-        return super(IVMeasurerVirtualBad, self).reconnect() and not self._failed
+        self._failed = False
+        try:
+            self._failed = not super(IVMeasurerVirtualBad, self).reconnect()
+        except RuntimeError:
+            self._failed = True
+        return self._failed
 
     # Add fail chance to every virtual measurer method
     def open_device(self):

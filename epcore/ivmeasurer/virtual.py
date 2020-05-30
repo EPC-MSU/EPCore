@@ -27,29 +27,36 @@ class IVMeasurerVirtual(IVMeasurerBase):
         :param defer_open: don't open serial port during initialization
         """
         self.url = url
-        self.__settings = MeasurementSettings(
+        self.__default_settings = MeasurementSettings(
             sampling_rate=10000,
             internal_resistance=475.,
             max_voltage=12.,
             probe_signal_frequency=100
         )
+
         self.__last_curve = IVCurve()
         self.__ready_time = 0
         self.__measurement_is_ready = False
-        self._open = not defer_open
+        self._open = False
         self.phase = 0
         self.model = "resistor"
         self.nominal = 100
         self.noise_factor = 0.05
+
+        if not defer_open:
+            self.open_device()
+
         logging.debug("IVMeasurerVirtual created")
         super(IVMeasurerVirtual, self).__init__(url, name, defer_open)
 
     def reconnect(self) -> bool:
         time.sleep(1)
+        self.open_device()
         return True
 
     def open_device(self):
         self._open = True
+        self.set_settings(self.__default_settings)
 
     @_check_open
     def set_settings(self, settings: MeasurementSettings):

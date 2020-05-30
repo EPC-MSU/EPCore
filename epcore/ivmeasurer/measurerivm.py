@@ -24,7 +24,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         :param name: friendly name (for measurement system)
         :param defer_open: don't open serial port during initialization
         """
-        self._device = IvmDeviceHandle(url, defer_open=defer_open)
+        self._device = IvmDeviceHandle(url, defer_open=True)
         self._FRAME_SIZE = 25
         self._default_settings = MeasurementSettings(
             sampling_rate=10000,
@@ -34,7 +34,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
             precharge_delay=0
         )
         if not defer_open:
-            self.set_settings(self._default_settings)
+            self.open_device()
         super(IVMeasurerIVM10, self).__init__(url, name)
 
     def open_device(self):
@@ -44,12 +44,12 @@ class IVMeasurerIVM10(IVMeasurerBase):
     def reconnect(self) -> bool:
         try:
             self._device.close()
-        except RuntimeError:
+        except (RuntimeError, OSError):
             pass
         try:
-            self._device.open()
+            self.open_device()
             return True
-        except RuntimeError:
+        except (RuntimeError, OSError):
             return False
 
     def set_settings(self, settings: MeasurementSettings):
