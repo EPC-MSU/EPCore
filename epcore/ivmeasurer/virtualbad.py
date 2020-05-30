@@ -34,7 +34,7 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
             self._failed = not super(IVMeasurerVirtualBad, self).reconnect()
         except RuntimeError:
             self._failed = True
-        return self._failed
+        return not self._failed
 
     # Add fail chance to every virtual measurer method
     def set_settings(self, settings: MeasurementSettings):
