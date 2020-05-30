@@ -37,10 +37,6 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
         return self._failed
 
     # Add fail chance to every virtual measurer method
-    def open_device(self):
-        super(IVMeasurerVirtualBad, self).open_device()
-        self._random_fail()
-
     def set_settings(self, settings: MeasurementSettings):
         self._random_fail()
         super(IVMeasurerVirtualBad, self).set_settings(settings)
