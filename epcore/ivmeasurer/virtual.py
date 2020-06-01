@@ -30,7 +30,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.__default_settings = MeasurementSettings(
             sampling_rate=10000,
             internal_resistance=475.,
-            max_voltage=12.,
+            max_voltage=5.,
             probe_signal_frequency=100
         )
 
