@@ -54,7 +54,7 @@ class TestIVCmpMethods(unittest.TestCase):
                                       * np.sin(2 * np.pi * i / IVCComparator.max_num_points))
         comparator.set_min_ivc(0, 0)
         res = comparator.compare_ivc(resistor1, resistor2)
-        # TODO: here was 0.17 (now 0.3)
+        # TODO: python compare return 0.25 (now 0.3)
         self.assertTrue((res - 0.3) < 0.01)
 
     def test_number_four(self):
