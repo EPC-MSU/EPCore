@@ -91,7 +91,7 @@ if __name__ == "__main__":
     parser.add_argument("--source", help="EyePoint P10 elements.json file", default="elements.json")
     parser.add_argument("--destination", help="EPLab output json file", default="converted.json")
     parser.add_argument("--validate", help="Validate output file over this schema, optional parameter",
-                        nargs="?", const="doc/elements.schema.json")
+                        nargs="?", const="doc/ufiv.schema.json")
 
     args = parser.parse_args()
 
