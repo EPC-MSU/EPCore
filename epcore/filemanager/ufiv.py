@@ -2,39 +2,54 @@
 Operations with UFIV JSON files
 UFIV - Universal file format for IV-curve measurements.
 """
-from ..elements import Board
+from ..elements import Board, version
+from ..utils import convert_p10
 from os.path import isfile
 from json import load, dump
+from logging import warning
 from PIL import Image
 from jsonschema import validate, ValidationError
+from os.path import basename
 from ..doc import path_to_ufiv_schema
 
 
-def load_board_from_ufiv(path: str, validate_input: bool = True) -> Board:
+def load_board_from_ufiv(path: str,
+                         validate_input: bool = True, 
+                         auto_convert_p10: bool = True) -> Board:
     """
     Load board (json and png) from directory
-    :param path: path to directory with board
+    :param path: path to JSON file
+    :validate_input: validate JSON before load
+    :param auto_convert_p10: enable auto conversion p10->ufiv
     :return:
     """
-
     with open(path, "r") as file:
         input_json = load(file)
 
-        if validate_input:
-            with open(path_to_ufiv_schema(), "r") as schema_file:
-                ufiv_schema_json = load(schema_file)
+    if "version" not in input_json and auto_convert_p10:
+        warning("No 'version' key found, try to convert board from P10 format...")
+        input_json = convert_p10(input_json, version=version, force_reference=True)
 
-            try:
-                validate(input_json, ufiv_schema_json)
-            except ValidationError as err:
-                err.message = "The input file has invalid format: " + err.message
-                raise
+    if validate_input:
+        with open(path_to_ufiv_schema(), "r") as schema_file:
+           ufiv_schema_json = load(schema_file)
+        
+        try:
+            validate(input_json, ufiv_schema_json)
+        except ValidationError as err:
+            err.message = "The input file has invalid format: " + err.message
+            raise
 
-        board = Board.create_from_json(input_json)
+    board = Board.create_from_json(input_json)
 
     image_path = path.replace(".json", ".png")
+    # Old-style format used 'image.png' files near elements.json file
+    p10_image_path = path.replace(basename(path), "image.png")
     if isfile(image_path):
         board.image = Image.open(image_path)
+    elif auto_convert_p10:
+        if isfile(p10_image_path):
+            board.image = Image.open(p10_image_path)
 
     return board
 

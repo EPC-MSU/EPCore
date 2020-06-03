@@ -29,7 +29,7 @@ python -m unittest discover epcore/elements
 from .measurement import Measurement, MeasurementSettings, IVCurve
 from .pin import Pin
 from .element import Element
-from .board import Board
+from .board import Board, version
 
 __all__ = ["IVCurve",
            "MeasurementSettings",
@@ -37,7 +37,8 @@ __all__ = ["IVCurve",
            "Pin",
            "Element",
            "IVCurve",
-           "Board"]
+           "Board",
+           "version"]
 
 __author__ = "mihalin"
 __email__ = "mihalin@pysabphyslab.ru"

@@ -78,3 +78,6 @@ class MeasurementSystem:
     def calibrate(self):
         for m in self.measurers:
             m.calibrate()
+
+    def reconnect(self) -> bool:
+        return all([m.reconnect() for m in self.measurers])

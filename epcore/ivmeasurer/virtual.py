@@ -6,42 +6,67 @@ from .base import IVMeasurerBase, IVMeasurerIdentityInformation, cache_curve
 from ..elements import MeasurementSettings, IVCurve
 
 
+def _check_open(func):
+    def handler(self: "IVMeasurerVirtual", *args, **kwargs):
+        if not self._open:
+            raise RuntimeError("Device is not opened")
+        return func(self, *args, **kwargs)
+    return handler
+
+
 class IVMeasurerVirtual(IVMeasurerBase):
     """
     Virtual IVMeasurer
     """
-    def __init__(self, url: str = "", name: str = ""):
+    def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
         or "com:///dev/tty/ttyACMx"
+        :param name: friendly name (for measurement system)
+        :param defer_open: don't open serial port during initialization
         """
         self.url = url
-        self.__settings = MeasurementSettings(
+        self.__default_settings = MeasurementSettings(
             sampling_rate=10000,
             internal_resistance=475.,
-            max_voltage=12.,
+            max_voltage=5.,
             probe_signal_frequency=100
         )
+
         self.__last_curve = IVCurve()
         self.__ready_time = 0
         self.__measurement_is_ready = False
+        self._open = False
         self.phase = 0
         self.model = "resistor"
         self.nominal = 100
         self.noise_factor = 0.05
+
+        if not defer_open:
+            self.open_device()
+
         logging.debug("IVMeasurerVirtual created")
-        super(IVMeasurerVirtual, self).__init__(url, name)
+        super(IVMeasurerVirtual, self).__init__(url, name, defer_open)
 
-    def reconnect(self):
-        pass
+    def reconnect(self) -> bool:
+        time.sleep(1)
+        self.open_device()
+        return True
 
+    def open_device(self):
+        self._open = True
+        self.set_settings(self.__default_settings)
+
+    @_check_open
     def set_settings(self, settings: MeasurementSettings):
         self.__settings = settings
 
+    @_check_open
     def get_settings(self) -> MeasurementSettings:
         return self.__settings
 
+    @_check_open
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
         return IVMeasurerIdentityInformation(
                 manufacturer="EPC MSU",
@@ -52,6 +77,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
                 name="Virtual"
         )
 
+    @_check_open
     def trigger_measurement(self):
         """
         Trigger measurement manually.
@@ -71,6 +97,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.__measurement_is_ready = False
         self.__ready_time = time.time() + 2. / self.__settings.probe_signal_frequency
 
+    @_check_open
     def measurement_is_ready(self) -> bool:
         """
         Return true if new measurement is ready
@@ -83,6 +110,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
         return self.__measurement_is_ready
 
+    @_check_open
     @cache_curve
     def get_last_iv_curve(self) -> IVCurve:
         """
@@ -93,6 +121,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         else:
             raise RuntimeError("Measurement is not ready")
 
+    @_check_open
     def calibrate(self, *args):
         """
         We don't need to calibrate virtual IVC

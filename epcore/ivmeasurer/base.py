@@ -27,11 +27,13 @@ class IVMeasurerBase(ABC):
     Base class, which implements standard interface for
     all IVMeasurers
     """
-    def __init__(self, url: str = "", name: str = ""):
+    def __init__(self, url: str = "", name: str = "", defer_open=False):
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
         or "com:///dev/tty/ttyACMx"
+        :param name: friendly name (for measurement system)
+        :param defer_open: don't open serial port during initialization
         """
         self.url = url
         self._name = name
@@ -44,7 +46,15 @@ class IVMeasurerBase(ABC):
         return self._name
 
     @abstractmethod
-    def reconnect(self):
+    def open_device(self):
+        """
+        Open device (com-port). You don't need that if defer_open is False
+        :return:
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def reconnect(self) -> bool:
         raise NotImplementedError()
 
     @abstractmethod
