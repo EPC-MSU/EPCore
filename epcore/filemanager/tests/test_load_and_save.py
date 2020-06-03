@@ -11,6 +11,7 @@ from jsonschema import ValidationError
 board_path = join_path(dirname(__file__), "testboard.json")
 invalid_board_path = join_path(dirname(__file__), "testboard_invalid.json")
 oldstyle_board_path = join_path(dirname(__file__), "oldstyleboard.json")
+invalid_oldstyle_board_path = join_path(dirname(__file__), "oldstyleboard_invalid.json")
 dummy_path = join_path(dirname(__file__), "no_such_file.json")
 image_path = join_path(dirname(__file__), "testboard.png")
 
@@ -30,10 +31,15 @@ class LoadSaveTests(unittest.TestCase):
         board = load_board_from_ufiv(oldstyle_board_path, auto_convert_p10=True)
         self.assertTrue(bool(board))
 
-    def test_load_vali(self):
+    def test_load_validation(self):
         # Bad board should cause an exception
         with self.assertRaises(ValidationError):
             load_board_from_ufiv(invalid_board_path, validate_input=True)
+            
+    def test_oldstyle_load_validation(self):
+        # Bad board should cause an exception
+        with self.assertRaises(ValidationError):
+            load_board_from_ufiv(invalid_oldstyle_board_path, auto_convert_p10=True, validate_input=True)
 
     def test_save_board(self):
         board = Board([])

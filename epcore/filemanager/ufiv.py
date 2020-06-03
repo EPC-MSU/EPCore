@@ -4,14 +4,28 @@ UFIV - Universal file format for IV-curve measurements.
 """
 from ..elements import Board, version
 from ..utils import convert_p10
+from ..doc import path_to_ufiv_schema, path_to_p10_elements_schema
 from os.path import isfile
 from json import load, dump
-from logging import warning
+import logging
+from typing import Dict
 from PIL import Image
 from jsonschema import validate, ValidationError
 from os.path import basename
-from ..doc import path_to_ufiv_schema
 
+MAX_ERR_MSG_LEN = 256
+
+def _validate_json_with_schema(input_json: Dict, validation_schema: Dict):
+    """
+    Validate json. Raise Validation Error in case of invalid json.
+    :param input_json: json to be validated
+    :param json: json schema for validation
+    """
+    try:
+        validate(input_json, validation_schema)
+    except ValidationError as err:
+        err.message = "The input file has invalid format: " + err.message[:MAX_ERR_MSG_LEN]
+        raise
 
 def load_board_from_ufiv(path: str,
                          validate_input: bool = True,
@@ -19,26 +33,32 @@ def load_board_from_ufiv(path: str,
     """
     Load board (json and png) from directory
     :param path: path to JSON file
-    :validate_input: validate JSON before load
+    :param validate_input: validate JSON before load
     :param auto_convert_p10: enable auto conversion p10->ufiv
     :return:
     """
     with open(path, "r") as file:
         input_json = load(file)
 
+    # Convert from old format if needed
     if "version" not in input_json and auto_convert_p10:
-        warning("No 'version' key found, try to convert board from P10 format...")
+        # Old format. Should be converted first.
+        logging.info("No 'version' key found, try to convert board from P10 format...")
+        
+        if validate_input:
+            with open(path_to_p10_elements_schema(), "r") as schema_file:
+                p10_elements_schema_json = load(schema_file)
+
+            _validate_json_with_schema(input_json, p10_elements_schema_json)
+
         input_json = convert_p10(input_json, version=version, force_reference=True)
 
     if validate_input:
         with open(path_to_ufiv_schema(), "r") as schema_file:
             ufiv_schema_json = load(schema_file)
 
-        try:
-            validate(input_json, ufiv_schema_json)
-        except ValidationError as err:
-            err.message = "The input file has invalid format: " + err.message
-            raise
+        _validate_json_with_schema(input_json, ufiv_schema_json)
+
 
     board = Board.create_from_json(input_json)
 
