@@ -14,7 +14,7 @@ from ..doc import path_to_ufiv_schema
 
 
 def load_board_from_ufiv(path: str,
-                         validate_input: bool = True, 
+                         validate_input: bool = True,
                          auto_convert_p10: bool = True) -> Board:
     """
     Load board (json and png) from directory
@@ -32,8 +32,8 @@ def load_board_from_ufiv(path: str,
 
     if validate_input:
         with open(path_to_ufiv_schema(), "r") as schema_file:
-           ufiv_schema_json = load(schema_file)
-        
+            ufiv_schema_json = load(schema_file)
+
         try:
             validate(input_json, ufiv_schema_json)
         except ValidationError as err:
