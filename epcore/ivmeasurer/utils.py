@@ -27,7 +27,7 @@ def plot_curves(ivcs: List[IVCurve]):
                  linestyle="None", marker="o",
                  label="ВАХ [{}]".format(i))
     plt.legend()
-    plt.xlabel("Напряжение, В".format(i))
+    plt.xlabel("Напряжение, В")
     plt.ylabel("Ток, мА")
 
     plt.show()

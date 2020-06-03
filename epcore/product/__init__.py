@@ -6,7 +6,7 @@ EyePoint module, which defines product functionality:
 """
 from .product import MeasurementParameterOption, MeasurementParameter, ProductBase
 
-__all__ = ["MeasurementParameterOption", 
+__all__ = ["MeasurementParameterOption",
            "MeasurementParameter",
            "ProductBase"]
 
