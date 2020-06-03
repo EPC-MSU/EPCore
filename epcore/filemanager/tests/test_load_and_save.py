@@ -35,7 +35,7 @@ class LoadSaveTests(unittest.TestCase):
         # Bad board should cause an exception
         with self.assertRaises(ValidationError):
             load_board_from_ufiv(invalid_board_path, validate_input=True)
-            
+
     def test_oldstyle_load_validation(self):
         # Bad board should cause an exception
         with self.assertRaises(ValidationError):

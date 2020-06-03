@@ -15,6 +15,7 @@ from os.path import basename
 
 MAX_ERR_MSG_LEN = 256
 
+
 def _validate_json_with_schema(input_json: Dict, validation_schema: Dict):
     """
     Validate json. Raise Validation Error in case of invalid json.
@@ -26,6 +27,7 @@ def _validate_json_with_schema(input_json: Dict, validation_schema: Dict):
     except ValidationError as err:
         err.message = "The input file has invalid format: " + err.message[:MAX_ERR_MSG_LEN]
         raise
+
 
 def load_board_from_ufiv(path: str,
                          validate_input: bool = True,
@@ -44,7 +46,7 @@ def load_board_from_ufiv(path: str,
     if "version" not in input_json and auto_convert_p10:
         # Old format. Should be converted first.
         logging.info("No 'version' key found, try to convert board from P10 format...")
-        
+
         if validate_input:
             with open(path_to_p10_elements_schema(), "r") as schema_file:
                 p10_elements_schema_json = load(schema_file)
@@ -58,7 +60,6 @@ def load_board_from_ufiv(path: str,
             ufiv_schema_json = load(schema_file)
 
         _validate_json_with_schema(input_json, ufiv_schema_json)
-
 
     board = Board.create_from_json(input_json)
 
