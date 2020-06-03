@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.1.1",
   "elements": [
     {
       "pins": [
@@ -14,8 +14,8 @@
                 "max_voltage": 0,
                 "probe_signal_frequency": 0
               },
-              "currents": [0, 0, 0],
-              "voltages": [1, 1, 1]
+              "currents": [0, 0, 0, 0],
+              "voltages": [1, 1, 1, 1]
             }
           ]
         }
@@ -35,8 +35,8 @@
                 "max_voltage": 1,
                 "probe_signal_frequency": 1
               },
-              "currents": [6, 5, 4],
-              "voltages": [3, 2, 1]
+              "currents": [8, 7, 6, 5],
+              "voltages": [4, 3, 2, 1]
             }
           ]
         }

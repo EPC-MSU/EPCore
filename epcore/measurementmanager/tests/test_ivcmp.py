@@ -1,7 +1,7 @@
 # This module test libivcmp work and check correct work of binding
 from __future__ import print_function
 import unittest
-from libivcmp import IvCurve, CompareIvc, MAX_NUM_POINTS, SetMinVC, VOLTAGE_AMPL, CURRENT_AMPL
+from ivcmp import IvCurve, CompareIvc, MAX_NUM_POINTS, SetMinVC, VOLTAGE_AMPL, CURRENT_AMPL
 from ctypes import c_double
 import numpy as np
 

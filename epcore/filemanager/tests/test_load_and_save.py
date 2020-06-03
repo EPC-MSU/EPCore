@@ -5,9 +5,11 @@ from os.path import isfile
 from PIL import Image
 from epcore.filemanager import load_board_from_ufiv, save_board_to_ufiv
 from epcore.elements import Board
+from jsonschema import ValidationError
 
 
 board_path = join_path(dirname(__file__), "testboard.json")
+invalid_board_path = join_path(dirname(__file__), "testboard_invalid.json")
 dummy_path = join_path(dirname(__file__), "no_such_file.json")
 image_path = join_path(dirname(__file__), "testboard.png")
 
@@ -22,6 +24,11 @@ class LoadSaveTests(unittest.TestCase):
         self.assertTrue(board.image is not None)
         self.assertTrue(board.image.width == 100)
         self.assertTrue(board.image.height == 100)
+
+    def test_load_vali(self):
+        # Bad board should cause an exception
+        with self.assertRaises(ValidationError):
+            _ = load_board_from_ufiv(invalid_board_path, validate_input=True)
 
     def test_save_board(self):
         board = Board([])
