@@ -17,6 +17,8 @@ setup(
                               "ivm-win64/ivm.dll"],
         "epcore.measurementmanager": ["ivcmp-debian/libivcmp.so",
                                       "ivcmp-win32/ivcmp.dll",
-                                      "ivcmp-win64/ivcmp.dll"]
+                                      "ivcmp-win64/ivcmp.dll"],
+        "epcore.doc": ["p10_elements.schema.json",
+                       "ufiv.schema.json"],
     }
 )
