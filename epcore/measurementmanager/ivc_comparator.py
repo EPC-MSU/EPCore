@@ -47,7 +47,8 @@ class IVCComparator:
     def compare_ivc(self, first_ivc: IVCurve, second_ivc: IVCurve) -> float:
         res = self._lib.CompareIVC(_to_c_array(first_ivc.voltages),
                                    _to_c_array(first_ivc.currents),
+                                   len(first_ivc.voltages),
                                    _to_c_array(second_ivc.voltages),
                                    _to_c_array(second_ivc.currents),
-                                   len(first_ivc.voltages))
+                                   len(second_ivc.voltages))
         return float(res)
