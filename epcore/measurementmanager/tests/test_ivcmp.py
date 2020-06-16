@@ -93,7 +93,6 @@ class TestIVCmpMethods(unittest.TestCase):
 
         comparator.set_min_ivc(0, 0)
 
-        print(curve_1)
         res_1 = comparator.compare_ivc(curve_1, curve_2)
         res_2 = comparator.compare_ivc(curve_2, curve_1)
         self.assertTrue(np.abs(res_1 - res_2) < 0.01)
