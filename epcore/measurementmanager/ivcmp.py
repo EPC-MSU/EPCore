@@ -97,7 +97,7 @@ if __name__ == "__main__":
     SetMinVC(0.2, 0.2)
     f = CompareIvc(iv_curve, ivc_curve)
     print(f)
-    
+
     IVCResistor1 = IvCurve()
     IVCCapacitor = IvCurve()
     for i in range(MAX_NUM_POINTS):
@@ -113,4 +113,3 @@ if __name__ == "__main__":
     res_1 = CompareIvc(IVCResistor1, IVCCapacitor)
     res_2 = CompareIvc(IVCResistor1, IVCCapacitor)
     print(res_1, res_2)
-    
