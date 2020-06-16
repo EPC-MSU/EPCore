@@ -18,4 +18,7 @@ if __name__ == "__main__":
     curves = ms.measure_iv_curves()
     plot_curves(curves)
 
+    curves = ms.get_processed_curves(3)
+    plot_curves(curves)
+
     mp = MeasurementPlan()
