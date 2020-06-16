@@ -84,7 +84,8 @@ def CompareIvc(first_iv_curve, second_iv_curve):
 
 def _to_c_array(arr):
     return (c_double * len(arr))(*arr)
-    
+
+
 if __name__ == "__main__":
     iv_curve = IvCurve()
     ivc_curve = IvCurve()
@@ -96,3 +97,20 @@ if __name__ == "__main__":
     SetMinVC(0.2, 0.2)
     f = CompareIvc(iv_curve, ivc_curve)
     print(f)
+    
+    IVCResistor1 = IvCurve()
+    IVCCapacitor = IvCurve()
+    for i in range(MAX_NUM_POINTS):
+        IVCResistor1.voltages[i] = 0.5 * VOLTAGE_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
+        IVCResistor1.currents[i] = 0.5 * CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
+
+    IVCCapacitor.length = 20
+    for i in range(IVCCapacitor.length):
+        IVCCapacitor.voltages[i] = VOLTAGE_AMPL * np.sin(2 * np.pi * i / IVCCapacitor.length)
+        IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / IVCCapacitor.length)
+
+    SetMinVC(0, 0)
+    res_1 = CompareIvc(IVCResistor1, IVCCapacitor)
+    res_2 = CompareIvc(IVCResistor1, IVCCapacitor)
+    print(res_1, res_2)
+    

@@ -82,18 +82,18 @@ class TestIVCmpMethods(unittest.TestCase):
         """
         comparator = IVCComparator()
 
-        resistor1 = IVCurve()
-        resistor2 = IVCurve()
-
         curve_1 = IVCurve()
         curve_2 = IVCurve()
 
-        curve_1.voltages = np.sin(np.linspace(0, 2 * np.pi, 20))
-        curve_1.voltages = np.sin(np.linspace(0, 2 * np.pi, 20))
-        
-        curve_1.voltages = np.sin(np.linspace(0, 2 * np.pi, 100))
-        curve_1.voltages = np.sin(np.linspace(0, 2 * np.pi, 100))
-        
+        curve_1.voltages = (np.sin(np.linspace(0, 2 * np.pi, 20))).tolist()
+        curve_1.currents = (np.sin(np.linspace(0, 2 * np.pi, 20))).tolist()
+
+        curve_2.voltages = (np.sin(np.linspace(0, 2 * np.pi, 100))).tolist()
+        curve_2.currents = (np.sin(np.linspace(0, 2 * np.pi, 100))).tolist()
+
         comparator.set_min_ivc(0, 0)
-        res = comparator.compare_ivc(resistor1, resistor2)
-        self.assertTrue((res - 0.99) < 0.01)
+
+        print(curve_1)
+        res_1 = comparator.compare_ivc(curve_1, curve_2)
+        res_2 = comparator.compare_ivc(curve_2, curve_1)
+        self.assertTrue(np.abs(res_1 - res_2) < 0.01)
