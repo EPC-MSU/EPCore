@@ -41,8 +41,8 @@ class MeasurementSystem:
             line = np.convolve(line, kernel, mode="valid")
             smoothed_curve.append(line)
 
-        curve.voltages = smoothed_curve[0]
-        curve.currents = smoothed_curve[1]
+        curve.voltages = smoothed_curve[0].tolist()
+        curve.currents = smoothed_curve[1].tolist()
 
         return curve
 
