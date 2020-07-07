@@ -19,6 +19,7 @@ setup(
                                       "ivcmp-win32/ivcmp.dll",
                                       "ivcmp-win64/ivcmp.dll"],
         "epcore.doc": ["p10_elements.schema.json",
+                       "p10_elements_2.schema.json",
                        "ufiv.schema.json"],
     }
 )
