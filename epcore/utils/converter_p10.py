@@ -78,6 +78,16 @@ def _convert_element(element: Dict, force_reference: bool = False) -> Dict:
     return element
 
 
+def _replace_keys(json_dict, key_old, key_new):
+    for k, v in json_dict.items():
+        if isinstance(v, dict):
+            json_dict[k] = replace_item(v, key_old, key_new)
+    if key_old in json_dict:
+        json_dict[key_new] = json_dict[key_old]
+        del json_dict[key_old]
+    return json_dict
+
+
 def convert_p10(source_json: Dict, version: str, force_reference: bool = False) -> Dict:
     result = deepcopy(source_json)
 
@@ -87,6 +97,13 @@ def convert_p10(source_json: Dict, version: str, force_reference: bool = False) 
         result["version"] = version
 
     return result
+
+
+def convert_p10_2(source_json: Dict, version: str, force_reference: bool = False) -> Dict:
+    source_json = _replace_keys(source_json, "number_points", "number_points")
+    source_json = _replace_keys(source_json, "number_charge_points", "n_charge_points")
+
+    return convert_p10(source_json, version, force_reference)
 
 
 if __name__ == "__main__":

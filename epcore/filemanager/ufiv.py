@@ -3,8 +3,8 @@ Operations with UFIV JSON files
 UFIV - Universal file format for IV-curve measurements.
 """
 from ..elements import Board, version
-from ..utils import convert_p10
-from ..doc import path_to_ufiv_schema, path_to_p10_elements_schema
+from ..utils import convert_p10, convert_p10_2
+from ..doc import path_to_ufiv_schema, path_to_p10_elements_schema, path_to_p10_elements_2_schema
 from os.path import isfile
 from json import load, dump
 import logging
@@ -47,13 +47,40 @@ def load_board_from_ufiv(path: str,
         # Old format. Should be converted first.
         logging.info("No 'version' key found, try to convert board from P10 format...")
 
+        validation_error = None
+        p10_fomat = "Normal_Schema"
         if validate_input:
-            with open(path_to_p10_elements_schema(), "r") as schema_file:
-                p10_elements_schema_json = load(schema_file)
+            logging.info("Check normal P10 format.")
+            try:
+                with open(path_to_p10_elements_schema(), "r") as schema_file:
+                    p10_elements_schema_json = load(schema_file)
 
-            _validate_json_with_schema(input_json, p10_elements_schema_json)
+                _validate_json_with_schema(input_json, p10_elements_schema_json)
+            except ValidationError as e:
+                validation_error = e
 
-        input_json = convert_p10(input_json, version=version, force_reference=True)
+            # If failed check an other format
+            logging.info("Check alternative P10 format.")
+            if validation_error is not None:
+                try:
+                    with open(path_to_p10_elements_2_schema(), "r") as schema_2_file:
+                        p10_elements_schema_2_json = load(schema_2_file)
+
+                    _validate_json_with_schema(input_json, p10_elements_schema_2_json)
+                    p10_fomat = "Schema_2"
+                    validation_error = None
+                except ValidationError as e:
+                    validation_error = e
+
+            # We did not found correct format
+            if validation_error is not None:
+                raise validation_error
+
+        if p10_fomat == "Normal_Schema":
+            input_json = convert_p10(input_json, version=version, force_reference=True)
+        
+        if p10_fomat == "Schema_2":
+            input_json = convert_p10_2(input_json, version=version, force_reference=True)
 
     if validate_input:
         with open(path_to_ufiv_schema(), "r") as schema_file:
