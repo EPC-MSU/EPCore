@@ -81,7 +81,7 @@ def _convert_element(element: Dict, force_reference: bool = False) -> Dict:
 def _replace_keys(json_dict, key_old, key_new):
     for k, v in json_dict.items():
         if isinstance(v, dict):
-            json_dict[k] = replace_item(v, key_old, key_new)
+            json_dict[k] = _replace_keys(v, key_old, key_new)
     if key_old in json_dict:
         json_dict[key_new] = json_dict[key_old]
         del json_dict[key_old]

@@ -78,7 +78,7 @@ def load_board_from_ufiv(path: str,
 
         if p10_fomat == "Normal_Schema":
             input_json = convert_p10(input_json, version=version, force_reference=True)
-        
+
         if p10_fomat == "Schema_2":
             input_json = convert_p10_2(input_json, version=version, force_reference=True)
 
