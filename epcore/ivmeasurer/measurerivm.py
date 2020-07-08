@@ -145,6 +145,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
     @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
         inf = self._device.get_identity_information()
+        rank = self._device.get_device_rank()
         return IVMeasurerIdentityInformation(manufacturer=bytes(inf.manufacturer).decode("utf-8").replace("\x00", ""),
                                              device_name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
                                              device_class=bytes(inf.product_name).decode("utf-8").replace("\x00", ""),
@@ -152,7 +153,8 @@ class IVMeasurerIVM10(IVMeasurerBase):
                                                                inf.hardware_bugfix),
                                              firmware_version=(inf.firmware_major, inf.firmware_minor,
                                                                inf.firmware_bugfix),
-                                             name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""))
+                                             name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
+                                             rank=int(rank))
 
     @_close_on_error
     def trigger_measurement(self):

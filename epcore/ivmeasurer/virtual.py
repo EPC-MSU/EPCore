@@ -74,7 +74,8 @@ class IVMeasurerVirtual(IVMeasurerBase):
                 device_name="Virtual IV Measurer",
                 hardware_version=(0, 0, 0),
                 firmware_version=(0, 0, 0),
-                name="Virtual"
+                name="Virtual",
+                rank=0
         )
 
     @_check_open
