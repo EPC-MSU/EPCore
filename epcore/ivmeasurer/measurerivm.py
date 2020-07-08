@@ -145,7 +145,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
     @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
         inf = self._device.get_identity_information()
-        rank = self._device.get_device_rank()
+        rank = self._device.get_device_rank().rank
         return IVMeasurerIdentityInformation(manufacturer=bytes(inf.manufacturer).decode("utf-8").replace("\x00", ""),
                                              device_name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
                                              device_class=bytes(inf.product_name).decode("utf-8").replace("\x00", ""),

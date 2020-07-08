@@ -58,6 +58,9 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self._open = True
         self.set_settings(self.__default_settings)
 
+    def close_device(self):
+        self._open = False
+
     @_check_open
     def set_settings(self, settings: MeasurementSettings):
         self.__settings = settings
