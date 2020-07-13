@@ -210,9 +210,10 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
         # Postprocessing
         if device_settings.probe_signal_frequency > 20000:
-            curve = interpolate_curve(curve=curve, 
+            curve = interpolate_curve(curve=curve,
                                       final_num_points=self._NORMAL_NUM_POINTS)
-            curve = smooth_curve(curve=curve,
-                                 kernel_size=self._SMOOTHING_KERNEL_SIZE)
+
+        curve = smooth_curve(curve=curve,
+                             kernel_size=self._SMOOTHING_KERNEL_SIZE)
 
         return curve

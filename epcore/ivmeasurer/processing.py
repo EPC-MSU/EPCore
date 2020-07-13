@@ -3,6 +3,7 @@ from scipy import interpolate as itl
 from ..elements import IVCurve
 import copy
 
+
 def interpolate_curve(curve: IVCurve, final_num_points: int):
     """
     Effectively increase resolution by curve interpolation
