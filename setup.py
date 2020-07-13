@@ -9,7 +9,8 @@ setup(
         "dataclasses",  # for elements module
         "Pillow",  # for Board image class
         "jsonschema",  # for converter (utils) and format validation (different tests)
-        "numpy"  # for test_iv_curve
+        "numpy",  # for test_iv_curve
+        "scipy"  # for curve interpolation
     ],
     package_data={
         "epcore.ivmeasurer": ["ivm-debian/libivm.so",
