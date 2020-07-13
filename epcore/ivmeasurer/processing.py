@@ -2,7 +2,7 @@ import numpy as np
 from ..elements import IVCurve
 
 
-def smooth_curve(self, curve: IVCurve, kernel_size: int) -> IVCurve:
+def smooth_curve(curve: IVCurve, kernel_size: int) -> IVCurve:
     """
     Remove noise by averaging
     :param curve: list or tuple of two arrays with voltages and currents
