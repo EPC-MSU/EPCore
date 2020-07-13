@@ -1,6 +1,7 @@
 import logging
 import time
 import numpy as np
+import copy
 
 from .base import IVMeasurerBase, IVMeasurerIdentityInformation, cache_curve
 from .processing import smooth_curve, interpolate_curve
@@ -44,6 +45,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.nominal = 100
         self.noise_factor = 0.05
         self._SMOOTHING_KERNEL_SIZE = 5
+        self._NORMAL_NUM_POINTS = 100
 
         if not defer_open:
             self.open_device()
@@ -100,8 +102,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
             self.__last_curve = self.__calculate_c_iv()
         else:
             raise NotImplementedError
-        self.__last_curve = smooth_curve(curve=self.__last_curve,
-                                         kernel_size=self._SMOOTHING_KERNEL_SIZE)
+
         self.__measurement_is_ready = False
         self.__ready_time = time.time() + 2. / self.__settings.probe_signal_frequency
 
@@ -124,10 +125,16 @@ class IVMeasurerVirtual(IVMeasurerBase):
         """
         Return result of the last measurement.
         """
-        if self.__measurement_is_ready:
-            return self.__last_curve
-        else:
+        if self.__measurement_is_ready is not True:
             raise RuntimeError("Measurement is not ready")
+
+        curve = copy.deepcopy(self.__last_curve)
+
+        curve = interpolate_curve(curve=curve,
+                                  final_num_points=self._NORMAL_NUM_POINTS)
+        curve = smooth_curve(curve=curve,
+                             kernel_size=self._SMOOTHING_KERNEL_SIZE)
+        return curve
 
     @_check_open
     def calibrate(self, *args):
