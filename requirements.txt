@@ -2,3 +2,4 @@ dataclasses
 Pillow
 jsonschema
 numpy
+matplotlib

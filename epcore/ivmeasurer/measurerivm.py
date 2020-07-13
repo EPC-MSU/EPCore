@@ -4,6 +4,7 @@ IVMeasurer Implementation for EyePoint IVM hardware measurer.
 from . import IVMeasurerIdentityInformation
 from .base import IVMeasurerBase, cache_curve
 from .ivm import IvmDeviceHandle
+from .utils import smooth_curve
 from ..elements import IVCurve, MeasurementSettings
 import numpy as np
 from typing import Callable
@@ -43,6 +44,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         """
         self._device = IvmDeviceHandle(url, defer_open=True)
         self._FRAME_SIZE = 25
+        self._SMOOTHING_KERNEL_SIZE = 5
         self._default_settings = MeasurementSettings(
             sampling_rate=10000,
             internal_resistance=475,
@@ -180,7 +182,11 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
     @cache_curve
     @_close_on_error
-    def get_last_iv_curve(self) -> IVCurve:
+    def get_last_iv_curve(self, raw=False) -> IVCurve:
+        """
+        Return measured data from device.
+        If raw is True postprocessing (averaging) is not applied
+        """
         device_settings = self._device.get_measurement_settings()
         voltages = []
         currents = []
@@ -193,7 +199,16 @@ class IVMeasurerIVM10(IVMeasurerBase):
         currents = (np.array(currents[:device_settings.number_points]) / 1000).tolist()
         voltages = voltages[:device_settings.number_points]
 
-        return IVCurve(
+        curve = IVCurve(
             currents=currents,
             voltages=voltages
         )
+
+        if raw is True:
+            return curve
+        
+        # Postprocessing
+        curve = smooth_curve(curve=curve,
+                             kernel_size=self._SMOOTHING_KERNEL_SIZE)
+
+        return curve
