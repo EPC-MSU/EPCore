@@ -4,7 +4,7 @@ IVMeasurer Implementation for EyePoint IVM hardware measurer.
 from . import IVMeasurerIdentityInformation
 from .base import IVMeasurerBase, cache_curve
 from .ivm import IvmDeviceHandle
-from .processing import smooth_curve
+from .processing import smooth_curve, interpolate_curve
 from ..elements import IVCurve, MeasurementSettings
 import numpy as np
 from typing import Callable
@@ -45,6 +45,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         self._device = IvmDeviceHandle(url, defer_open=True)
         self._FRAME_SIZE = 25
         self._SMOOTHING_KERNEL_SIZE = 5
+        self._NORMAL_NUM_POINTS = 100
         self._default_settings = MeasurementSettings(
             sampling_rate=10000,
             internal_resistance=475,
@@ -208,7 +209,10 @@ class IVMeasurerIVM10(IVMeasurerBase):
             return curve
 
         # Postprocessing
-        curve = smooth_curve(curve=curve,
-                             kernel_size=self._SMOOTHING_KERNEL_SIZE)
+        if device_settings.probe_signal_frequency > 20000:
+            curve = interpolate_curve(curve=curve, 
+                                      final_num_points=self._NORMAL_NUM_POINTS)
+            curve = smooth_curve(curve=curve,
+                                 kernel_size=self._SMOOTHING_KERNEL_SIZE)
 
         return curve
