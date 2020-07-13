@@ -64,7 +64,9 @@ class MeasurementPlan(Board):
         """
         curve = self.measurer.get_last_cached_iv_curve()
         settings = self.measurer.get_settings()
-        measurement = Measurement(settings=settings, ivc=curve, is_reference=True)
+        measurement = Measurement(settings=deepcopy(settings), 
+                                  ivc=curve, 
+                                  is_reference=True)
         pin = self.get_current_pin()
         pin.set_reference_measurement(measurement)
 
