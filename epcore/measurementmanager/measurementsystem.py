@@ -1,6 +1,5 @@
 from typing import List, Optional, Dict
 import time
-import numpy as np
 from copy import deepcopy
 from ..elements import MeasurementSettings, IVCurve
 from ..ivmeasurer import IVMeasurerBase

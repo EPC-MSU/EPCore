@@ -206,7 +206,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
         if raw is True:
             return curve
-        
+
         # Postprocessing
         curve = smooth_curve(curve=curve,
                              kernel_size=self._SMOOTHING_KERNEL_SIZE)
