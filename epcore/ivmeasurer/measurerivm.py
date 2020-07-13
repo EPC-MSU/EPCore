@@ -4,7 +4,7 @@ IVMeasurer Implementation for EyePoint IVM hardware measurer.
 from . import IVMeasurerIdentityInformation
 from .base import IVMeasurerBase, cache_curve
 from .ivm import IvmDeviceHandle
-from .utils import smooth_curve
+from .processing import smooth_curve
 from ..elements import IVCurve, MeasurementSettings
 import numpy as np
 from typing import Callable
