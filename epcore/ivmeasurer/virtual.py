@@ -3,6 +3,7 @@ import time
 import numpy as np
 
 from .base import IVMeasurerBase, IVMeasurerIdentityInformation, cache_curve
+from .processing import smooth_curve, interpolate_curve
 from ..elements import MeasurementSettings, IVCurve
 
 
@@ -42,6 +43,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.model = "resistor"
         self.nominal = 100
         self.noise_factor = 0.05
+        self._SMOOTHING_KERNEL_SIZE = 5
 
         if not defer_open:
             self.open_device()
@@ -98,6 +100,8 @@ class IVMeasurerVirtual(IVMeasurerBase):
             self.__last_curve = self.__calculate_c_iv()
         else:
             raise NotImplementedError
+        self.__last_curve = smooth_curve(curve=self.__last_curve,
+                                         kernel_size=self._SMOOTHING_KERNEL_SIZE)
         self.__measurement_is_ready = False
         self.__ready_time = time.time() + 2. / self.__settings.probe_signal_frequency
 
