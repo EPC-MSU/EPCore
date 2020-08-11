@@ -76,8 +76,8 @@ def CompareIvc(first_iv_curve, second_iv_curve):
     lib_func = lib.CompareIVC
     lib_func.argtype = POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double), c_size_t
     lib_func.restype = c_double
-    res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, 
-                   second_iv_curve.voltages, second_iv_curve.currents, second_iv_curve.length)
+    res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, second_iv_curve.voltages,
+                   second_iv_curve.currents, second_iv_curve.length)
     res = _normalize_arg(res, c_double)
     return res
 
