@@ -2,25 +2,16 @@ from ctypes import CDLL, Structure, Array, c_ubyte, \
     c_double, c_size_t, POINTER
 from platform import system
 import numpy as np
-import struct
 VOLTAGE_AMPL = 12.
 R_CS = 475.
 CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
 
 
-def _fullpath_lib(name: str) -> str:
-    from os.path import dirname, join
-    return join(dirname(__file__), name)
-
-
 def _get_dll():
     if system() == "Linux":
-        return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
+        return CDLL("libivcmp.so")
     elif system() == "Windows":
-        if 8 * struct.calcsize("P") == 32:
-            return CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
-        else:
-            return CDLL(_fullpath_lib("ivcmp-win64/ivcmp.dll"))
+        return CDLL("ivcmp.dll")
     else:
         raise NotImplementedError("Unsupported platform {0}".format(system()))
 
@@ -58,12 +49,8 @@ def _normalize_arg(value, desired_ctype):
 class IvCurve(_IterableStructure):
     _fields_ = (
         ("voltages", c_double*MAX_NUM_POINTS),
-        ("currents", c_double*MAX_NUM_POINTS),
-        ("length", c_size_t)
+        ("currents", c_double*MAX_NUM_POINTS)
     )
-
-    def __init__(self):
-        self.length = MAX_NUM_POINTS
 
 
 def SetMinVC(min_var_v, min_var_c):
@@ -72,18 +59,14 @@ def SetMinVC(min_var_v, min_var_c):
     lib_func(c_double(min_var_v),  c_double(min_var_c))
 
 
-def CompareIvc(first_iv_curve, second_iv_curve):
+def CompareIvc(first_iv_curve, second_iv_curve, size):
     lib_func = lib.CompareIVC
-    lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
+    lib_func.argtype = POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double), c_size_t
     lib_func.restype = c_double
-    res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, first_iv_curve.length,
-                   second_iv_curve.voltages, second_iv_curve.currents, second_iv_curve.length)
+    res = lib_func(first_iv_curve.voltages, first_iv_curve.currents,
+                   second_iv_curve.voltages, second_iv_curve.currents, c_size_t(size))
     res = _normalize_arg(res, c_double)
     return res
-
-
-def _to_c_array(arr):
-    return (c_double * len(arr))(*arr)
 
 
 if __name__ == "__main__":
@@ -94,22 +77,8 @@ if __name__ == "__main__":
         iv_curve.currents[i] = 0.63 * CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
         ivc_curve.voltages[i] = VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
         ivc_curve.currents[i] = CURRENT_AMPL * np.cos(2 * 3.14 * i / MAX_NUM_POINTS)
-    SetMinVC(0.2, 0.2)
-    f = CompareIvc(iv_curve, ivc_curve)
-    print(f)
-
-    IVCResistor1 = IvCurve()
-    IVCCapacitor = IvCurve()
-    for i in range(MAX_NUM_POINTS):
-        IVCResistor1.voltages[i] = 0.5 * VOLTAGE_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
-        IVCResistor1.currents[i] = 0.5 * CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
-
-    IVCCapacitor.length = 20
-    for i in range(IVCCapacitor.length):
-        IVCCapacitor.voltages[i] = VOLTAGE_AMPL * np.sin(2 * np.pi * i / IVCCapacitor.length)
-        IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / IVCCapacitor.length)
-
     SetMinVC(0, 0)
-    res_1 = CompareIvc(IVCResistor1, IVCCapacitor)
-    res_2 = CompareIvc(IVCResistor1, IVCCapacitor)
-    print(res_1, res_2)
+    f = CompareIvc(iv_curve, ivc_curve, MAX_NUM_POINTS)
+    print(f)
+    # for i in range(MAX_NUM_POINTS):
+    #     print(iv_curve.currents[i], iv_curve.voltages[i])
