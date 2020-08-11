@@ -9,8 +9,9 @@ python -m epcore.measurementmanager
 from .measurementplan import MeasurementPlan
 from .measurementsystem import MeasurementSystem
 from .ivc_comparator import IVCComparator
+from .utils import search_optimal_settings
 
-__all__ = ["MeasurementPlan", "MeasurementSystem", "IVCComparator"]
+__all__ = ["MeasurementPlan", "MeasurementSystem", "IVCComparator", "search_optimal_settings"]
 
 __author__ = ""
 __email__ = ""
