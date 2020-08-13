@@ -130,4 +130,4 @@ def autosetup_settings(voltages, currents, settings):
     else:
         new_signal_frequency = probe_signal_frequency
 
-    return new_max_voltage, new_internal_resistance, new_signal_frequency
+    return new_signal_frequency, new_internal_resistance, new_max_voltage
