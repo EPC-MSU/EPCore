@@ -24,13 +24,13 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
     print(initial_settings.max_voltage, initial_settings.internal_resistance, initial_settings.probe_signal_frequency)
 
     # Search optimal settings
+    # TODO: find a way to get avalailable options
     # Avalailable:
     # - probe_signal_frequency = 10, 100, 1000, 10000
     # - internal_resistance = 475.0, 4750.0, 47500.0
     # - max_voltage = 1.2, 3.0, 5.0, 12.0   WARNING: don't forget zeros...
 
     for i in range(ITER):
-        # first iteration -- gather data
         if i == 0:
             optimal_settings = MeasurementSettings(
                 sampling_rate=10000,
@@ -38,7 +38,6 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
                 internal_resistance=4750.0,
                 max_voltage=12.0
             )
-        # next iterations -- analyze data
         else:
             settings = measurer.get_settings()
             new_signal_frequency, new_internal_resistance, new_max_voltage = autosetup_settings(voltages, currents, settings)
@@ -49,7 +48,6 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
                 max_voltage = new_max_voltage
             )
 
-        print(optimal_settings)
         measurer.set_settings(optimal_settings)
         VC = measurer.measure_iv_curve()
         voltages = VC.voltages
@@ -112,14 +110,14 @@ def autosetup_settings(voltages, currents, settings):
     for voltage in voltages:
         if abs(voltage) > new_max_voltage:
             new_max_voltage = abs(voltage)
-    if new_max_voltage > 5.: new_max_voltage = 12
-    elif new_max_voltage > 3.: new_max_voltage = 5
-    elif new_max_voltage > 1.2: new_max_voltage = 3
+    if new_max_voltage > 5.0: new_max_voltage = 12.0
+    elif new_max_voltage > 3.3: new_max_voltage = 5.0
+    elif new_max_voltage > 1.2: new_max_voltage = 3.3
     else: new_max_voltage = 1.2
 
     # change frequency
     # the thing is -- diod and capacitor have different behavior when changing frequency
-    # possible bypass is storing past frequency and finding out whether area changes in direct ratio ot no
+    # possible bypass is storing past frequency and finding out whether area changes in direct ratio or no
     # but this will do
     integral = integrate(voltages, currents)
     square = (max_voltage * 2) * (max_current * 2)
