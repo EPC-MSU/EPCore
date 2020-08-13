@@ -17,14 +17,16 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
     """
     # Save initial settings. At the end we will set measurer to initial state
     initial_settings = measurer.get_settings()
+    print(initial_settings.max_voltage, initial_settings.internal_resistance, initial_settings.probe_signal_frequency)
 
     # Search optimal settings
     optimal_settings = MeasurementSettings(
         sampling_rate=10000,
-        probe_signal_frequency=100,
-        internal_resistance=475,
-        max_voltage=5
+        probe_signal_frequency=1000,
+        internal_resistance=4750.0,
+        max_voltage=12.0
     )
+    print(optimal_settings)
     measurer.set_settings(optimal_settings)
 
     # Set initial settings. Don't return without this!
