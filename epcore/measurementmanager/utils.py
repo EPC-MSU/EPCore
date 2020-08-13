@@ -51,7 +51,7 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
 
         print(optimal_settings)
         measurer.set_settings(optimal_settings)
-        VC = measurer.measure_iv_curve()[0]
+        VC = measurer.measure_iv_curve()
         voltages = VC.voltages
         currents = VC.currents
 
