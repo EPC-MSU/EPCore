@@ -26,23 +26,24 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
     # Search optimal settings
     # TODO: find a way to get avalailable options
     # Avalailable:
-    # - probe_signal_frequency = 10, 100, 1000, 10000
+    # - probe_signal_frequency = 10, 100, 1000, 10000, 100000
+    # - sampling_rate = 1000, 10000, 100000, 1000000, 2000000 (according to probe_sample_frequency)
     # - internal_resistance = 475.0, 4750.0, 47500.0
     # - max_voltage = 1.2, 3.0, 5.0, 12.0   WARNING: don't forget zeros...
 
     for i in range(ITER):
         if i == 0:
             optimal_settings = MeasurementSettings(
-                sampling_rate=10000,
+                sampling_rate=100000,
                 probe_signal_frequency=1000,
                 internal_resistance=4750.0,
                 max_voltage=12.0
             )
         else:
             settings = measurer.get_settings()
-            new_signal_frequency, new_internal_resistance, new_max_voltage = autosetup_settings(voltages, currents, settings)
+            new_sampling_rate, new_signal_frequency, new_internal_resistance, new_max_voltage = autosetup_settings(voltages, currents, settings)
             optimal_settings = MeasurementSettings(
-                sampling_rate=10000,
+                sampling_rate=new_sampling_rate,
                 probe_signal_frequency=new_signal_frequency,
                 internal_resistance = new_internal_resistance,
                 max_voltage = new_max_voltage
@@ -121,11 +122,15 @@ def autosetup_settings(voltages, currents, settings):
     # but this will do
     integral = integrate(voltages, currents)
     square = (max_voltage * 2) * (max_current * 2)
-    print(f'integral {integral} square {square}')
-    print("diff {}".format(abs(integral / square)))
     if (abs(integral / square) < 0.005) and (probe_signal_frequency > 10):
         new_signal_frequency = probe_signal_frequency / 10
     else:
         new_signal_frequency = probe_signal_frequency
+    
+    #choose sampling rate accordingly
+    if new_signal_frequency != 100000:
+        new_sampling_rate = new_signal_frequency * 100
+    else:
+        new_sampling_rate = 2000000
 
-    return new_signal_frequency, new_internal_resistance, new_max_voltage
+    return new_sampling_rate, new_signal_frequency, new_internal_resistance, new_max_voltage
