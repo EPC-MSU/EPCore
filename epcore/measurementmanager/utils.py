@@ -21,7 +21,6 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
     """
     # Save initial settings. At the end we will set measurer to initial state
     initial_settings = measurer.get_settings()
-    print(initial_settings.max_voltage, initial_settings.internal_resistance, initial_settings.probe_signal_frequency)
 
     # Search optimal settings
     # TODO: find a way to get avalailable options
@@ -48,7 +47,6 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
                 internal_resistance = new_internal_resistance,
                 max_voltage = new_max_voltage
             )
-
         measurer.set_settings(optimal_settings)
         VC = measurer.measure_iv_curve()
         voltages = VC.voltages
