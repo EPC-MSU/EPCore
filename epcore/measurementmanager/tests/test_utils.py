@@ -70,10 +70,10 @@ class TestPlan(unittest.TestCase):
         measurer.nominal = 0.00001
         optimal_settings = search_optimal_settings(measurer)
         good_settings = MeasurementSettings(
-            sampling_rate=10000,
+            sampling_rate=1000,
             internal_resistance=475.0,
             max_voltage=1.2,
-            probe_signal_frequency=100
+            probe_signal_frequency=10
         )
 
         # The measurer should have good settings
