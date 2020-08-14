@@ -72,17 +72,13 @@ def autosetup_settings(voltages, currents, integral, maximize_square, settings):
     c_avg /= max_current
     v_avg /= max_voltage
     if c_avg < 0.15:
-        if internal_resistance == 475.0:
-            new_internal_resistance = 4750.0
-        elif internal_resistance == 4750.0:
-            new_internal_resistance = 47500.0
+        if internal_resistance < 47500.0:
+            new_internal_resistance = internal_resistance * 10
         else:
             new_internal_resistance = internal_resistance
     elif v_avg < 0.15:
-        if internal_resistance == 47500.0:
-            new_internal_resistance = 4750.0
-        elif internal_resistance == 4750.0:
-            new_internal_resistance = 475.0
+        if internal_resistance > 475.0:
+            new_internal_resistance = internal_resistance / 10
         else:
             new_internal_resistance = internal_resistance
     else:
