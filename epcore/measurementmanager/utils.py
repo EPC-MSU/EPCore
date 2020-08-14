@@ -21,6 +21,7 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
     """
     # Save initial settings. At the end we will set measurer to initial state
     initial_settings = measurer.get_settings()
+    maximize_square = True # if true then area under the curve will be maximized even for diodes and resistors
 
     # Search optimal settings
     # TODO: find a way to get avalailable options
@@ -28,19 +29,20 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
     # - probe_signal_frequency = 10, 100, 1000, 10000, 100000
     # - sampling_rate = 1000, 10000, 100000, 1000000, 2000000 (according to probe_sample_frequency)
     # - internal_resistance = 475.0, 4750.0, 47500.0
-    # - max_voltage = 1.2, 3.0, 5.0, 12.0   WARNING: don't forget zeros...
+    # - max_voltage = 1.2, 3.0, 5.0, 12.0
 
     for i in range(ITER):
         if i == 0:
             optimal_settings = MeasurementSettings(
-                sampling_rate=100000,
-                probe_signal_frequency=1000,
+                sampling_rate=1000000,
+                probe_signal_frequency=10000,
                 internal_resistance=4750.0,
                 max_voltage=12.0
             )
+            integral = []
         else:
             settings = measurer.get_settings()
-            new_sampling_rate, new_signal_frequency, new_internal_resistance, new_max_voltage = autosetup_settings(voltages, currents, settings)
+            new_sampling_rate, new_signal_frequency, new_internal_resistance, new_max_voltage = autosetup_settings(voltages, currents, integral, maximize_square, settings)
             optimal_settings = MeasurementSettings(
                 sampling_rate=new_sampling_rate,
                 probe_signal_frequency=new_signal_frequency,
@@ -57,24 +59,7 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
 
     return optimal_settings
 
-def _equidistant(voltages, currents):
-    # there are some repeats...
-    an = np.array([voltages, currents])
-    params = np.arange(0, 1, 1.0 / len(an[0]))
-    step = 1.0 / len(an[0])
-    tck, _ = interpolate.splprep(an, u=params, s=0.00)
-    eq = np.array(interpolate.splev(params, tck))
-    return eq, step
-
-def integrate(voltages, currents):
-    eq, step = _equidistant(voltages, currents)
-    integral = 0.0
-    for i in range(len(eq[1])-1):
-        integral += step * (eq[1][i] + eq[1][i+1]) / 2
-    # np.trapz works literally the same
-    return integral
-
-def autosetup_settings(voltages, currents, settings):
+def autosetup_settings(voltages, currents, integral, maximize_square, settings):
     # get current settings
     probe_signal_frequency = settings.probe_signal_frequency
     internal_resistance = settings.internal_resistance
@@ -86,14 +71,14 @@ def autosetup_settings(voltages, currents, settings):
     v_avg = np.mean(np.abs(voltages))
     c_avg /= max_current
     v_avg /= max_voltage
-    if c_avg < 0.2:
+    if c_avg < 0.15:
         if internal_resistance == 475.0:
             new_internal_resistance = 4750.0
         elif internal_resistance == 4750.0:
             new_internal_resistance = 47500.0
         else:
             new_internal_resistance = internal_resistance
-    elif v_avg < 0.2:
+    elif v_avg < 0.15:
         if internal_resistance == 47500.0:
             new_internal_resistance = 4750.0
         elif internal_resistance == 4750.0:
@@ -114,17 +99,29 @@ def autosetup_settings(voltages, currents, settings):
     elif new_max_voltage > 1.2: new_max_voltage = 3.3
     else: new_max_voltage = 1.2
 
-    # change frequency
-    # the thing is -- diod and capacitor have different behavior when changing frequency
-    # possible bypass is storing past frequency and finding out whether area changes in direct ratio or no
-    # but this will do
-    integral = integrate(voltages, currents)
+    # change frequency algoritm for ITER = 3
     square = (max_voltage * 2) * (max_current * 2)
-    if (abs(integral / square) < 0.005) and (probe_signal_frequency > 10):
-        new_signal_frequency = probe_signal_frequency / 10
+    integral.append(abs(integrate(voltages, currents) / square))
+    if maximize_square:
+        # first check is made to be certain that 10KHz is not optimal
+        if (integral[0] < 0.003) and (probe_signal_frequency > 10) and (len(integral) == 1):
+            new_signal_frequency = probe_signal_frequency / 100
+        # if it is optimal then keep the frequency (mostly optimal for diodes)
+        elif (len(integral) == 1):
+            new_signal_frequency = probe_signal_frequency
+        # second check is to determine whether frequency changes in direct ratio with integral or not
+        elif ((integral[1] / integral[0]) > 1.2) and (probe_signal_frequency > 10):
+            new_signal_frequency = probe_signal_frequency / 10
+        elif ((integral[1] / integral[0]) < 1) and (probe_signal_frequency < 10000):
+            new_signal_frequency = probe_signal_frequency * 100
+        else:
+            new_signal_frequency = probe_signal_frequency
     else:
-        new_signal_frequency = probe_signal_frequency
-    
+        if (integral[-1] < 0.05) and (probe_signal_frequency > 10):
+            new_signal_frequency = probe_signal_frequency / 10
+        else:
+            new_signal_frequency = probe_signal_frequency
+
     #choose sampling rate accordingly
     if new_signal_frequency != 100000:
         new_sampling_rate = new_signal_frequency * 100
@@ -132,3 +129,20 @@ def autosetup_settings(voltages, currents, settings):
         new_sampling_rate = 2000000
 
     return new_sampling_rate, new_signal_frequency, new_internal_resistance, new_max_voltage
+
+def _equidistant(voltages, currents):
+    # there are some repeats...
+    an = np.array([voltages, currents])
+    params = np.arange(0, 1, 1.0 / len(an[0]))
+    step = 1.0 / len(an[0])
+    tck, _ = interpolate.splprep(an, u=params, s=0.00)
+    eq = np.array(interpolate.splev(params, tck))
+    return eq, step
+
+def integrate(voltages, currents):
+    eq, step = _equidistant(voltages, currents)
+    integral = 0.0
+    for i in range(len(eq[1])-1):
+        integral += step * (eq[1][i] + eq[1][i+1]) / 2
+    # np.trapz works literally the same
+    return integral
