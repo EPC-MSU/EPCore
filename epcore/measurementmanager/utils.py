@@ -30,27 +30,28 @@ def search_optimal_settings(measurer: IVMeasurerBase) -> MeasurementSettings:
     # - sampling_rate = 1000, 10000, 100000, 1000000, 2000000 (according to probe_sample_frequency)
     # - internal_resistance = 475.0, 4750.0, 47500.0
     # - max_voltage = 1.2, 3.0, 5.0, 12.0
-
-    for i in range(ITER):
-        if i == 0:
-            optimal_settings = MeasurementSettings(
-                sampling_rate=1000000,
-                probe_signal_frequency=10000,
-                internal_resistance=4750.0,
-                max_voltage=12.0
-            )
-            integral = []
-        else:
-            settings = measurer.get_settings()
-            (new_sampling_rate, new_signal_frequency,
-             new_internal_resistance, new_max_voltage) = autosetup_settings(voltages, currents,
-                                                                            integral, maximize_square, settings)
-            optimal_settings = MeasurementSettings(
-                sampling_rate=new_sampling_rate,
-                probe_signal_frequency=new_signal_frequency,
-                internal_resistance=new_internal_resistance,
-                max_voltage=new_max_voltage
-            )
+    optimal_settings = MeasurementSettings(
+        sampling_rate=1000000,
+        probe_signal_frequency=10000,
+        internal_resistance=4750.0,
+        max_voltage=12.0
+    )
+    integral = []
+    measurer.set_settings(optimal_settings)
+    VC = measurer.measure_iv_curve()
+    voltages = VC.voltages
+    currents = VC.currents
+    for i in range(1, ITER):
+        settings = measurer.get_settings()
+        (new_sampling_rate, new_signal_frequency,
+         new_internal_resistance, new_max_voltage) = autosetup_settings(voltages, currents,
+                                                                        integral, maximize_square, settings)
+        optimal_settings = MeasurementSettings(
+            sampling_rate=new_sampling_rate,
+            probe_signal_frequency=new_signal_frequency,
+            internal_resistance=new_internal_resistance,
+            max_voltage=new_max_voltage
+        )
         measurer.set_settings(optimal_settings)
         VC = measurer.measure_iv_curve()
         voltages = VC.voltages
@@ -74,16 +75,10 @@ def autosetup_settings(voltages, currents, integral, maximize_square, settings):
     v_avg = np.mean(np.abs(voltages))
     c_avg /= max_current
     v_avg /= max_voltage
-    if c_avg < 0.15:
-        if internal_resistance < 47500.0:
-            new_internal_resistance = internal_resistance * 10
-        else:
-            new_internal_resistance = internal_resistance
-    elif v_avg < 0.15:
-        if internal_resistance > 475.0:
-            new_internal_resistance = internal_resistance / 10
-        else:
-            new_internal_resistance = internal_resistance
+    if c_avg < 0.15 and internal_resistance < 47500.0:
+        new_internal_resistance = internal_resistance * 10
+    elif v_avg < 0.15 and internal_resistance > 475.0:
+        new_internal_resistance = internal_resistance / 10
     else:
         new_internal_resistance = internal_resistance
 

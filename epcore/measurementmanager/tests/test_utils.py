@@ -46,7 +46,7 @@ class TestPlan(unittest.TestCase):
 
     def test_optimal_settings_resistor(self):
         measurer = IVMeasurerVirtual()
-        measurer.model = 'resistor'
+        measurer.model = "resistor"
         measurer.nominal = 1000
         optimal_settings = search_optimal_settings(measurer)
         good_settings = MeasurementSettings(
@@ -64,7 +64,7 @@ class TestPlan(unittest.TestCase):
 
     def test_optimal_settings_capacitor(self):
         measurer = IVMeasurerVirtual()
-        measurer.model = 'capacitor'
+        measurer.model = "capacitor"
         measurer.nominal = 0.00001
         optimal_settings = search_optimal_settings(measurer)
         good_settings = MeasurementSettings(
