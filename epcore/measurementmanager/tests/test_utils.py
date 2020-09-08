@@ -1,7 +1,5 @@
 import unittest
 
-import numpy as np
-
 from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.elements import MeasurementSettings
 from epcore.measurementmanager import search_optimal_settings
@@ -25,7 +23,7 @@ class TestPlan(unittest.TestCase):
 
         # The measurer should have initial settings after search
         self.assertTrue(settings_after_search is test_settings)
-    
+
     def test_optimal_settings_set_new_settings(self):
         measurer = IVMeasurerVirtual()
 
