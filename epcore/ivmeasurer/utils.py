@@ -18,6 +18,7 @@ def plot_curves(ivcs: List[IVCurve]):
         plt.plot(np.array(ivc.currents) * 1000, linestyle="None", marker="o",
                  label="Ток [{}], мА".format(i))
     plt.legend()
+    plt.grid()
 
     plt.subplot(1, 2, 2)
     plt.title("ВАХ")
@@ -27,6 +28,7 @@ def plot_curves(ivcs: List[IVCurve]):
                  linestyle="None", marker="o",
                  label="ВАХ [{}]".format(i))
     plt.legend()
+    plt.grid()
     plt.xlabel("Напряжение, В")
     plt.ylabel("Ток, мА")
 

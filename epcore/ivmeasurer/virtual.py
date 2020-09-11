@@ -148,11 +148,11 @@ class IVMeasurerVirtual(IVMeasurerBase):
     # =================== Internal methods =================================
     def __add_noise(self, voltages_arr, currents_arr):
         voltage_noise_ampl = self.__settings.max_voltage * self.noise_factor
-        voltages_arr = np.array(voltages_arr) + voltage_noise_ampl * np.random.random(len(voltages_arr))
+        voltages_arr = np.array(voltages_arr) + voltage_noise_ampl * (2 * np.random.random(len(voltages_arr)) - 1)
 
         current_noise_ampl = (self.__settings.max_voltage / (self.__settings.internal_resistance + 100) *
                               self.noise_factor)
-        currents_arr = np.array(currents_arr) + current_noise_ampl * np.random.random(len(currents_arr))
+        currents_arr = np.array(currents_arr) + current_noise_ampl * (2 * np.random.random(len(currents_arr)) - 1)
 
         return (voltages_arr, currents_arr)
 
