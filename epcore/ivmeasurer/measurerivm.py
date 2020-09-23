@@ -3,11 +3,12 @@ IVMeasurer Implementation for EyePoint IVM hardware measurer.
 """
 from . import IVMeasurerIdentityInformation
 from .base import IVMeasurerBase, cache_curve
-from .ivm import IvmDeviceHandle
+from .ivm import IvmDeviceHandle, _logging_callback
 from .processing import smooth_curve, interpolate_curve
 from ..elements import IVCurve, MeasurementSettings
 import numpy as np
 from typing import Callable
+from .safe_opener import open_device_safe
 
 
 def _close_on_error(func: Callable):
@@ -34,7 +35,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
     Format for Windows: com:\\\\.\\COMx
     Format for Linux: /dev/ttyACMx
     """
-    def __init__(self, url: str = "", name: str = "", defer_open=False):
+    def __init__(self, url: str = "", name: str = "", config="", defer_open=False):
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
@@ -42,6 +43,8 @@ class IVMeasurerIVM10(IVMeasurerBase):
         :param name: friendly name (for measurement system)
         :param defer_open: don't open serial port during initialization
         """
+        self._config = config
+        self._url = url
         self._device = IvmDeviceHandle(url, defer_open=True)
         self._FRAME_SIZE = 25
         self._SMOOTHING_KERNEL_SIZE = 5
@@ -59,7 +62,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
     @_close_on_error
     def open_device(self):
-        self._device.open()
+        open_device_safe(self._url, IvmDeviceHandle, self._config, _logging_callback)
         self.set_settings(self._default_settings)
 
     def close_device(self):
