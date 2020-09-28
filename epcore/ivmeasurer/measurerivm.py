@@ -56,13 +56,14 @@ class IVMeasurerIVM10(IVMeasurerBase):
             probe_signal_frequency=100,
             precharge_delay=0
         )
+        open_device_safe(self._url, IvmDeviceHandle, self._config, _logging_callback)
         if not defer_open:
             self.open_device()
         super(IVMeasurerIVM10, self).__init__(url, name)
 
     @_close_on_error
     def open_device(self):
-        open_device_safe(self._url, IvmDeviceHandle, self._config, _logging_callback)
+        self._device.open()
         self.set_settings(self._default_settings)
 
     def close_device(self):
