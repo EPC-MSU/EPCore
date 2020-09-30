@@ -109,8 +109,10 @@ def _logging_callback(loglevel, message, user_data):
         _logger.info(message)
     elif loglevel == 0x04:
         _logger.debug(message)
-#_lib.ivm_set_logging_callback(_logging_callback, 0)
-#atexit.register(lambda: _lib.ivm_set_logging_callback(None, 0))
+
+
+_lib.ivm_set_logging_callback(_logging_callback, 0)
+atexit.register(lambda: _lib.ivm_set_logging_callback(None, 0))
 
 
 def reset_locks():
