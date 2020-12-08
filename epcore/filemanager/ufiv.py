@@ -29,26 +29,22 @@ def _validate_json_with_schema(input_json: Dict, validation_schema: Dict):
         raise
 
 
-def load_board_from_ufiv(path: str,
-                         validate_input: bool = True,
-                         auto_convert_p10: bool = True) -> Board:
+def detect_p10_format(input_json, validate_input: bool = True, auto_convert_p10: bool = True):
     """
-    Load board (json and png) from directory
-    :param path: path to JSON file
-    :param validate_input: validate JSON before load
-    :param auto_convert_p10: enable auto conversion p10->ufiv
+    Returned p10_format or None
+    :param input_json:
+    :param validate_input:
+    :param auto_convert_p10:
     :return:
     """
-    with open(path, "r") as file:
-        input_json = load(file)
-
+    p10_format = None
     # Convert from old format if needed
     if "version" not in input_json and auto_convert_p10:
         # Old format. Should be converted first.
         logging.info("No 'version' key found, try to convert board from P10 format...")
 
         validation_error = None
-        p10_fomat = "Normal_Schema"
+        p10_format = "Normal_Schema"
         if validate_input:
             logging.info("Check normal P10 format.")
             try:
@@ -67,7 +63,7 @@ def load_board_from_ufiv(path: str,
                         p10_elements_schema_2_json = load(schema_2_file)
 
                     _validate_json_with_schema(input_json, p10_elements_schema_2_json)
-                    p10_fomat = "Schema_2"
+                    p10_format = "Schema_2"
                     validation_error = None
                 except ValidationError as e:
                     validation_error = e
@@ -75,12 +71,28 @@ def load_board_from_ufiv(path: str,
             # We did not found correct format
             if validation_error is not None:
                 raise validation_error
+    return p10_format
 
-        if p10_fomat == "Normal_Schema":
-            input_json = convert_p10(input_json, version=version, force_reference=True)
 
-        if p10_fomat == "Schema_2":
-            input_json = convert_p10_2(input_json, version=version, force_reference=True)
+def load_board_from_ufiv(path: str,
+                         validate_input: bool = True,
+                         auto_convert_p10: bool = True) -> Board:
+    """
+    Load board (json and png) from directory
+    :param path: path to JSON file
+    :param validate_input: validate JSON before load
+    :param auto_convert_p10: enable auto conversion p10->ufiv
+    :return:
+    """
+    with open(path, "r") as file:
+        input_json = load(file)
+
+    p10_format = detect_p10_format(input_json, validate_input, auto_convert_p10)
+    if p10_format == "Normal_Schema":
+        input_json = convert_p10(input_json, version=version, force_reference=True)
+
+    if p10_format == "Schema_2":
+        input_json = convert_p10_2(input_json, version=version, force_reference=True)
 
     if validate_input:
         with open(path_to_ufiv_schema(), "r") as schema_file:
