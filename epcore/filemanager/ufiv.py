@@ -47,7 +47,7 @@ def detect_format(path: str, validate_input: bool = True):
     :return:
     """
     try:
-        zipfile.ZipFile(path, 'r')
+        zipfile.ZipFile(path, "r")
         json_format = Formats.UFIV_archive_schema
         return json_format
     except zipfile.BadZipFile:
@@ -94,7 +94,7 @@ def detect_format(path: str, validate_input: bool = True):
 
 def convert_archive(path: str):
     input_json, im = None, None
-    archive = zipfile.ZipFile(path, 'r')
+    archive = zipfile.ZipFile(path, "r")
     files = archive.namelist()
     for f in files:
         if ".json" in f:
