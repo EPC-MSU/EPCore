@@ -187,6 +187,3 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
     if board.image is not None:
         board.image.save(image_path)
         archive.write(image_path)
-
-
-
