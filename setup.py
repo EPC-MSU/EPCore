@@ -6,7 +6,7 @@ setup(
     name="epcore",
     packages=find_packages(),
     install_requires=[
-        "dataclasses==0.8",  # for elements module
+        "dataclasses==0.6",  # for elements module
         "Pillow==8.0.1",  # for Board image class
         "jsonschema==3.2.0",  # for converter (utils) and format validation (different tests)
         "numpy==1.14.5",  # for test_iv_curve
