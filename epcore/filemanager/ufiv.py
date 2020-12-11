@@ -185,13 +185,14 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
     json_path = basename(path_to_file).replace(".zip", ".json")
 
     with open(json_path, "w") as file:
-        dump(json, file)
+        dump(json, file, indent=1)
     archive.write(json_path)
+
     image_path = json_path.replace(".json", ".png")
 
     if board.image is not None:
         board.image.save(image_path)
         archive.write(image_path)
+        os.remove(image_path)
     archive.close()
     os.remove(json_path)
-    os.remove(image_path)

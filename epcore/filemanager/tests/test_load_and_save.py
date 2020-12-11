@@ -2,6 +2,7 @@ import unittest
 from os.path import join as join_path, dirname
 from tempfile import TemporaryDirectory
 from os.path import isfile
+import zipfile
 from PIL import Image
 from epcore.filemanager import load_board_from_ufiv, save_board_to_ufiv
 from epcore.elements import Board
@@ -46,6 +47,10 @@ class LoadSaveTests(unittest.TestCase):
         board.image = Image.open(image_path)
 
         with TemporaryDirectory() as tempdir:
-            save_board_to_ufiv(join_path(tempdir, "foo.json"), board)
-            self.assertTrue(isfile(join_path(tempdir, "foo.json")))
-            self.assertTrue(isfile(join_path(tempdir, "foo.png")))
+            save_board_to_ufiv(join_path(tempdir, "foo.zip"), board)
+            self.assertTrue(isfile(join_path(tempdir, "foo.zip")))
+            archive = zipfile.ZipFile(join_path(tempdir, "foo.zip"))
+            archive.close()
+            files = archive.namelist()
+            self.assertTrue("foo.json" in files)
+            self.assertTrue("foo.png" in files)
