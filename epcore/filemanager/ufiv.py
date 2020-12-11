@@ -20,10 +20,10 @@ MAX_ERR_MSG_LEN = 256
 
 
 class Formats(enum.Enum):
-    Normal_P10_schema = 0
-    New_P10_schema = 1
-    UFIV_schema = 2
-    UFIV_archive_schema = 3
+    Normal_P10 = 0
+    New_P10 = 1
+    UFIV = 2
+    UFIV_archived = 3
 
 
 def _validate_json_with_schema(input_json: Dict, validation_schema: Dict):
@@ -41,17 +41,13 @@ def _validate_json_with_schema(input_json: Dict, validation_schema: Dict):
 
 def detect_format(path: str, validate_input: bool = True):
     """
-    Returned format of json
+    Returned format of board file
     :param path:
     :param validate_input:
     :return:
     """
-    try:
-        zipfile.ZipFile(path, "r")
-        json_format = Formats.UFIV_archive_schema
-        return json_format
-    except zipfile.BadZipFile:
-        json_format = Formats.UFIV_schema
+    if ".zip" in path:
+        return Formats.UFIV_archived
 
     with open(path, "r") as file:
         input_json = load(file)
@@ -62,7 +58,7 @@ def detect_format(path: str, validate_input: bool = True):
         logging.info("No 'version' key found, try to convert board from P10 format...")
 
         validation_error = None
-        json_format = Formats.Normal_P10_schema
+        json_format = Formats.Normal_P10
         if validate_input:
             logging.info("Check normal P10 format.")
             try:
@@ -81,7 +77,7 @@ def detect_format(path: str, validate_input: bool = True):
                         p10_elements_schema_2_json = load(schema_2_file)
 
                     _validate_json_with_schema(input_json, p10_elements_schema_2_json)
-                    json_format = Formats.New_P10_schema
+                    json_format = Formats.New_P10
                     validation_error = None
                 except ValidationError as e:
                     validation_error = e
@@ -89,10 +85,17 @@ def detect_format(path: str, validate_input: bool = True):
             # We did not found correct format
             if validation_error is not None:
                 raise validation_error
+    else:
+        json_format = Formats.UFIV
     return json_format
 
 
 def convert_archive(path: str):
+    """
+    Function convert UFIV_archived format to UFIV
+    :param path:
+    :return:
+    """
     input_json, im = None, None
     archive = zipfile.ZipFile(path, "r")
     files = archive.namelist()
@@ -106,6 +109,30 @@ def convert_archive(path: str):
     return input_json, im
 
 
+def convert_common(json_format: Formats, path: str, p10_convert_flag: bool):
+    """
+    Function convert any board file to UFIV format
+    :param json_format: format of board file
+    :param path:
+    :param p10_convert_flag:
+    :return:
+    """
+    if json_format == Formats.UFIV_archived:
+        input_json, image = convert_archive(path)
+    else:
+        with open(path, "r") as file:
+            input_json = load(file)
+            image_path = path.replace(".json", ".png")
+        if json_format == Formats.Normal_P10 and p10_convert_flag:
+            input_json = convert_p10(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
+            image_path = path.replace(basename(path), "image.png")
+        if json_format == Formats.New_P10 and p10_convert_flag:
+            input_json = convert_p10_2(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
+            image_path = path.replace(basename(path), "image.png")
+        image = Image.open(image_path) if isfile(image_path) else None
+    return input_json, image
+
+
 def load_board_from_ufiv(path: str,
                          validate_input: bool = True,
                          auto_convert_p10: bool = True) -> Board:
@@ -116,20 +143,8 @@ def load_board_from_ufiv(path: str,
     :param auto_convert_p10: enable auto conversion p10->ufiv
     :return:
     """
-    im = None
     json_format = detect_format(path, validate_input)
-
-    if json_format == Formats.UFIV_archive_schema:
-        input_json, im = convert_archive(path)
-    else:
-        with open(path, "r") as file:
-            input_json = load(file)
-
-    if json_format == Formats.Normal_P10_schema and auto_convert_p10:
-        input_json = convert_p10(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
-
-    if json_format == Formats.New_P10_schema and auto_convert_p10:
-        input_json = convert_p10_2(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
+    input_json, image = convert_common(json_format, path, auto_convert_p10)
 
     if validate_input:
         with open(path_to_ufiv_schema(), "r") as schema_file:
@@ -138,19 +153,7 @@ def load_board_from_ufiv(path: str,
         _validate_json_with_schema(input_json, ufiv_schema_json)  # check input_json has ufiv format
 
     board = Board.create_from_json(input_json)
-
-    if json_format == Formats.UFIV_archive_schema:
-        board.image = im
-        return board
-    else:
-        image_path = path.replace(".json", ".png")
-        # Old-style format used 'image.png' files near elements.json file
-        p10_image_path = path.replace(basename(path), "image.png")
-    if isfile(image_path):
-        board.image = Image.open(image_path)
-    elif auto_convert_p10:
-        if isfile(p10_image_path):
-            board.image = Image.open(p10_image_path)
+    board.image = image
 
     return board
 
