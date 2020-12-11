@@ -6,6 +6,7 @@ from ..elements import Board, version
 from ..utils import convert_p10, convert_p10_2
 from ..doc import path_to_ufiv_schema, path_to_p10_elements_schema, path_to_p10_elements_2_schema
 from os.path import isfile
+import os
 from json import load, dump, loads
 import logging
 from typing import Dict
@@ -106,6 +107,7 @@ def convert_archive(path: str):
         if ".png" in f or ".jpg" in f or ".bmp" in f:
             image_data = archive.read(f)
             im = Image.open(io.BytesIO(image_data))
+    archive.close()
     return input_json, im
 
 
@@ -190,3 +192,6 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
     if board.image is not None:
         board.image.save(image_path)
         archive.write(image_path)
+    archive.close()
+    os.remove(json_path)
+    os.remove(image_path)
