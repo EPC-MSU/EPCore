@@ -19,12 +19,15 @@ import io
 
 MAX_ERR_MSG_LEN = 256
 
+
 class FilesPath():
     def __init__(self, json_pth=None, img_pth=None):
         json_pth = json_pth
         img_pth = img_pth
 
+
 current_path = FilesPath()
+
 
 class Formats(enum.Enum):
     Normal_P10 = 0
