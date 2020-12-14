@@ -16,17 +16,30 @@ import enum
 from os.path import basename
 import zipfile
 import io
+from tempfile import TemporaryDirectory
+from shutil import copyfile
 
 MAX_ERR_MSG_LEN = 256
 
 
 class FilesPath():
-    def __init__(self, json_pth=None, img_pth=None):
-        json_pth = json_pth
-        img_pth = img_pth
+    json_pth = None
+    img_pth = None
+
+    def __init__(self, pth=None):
+        if pth is None:
+            return
+        for f in os.listdir(pth):
+            if ".json" in f:
+                self.json_pth = os.path.join(pth, f)
+            elif ".png" in f or "jpg" in f or "bmp" in f:
+                self.img_pth = os.path.join(pth, f)
+
+    def add_img_pth(self, img_pth):
+        copyfile(img_pth, self.img_pth)
 
 
-current_path = FilesPath()
+source_path = FilesPath()
 
 
 class Formats(enum.Enum):
@@ -106,18 +119,11 @@ def convert_archive(path: str):
     :param path:
     :return:
     """
-    input_json, im = None, None
     archive = zipfile.ZipFile(path, "r")
-    files = archive.namelist()
-    for f in files:
-        if ".json" in f:
-            input_json = archive.read(f).decode("UTF-8")
-            input_json = loads(input_json)
-        if ".png" in f or ".jpg" in f or ".bmp" in f:
-            image_data = archive.read(f)
-            im = Image.open(io.BytesIO(image_data))
+    tempdir = TemporaryDirectory().name
+    archive.extractall(path=tempdir)
     archive.close()
-    return input_json, im
+    return os.path.join(tempdir, basename(path).replace(".uzf", ".json"))
 
 
 def convert_common(json_format: Formats, path: str, p10_convert_flag: bool):
@@ -128,19 +134,22 @@ def convert_common(json_format: Formats, path: str, p10_convert_flag: bool):
     :param p10_convert_flag:
     :return:
     """
+    global source_path
     if json_format == Formats.UFIV_archived:
-        input_json, image = convert_archive(path)
-    else:
-        with open(path, "r") as file:
-            input_json = load(file)
-            image_path = path.replace(".json", ".png")
-        if json_format == Formats.Normal_P10 and p10_convert_flag:
-            input_json = convert_p10(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
-            image_path = path.replace(basename(path), "image.png")
-        if json_format == Formats.New_P10 and p10_convert_flag:
-            input_json = convert_p10_2(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
-            image_path = path.replace(basename(path), "image.png")
-        image = Image.open(image_path) if isfile(image_path) else None
+        path = convert_archive(path)
+    source_path = FilesPath(os.path.dirname(path))
+    with open(source_path.json_pth, "r") as file:
+        input_json = load(file)
+    if json_format == Formats.Normal_P10 and p10_convert_flag:
+        input_json = convert_p10(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
+        if not isfile(source_path.img_pth):
+            source_path.add_img_pth(source_path.json_pth.replace(basename(source_path.json_pth), "image.png"))
+    if json_format == Formats.New_P10 and p10_convert_flag:
+        input_json = convert_p10_2(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
+        if not isfile(source_path.img_pth):
+            source_path.add_img_pth(source_path.json_pth.replace(basename(source_path.json_pth), "image.png"))
+    image = Image.open(source_path.img_pth) if isfile(source_path.img_pth) else None
+
     return input_json, image
 
 
@@ -156,13 +165,11 @@ def load_board_from_ufiv(path: str,
     """
     json_format = detect_format(path, validate_input)
     input_json, image = convert_common(json_format, path, auto_convert_p10)
-
     if validate_input:
         with open(path_to_ufiv_schema(), "r") as schema_file:
             ufiv_schema_json = load(schema_file)
 
         _validate_json_with_schema(input_json, ufiv_schema_json)  # check input_json has ufiv format
-
     board = Board.create_from_json(input_json)
     board.image = image
 
@@ -176,7 +183,9 @@ def add_image_to_ufiv(path: str, board: Board) -> Board:
     :param board:
     :return:
     """
+    global source_path
     board.image = Image.open(path)
+    source_path.add_img_pth(path)
     return board
 
 
@@ -187,21 +196,21 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
     :param board:
     :return:
     """
+    global source_path
     if ".json" in path_to_file:
         path_to_file = path_to_file.replace(".json", ".uzf")
+    t = TemporaryDirectory()
+    source_path.json_pth = os.path.join(t.name, basename(path_to_file.replace(".uzf", ".json")))
     json = board.to_json()
     archive = zipfile.ZipFile(path_to_file, "w")
-    json_path = basename(path_to_file).replace(".uzf", ".json")
-
-    with open(json_path, "w") as file:
+    with open(source_path.json_pth, "w") as file:
         dump(json, file, indent=1)
-    archive.write(json_path)
-
-    image_path = json_path.replace(".json", ".png")
+    archive.write(source_path.json_pth, arcname=basename(source_path.json_pth))
 
     if board.image is not None:
-        board.image.save(image_path)
-        archive.write(image_path)
-        os.remove(image_path)
+        if not isfile(source_path.img_pth):
+            board.image.save(source_path.img_pth)
+            archive.write(source_path.img_pth, arcname=basename(source_path.img_pth))
+        else:
+            archive.write(source_path.img_pth, arcname=basename(source_path.img_pth))
     archive.close()
-    os.remove(json_path)
