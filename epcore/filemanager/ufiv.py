@@ -19,6 +19,12 @@ import io
 
 MAX_ERR_MSG_LEN = 256
 
+class FilesPath():
+    def __init__(self, json_pth=None, img_pth=None):
+        json_pth = json_pth
+        img_pth = img_pth
+
+current_path = FilesPath()
 
 class Formats(enum.Enum):
     Normal_P10 = 0
@@ -179,7 +185,7 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
     :return:
     """
     if ".json" in path_to_file:
-        path_to_file = path_to_file.replace(".json", ".zip")
+        path_to_file = path_to_file.replace(".json", ".uzf")
     json = board.to_json()
     archive = zipfile.ZipFile(path_to_file, "w")
     json_path = basename(path_to_file).replace(".zip", ".json")
