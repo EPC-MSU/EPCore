@@ -53,7 +53,7 @@ def detect_format(path: str, validate_input: bool = True):
     :param validate_input:
     :return:
     """
-    if ".zip" in path:
+    if ".uzf" in path:
         return Formats.UFIV_archived
 
     with open(path, "r") as file:
@@ -188,7 +188,7 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
         path_to_file = path_to_file.replace(".json", ".uzf")
     json = board.to_json()
     archive = zipfile.ZipFile(path_to_file, "w")
-    json_path = basename(path_to_file).replace(".zip", ".json")
+    json_path = basename(path_to_file).replace(".uzf", ".json")
 
     with open(json_path, "w") as file:
         dump(json, file, indent=1)
