@@ -7,7 +7,7 @@ from ..utils import convert_p10, convert_p10_2
 from ..doc import path_to_ufiv_schema, path_to_p10_elements_schema, path_to_p10_elements_2_schema
 from os.path import isfile
 import os
-from json import load, dump, loads
+from json import load, dump
 import logging
 from typing import Dict
 from PIL import Image
@@ -15,28 +15,29 @@ from jsonschema import validate, ValidationError
 import enum
 from os.path import basename
 import zipfile
-import io
 from tempfile import TemporaryDirectory
-from shutil import copyfile
 
 MAX_ERR_MSG_LEN = 256
 
 
-class FilesPath():
-    json_pth = None
-    img_pth = None
+class FilesPath:
+    json_pth = ""
+    img_pth = ""
 
-    def __init__(self, pth=None):
-        if pth is None:
+    def __init__(self, json_pth=None, fomat=None):
+        if json_pth is None or fomat is None:
             return
-        for f in os.listdir(pth):
-            if ".json" in f:
-                self.json_pth = os.path.join(pth, f)
-            elif ".png" in f or "jpg" in f or "bmp" in f:
-                self.img_pth = os.path.join(pth, f)
+        self.json_pth = json_pth
+        dir = os.path.dirname(json_pth)
+        for f in os.listdir(dir):
+            if ".png" in f or ".jpg" in f or ".bmp" in f:
+                if f[:-4] == basename(json_pth)[:-5]:
+                    self.img_pth = os.path.join(dir, f)
+        if (fomat == Formats.Normal_P10 or fomat == Formats.New_P10) and not isfile(self.img_pth):
+            self.img_pth = os.path.join(dir, "image.png")
 
     def add_img_pth(self, img_pth):
-        copyfile(img_pth, self.img_pth)
+        self.img_pth = img_pth
 
 
 source_path = FilesPath()
@@ -137,18 +138,15 @@ def convert_common(json_format: Formats, path: str, p10_convert_flag: bool):
     global source_path
     if json_format == Formats.UFIV_archived:
         path = convert_archive(path)
-    source_path = FilesPath(os.path.dirname(path))
+    source_path = FilesPath(path, json_format)
     with open(source_path.json_pth, "r") as file:
         input_json = load(file)
     if json_format == Formats.Normal_P10 and p10_convert_flag:
         input_json = convert_p10(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
-        if not isfile(source_path.img_pth):
-            source_path.add_img_pth(source_path.json_pth.replace(basename(source_path.json_pth), "image.png"))
     if json_format == Formats.New_P10 and p10_convert_flag:
         input_json = convert_p10_2(input_json, version=version, force_reference=True)  # convert p10 format to ufiv
-        if not isfile(source_path.img_pth):
-            source_path.add_img_pth(source_path.json_pth.replace(basename(source_path.json_pth), "image.png"))
-    image = Image.open(source_path.img_pth) if isfile(source_path.img_pth) else None
+    if source_path.img_pth is not None:
+        image = Image.open(source_path.img_pth) if isfile(source_path.img_pth) else None
 
     return input_json, image
 
@@ -206,11 +204,10 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
     with open(source_path.json_pth, "w") as file:
         dump(json, file, indent=1)
     archive.write(source_path.json_pth, arcname=basename(source_path.json_pth))
-
     if board.image is not None:
         if not isfile(source_path.img_pth):
             board.image.save(source_path.img_pth)
-            archive.write(source_path.img_pth, arcname=basename(source_path.img_pth))
+            archive.write(source_path.img_pth, arcname=basename(source_path.img_pth).replace(basename(source_path.img_pth)[:-4], basename(source_path.json_pth)[:-5]))
         else:
-            archive.write(source_path.img_pth, arcname=basename(source_path.img_pth))
+            archive.write(source_path.img_pth, arcname=basename(source_path.img_pth).replace(basename(source_path.img_pth)[:-4], basename(source_path.json_pth)[:-5]))
     archive.close()
