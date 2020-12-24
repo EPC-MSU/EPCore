@@ -41,12 +41,14 @@ def _validate_json_with_schema(input_json: Dict, validation_schema: Dict):
     Validate json. Raise Validation Error in case of invalid json.
     :param input_json: json to be validated
     :param json: json schema for validation
+    :return: is_valid, error
     """
     try:
         validate(input_json, validation_schema)
+        return True, None
     except ValidationError as err:
         err.message = "The input file has invalid format: " + err.message[:MAX_ERR_MSG_LEN]
-        raise
+        return False, err
 
 
 def detect_format(path: str, validate_input: bool = True):
@@ -67,37 +69,25 @@ def detect_format(path: str, validate_input: bool = True):
         # Old format. Should be converted first.
         logging.info("No 'version' key found, try to convert board from P10 format...")
 
-        validation_error = None
-        json_format = Formats.Normal_P10
         if validate_input:
+
             logging.info("Check normal P10 format.")
-            try:
-                with open(path_to_p10_elements_schema(), "r") as schema_file:
-                    p10_elements_schema_json = load(schema_file)
+            with open(path_to_p10_elements_schema(), "r") as schema_file:
+                p10_elements_schema_json = load(schema_file)
+            is_valid, err = _validate_json_with_schema(input_json, p10_elements_schema_json)
+            if is_valid:
+                return Formats.Normal_P10
 
-                _validate_json_with_schema(input_json, p10_elements_schema_json)
-            except ValidationError as e:
-                validation_error = e
-
-            # If failed check an other format
             logging.info("Check alternative P10 format.")
-            if validation_error is not None:
-                try:
-                    with open(path_to_p10_elements_2_schema(), "r") as schema_2_file:
-                        p10_elements_schema_2_json = load(schema_2_file)
-
-                    _validate_json_with_schema(input_json, p10_elements_schema_2_json)
-                    json_format = Formats.New_P10
-                    validation_error = None
-                except ValidationError as e:
-                    validation_error = e
-
-            # We did not found correct format
-            if validation_error is not None:
-                raise validation_error
+            with open(path_to_p10_elements_2_schema(), "r") as schema_2_file:
+                p10_elements_schema_2_json = load(schema_2_file)
+            is_valid, err = _validate_json_with_schema(input_json, p10_elements_schema_2_json)
+            if is_valid:
+                return Formats.New_P10
+            else:
+                raise err
     else:
-        json_format = Formats.UFIV
-    return json_format
+        return Formats.UFIV
 
 
 def load_board_from_ufiv(path: str,
@@ -121,7 +111,9 @@ def load_board_from_ufiv(path: str,
         with open(path_to_ufiv_schema(), "r") as schema_file:
             ufiv_schema_json = load(schema_file)
 
-        _validate_json_with_schema(input_json, ufiv_schema_json)  # check input_json has ufiv format
+    is_valid, err = _validate_json_with_schema(input_json, ufiv_schema_json)  # check input_json has ufiv format
+    if not is_valid:
+        raise err
     board = Board.create_from_json(input_json)
     board.image = image
 
