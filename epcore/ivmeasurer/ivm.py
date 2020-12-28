@@ -9,6 +9,7 @@ from ctypes import c_ubyte, c_byte, c_ushort, c_short, c_uint, c_int, c_ulonglon
 from ctypes.util import find_library
 import atexit
 import struct
+import subprocess
 
 try:
     from typing import overload, Union, Sequence, Optional
@@ -81,6 +82,9 @@ def _load_lib():
     elif os_kind == "darwin":
         lib = CDLL(_fullpath_lib("ivm-darwin/libivm.dylib"))
     elif os_kind == "freebsd" or "linux" in os_kind:
+        if subprocess.call(["dpkg", "--print-architecture"]) == "arm64":
+            lib = CDLL(_fullpath_lib("ivm-arm64/libivm.so"))
+        else:
         lib = CDLL(_fullpath_lib("ivm-debian/libivm.so"))
     else:
         raise RuntimeError("unexpected OS")

@@ -3,6 +3,7 @@ from ctypes import CDLL, Structure, Array, c_ubyte, \
 from platform import system
 import numpy as np
 import struct
+import subprocess
 VOLTAGE_AMPL = 12.
 R_CS = 475.
 CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
@@ -15,7 +16,10 @@ def _fullpath_lib(name: str) -> str:
 
 def _get_dll():
     if system() == "Linux":
-        return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
+        if subprocess.call(["dpkg", "--print-architecture"]) == "arm64":
+            return CDLL(_fullpath_lib("ivcmp-arm64/libivcmp.so"))
+        else:
+            return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
     elif system() == "Windows":
         if 8 * struct.calcsize("P") == 32:
             return CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
