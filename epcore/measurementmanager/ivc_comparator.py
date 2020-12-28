@@ -3,7 +3,7 @@ from platform import system
 from typing import List
 import struct
 from ..elements import IVCurve
-
+import subprocess
 
 def _fullpath_lib(name: str) -> str:
     from os.path import dirname, join
@@ -12,7 +12,11 @@ def _fullpath_lib(name: str) -> str:
 
 def _get_dll():
     if system() == "Linux":
-        return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
+        process = subprocess.Popen(["dpkg", "--print-architecture"], stdout=subprocess.PIPE)
+        if "arm64" in process.communicate()[0].decode("UTF-8"):
+            return CDLL(_fullpath_lib("ivcmp-arm64/libivcmp.so"))
+        else:
+            return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
     elif system() == "Windows":
         if 8 * struct.calcsize("P") == 32:
             return CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))

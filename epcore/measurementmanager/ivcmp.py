@@ -16,7 +16,8 @@ def _fullpath_lib(name: str) -> str:
 
 def _get_dll():
     if system() == "Linux":
-        if subprocess.call(["dpkg", "--print-architecture"]) == "arm64":
+        process = subprocess.Popen(["dpkg", "--print-architecture"], stdout=subprocess.PIPE)
+        if "arm64" in process.communicate()[0].decode("UTF-8"):
             return CDLL(_fullpath_lib("ivcmp-arm64/libivcmp.so"))
         else:
             return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))

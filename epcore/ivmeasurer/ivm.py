@@ -82,10 +82,11 @@ def _load_lib():
     elif os_kind == "darwin":
         lib = CDLL(_fullpath_lib("ivm-darwin/libivm.dylib"))
     elif os_kind == "freebsd" or "linux" in os_kind:
-        if subprocess.call(["dpkg", "--print-architecture"]) == "arm64":
+        process = subprocess.Popen(["dpkg", "--print-architecture"], stdout=subprocess.PIPE)
+        if "arm64" in process.communicate()[0].decode("UTF-8"):
             lib = CDLL(_fullpath_lib("ivm-arm64/libivm.so"))
         else:
-        lib = CDLL(_fullpath_lib("ivm-debian/libivm.so"))
+            lib = CDLL(_fullpath_lib("ivm-debian/libivm.so"))
     else:
         raise RuntimeError("unexpected OS")
 
