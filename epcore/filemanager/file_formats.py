@@ -26,11 +26,11 @@ class FileUFIVFormat:
         self.img_pth = img_pth
 
     def find_img(self):
-        dir = os.path.dirname(self.json_pth)
-        for f in os.listdir(dir):
+        directory = os.path.dirname(self.json_pth)
+        for f in os.listdir(directory):
             if ".png" in f or ".jpg" in f or ".bmp" in f:
                 if f[:-4] == basename(self.json_pth)[:-5]:
-                    self.add_img_pth(os.path.join(dir, f))
+                    self.add_img_pth(os.path.join(directory, f))
 
     def get_json_and_image(self):
         with open(self.json_pth, "r") as file:
@@ -44,9 +44,9 @@ class FileP10NormalFormat(FileUFIVFormat):
 
     def __init__(self, path):
         super().__init__(json_pth=path)
-        _dir = os.path.dirname(self.json_pth)
+        directory = os.path.dirname(self.json_pth)
         if not isfile(self.img_pth):
-            self.add_img_pth(os.path.join(_dir, "image.png"))
+            self.add_img_pth(os.path.join(directory, "image.png"))
 
     def get_json_and_image(self, p10_convert_flag):
         """
@@ -64,9 +64,9 @@ class FileP10NewFormat(FileUFIVFormat):
 
     def __init__(self, path):
         super().__init__(json_pth=path)
-        _dir = os.path.dirname(self.json_pth)
+        directory = os.path.dirname(self.json_pth)
         if not isfile(self.img_pth):
-            self.add_img_pth(os.path.join(_dir, "image.png"))
+            self.add_img_pth(os.path.join(directory, "image.png"))
 
     def get_json_and_image(self, p10_convert_flag):
         """

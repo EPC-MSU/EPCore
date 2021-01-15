@@ -153,7 +153,11 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
     if board.image is not None:
         if not isfile(source_file.img_pth):
             board.image.save(source_file.img_pth)
-            archive.write(source_file.img_pth, arcname=basename(source_file.img_pth).replace(basename(source_file.img_pth)[:-4], basename(source_file.json_pth)[:-5]))
+            archive.write(source_file.img_pth,
+                          arcname=basename(source_file.img_pth).replace(basename(source_file.img_pth)[:-4],
+                          basename(source_file.json_pth)[:-5]))
         else:
-            archive.write(source_file.img_pth, arcname=basename(source_file.img_pth).replace(basename(source_file.img_pth)[:-4], basename(source_file.json_pth)[:-5]))
+            archive.write(source_file.img_pth,
+                          arcname=basename(source_file.img_pth).replace(basename(source_file.img_pth)[:-4],
+                          basename(source_file.json_pth)[:-5]))
     archive.close()
