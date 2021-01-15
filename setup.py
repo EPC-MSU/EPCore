@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    version="0.1.5",
+    version="0.1.6",
     name="epcore",
     packages=find_packages(),
     install_requires=[
