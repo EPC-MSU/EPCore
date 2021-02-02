@@ -47,9 +47,9 @@ class LoadSaveTests(unittest.TestCase):
         board.image = Image.open(image_path)
 
         with TemporaryDirectory() as tempdir:
-            save_board_to_ufiv(join_path(tempdir, "foo.zip"), board)
-            self.assertTrue(isfile(join_path(tempdir, "foo.zip")))
-            archive = zipfile.ZipFile(join_path(tempdir, "foo.zip"))
+            save_board_to_ufiv(join_path(tempdir, "foo.uzf"), board)
+            self.assertTrue(isfile(join_path(tempdir, "foo.uzf")))
+            archive = zipfile.ZipFile(join_path(tempdir, "foo.uzf"))
             archive.close()
             files = archive.namelist()
             self.assertTrue("foo.json" in files)
