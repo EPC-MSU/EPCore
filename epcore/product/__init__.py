@@ -4,12 +4,13 @@ EyePoint module, which defines product functionality:
 * available modes
 * labels in GUI
 """
-from .product import ProductBase, EPLab, MeasurementParameter, MeasurementParameterOption
+from .product import ProductBase, EPLab, MeasurementParameter, MeasurementParameterOption, InvalidJson
 
 __all__ = ["MeasurementParameterOption",
            "MeasurementParameter",
            "ProductBase",
-           "EPLab"]
+           "EPLab",
+           "InvalidJson"]
 
 __author__ = "mihalin"
 __email__ = "mihalin@physlab.ru"

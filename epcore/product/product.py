@@ -1,11 +1,17 @@
 from dataclasses import dataclass
 from abc import abstractmethod
-from typing import List, Dict, Any, Optional, Tuple
-from epcore.measurementmanager import MeasurementSystem
+from typing import List, Dict, Any, Tuple, Optional
 from epcore.elements import MeasurementSettings
 from warnings import warn
+from os.path import join, dirname
 import numpy as np
+import jsonschema
+import json
 from enum import Enum, auto
+
+
+class InvalidJson(ValueError):
+    pass
 
 
 @dataclass
@@ -15,12 +21,17 @@ class MeasurementParameterOption:
     label_ru: str
     label_en: str
 
+    @classmethod
+    def from_json(cls, json: Dict) -> "MeasurementParameterOption":
+        return MeasurementParameterOption(name=json["name"],
+                                          value=json["value"],
+                                          label_ru=json["label_ru"],
+                                          label_en=json["label_en"])
+
 
 @dataclass
 class MeasurementParameter:
     name: Enum
-    label_ru: str
-    label_en: str
     options: List[MeasurementParameterOption]
 
 
@@ -33,31 +44,12 @@ class ProductBase:
     """
     _precision = 0.01
 
-    def __init__(self, msystem: MeasurementSystem):
-        self.msystem = msystem
+    def __init__(self):
         self.mparams = {}
-
-    @classmethod
-    def create_from_json(cls, json: Dict) -> "ProductBase":
-        raise NotImplementedError()  # TODO: this
-
-    @abstractmethod
-    def get_current_options(self) -> Dict[Enum, str]:
-        """
-        This function can be used for setting lists and radiobuttons
-        in GUI for current settings.
-        This function:
-        * Get current settings from measurement system
-        * Find correct option for all parameters for current settings
-        * return options to be set in GUI
-        If for some parameters there is now Option in option list,
-        empty Option should be returned and warning should be printed to log.
-        """
-        raise NotImplementedError()
 
     def get_all_available_options(self) -> Dict[Enum, MeasurementParameter]:
         """
-        This function returns all parameters and all available options.
+        Get all parameters and all available options.
         If you have a state machine and from current state
         only subset of options is available,
         you should redefine this function and add additional logic here.
@@ -65,19 +57,23 @@ class ProductBase:
         return self.mparams
 
     @abstractmethod
-    def set_settings_from_options(self, params: Dict[Enum, str]):
+    def settings_to_options(self, settings: MeasurementSettings) -> Dict[Enum, str]:
         """
-        This function accepts dict of options and set settings to measurement system.
-        In case there is no options for some parameters, they should keep their old value.
-        So if you call set_settings_from_options({"probe_signal_frequency": (...)}),
-        it means that probe signal frequency should be changed while
-        voltage and internal resistance should stay unchanged.
+        Convert measurement settings to options set
         If you want to add additional limitations for parameter combinations in your product,
         redefine this function.
         """
         raise NotImplementedError()
 
-    def adjust_plot_scale(self, settings: Optional[MeasurementSettings] = None) -> Tuple[float, float]:
+    @abstractmethod
+    def options_to_settings(self, options: Dict[Enum, str],
+                            settings: MeasurementSettings) -> MeasurementSettings:
+        """
+        Convert options set to measurement settings
+        """
+        raise NotImplementedError()
+
+    def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
         You can use this function for
         setting IVCurve plot scale for current setting.
@@ -90,28 +86,24 @@ class ProductBase:
         but you probably will plot current in mA,
         don’t forget to multiply by 1000
         """
-        if not settings:
-            settings = self.msystem.get_settings()
 
         return settings.max_voltage * 1.2, settings.max_voltage / settings.internal_resistance * 1.2
 
     @abstractmethod
-    def adjust_plot_borders(self, settings: Optional[MeasurementSettings] = None) -> Tuple[float, float]:
+    def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
         Adjust plot borders
-        :param settings: 
-        :return: 
+        :param settings:
+        :return:
         """
         raise NotImplementedError()
 
-    def adjust_noise_amplitude(self, settings: Optional[MeasurementSettings] = None) -> Tuple[float, float]:
+    def adjust_noise_amplitude(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
         Get noise amplitude for specified settings
         :param settings: Measurement settings
         :return: v_amplitude, c_amplitude
         """
-        if not settings:
-            settings = self.msystem.get_settings()
 
         return settings.max_voltage / 20, settings.internal_resistance * 20
 
@@ -123,42 +115,44 @@ class EPLab(ProductBase):
         voltage = auto()
         sensitive = auto()
 
-    def __init__(self, msystem: MeasurementSystem):
-        super(EPLab, self).__init__(msystem)
+    @classmethod
+    def _default_json(cls) -> Dict:
+        with open(join(dirname(__file__), "eplab_default_options.json"), "r") as file:
+            return json.load(file)
+
+    @classmethod
+    def _schema(cls) -> Dict:
+        with open(join(dirname(__file__), "doc", "eplab_schema.json"), "r") as file:
+            return json.load(file)
+
+    def __init__(self, json: Optional[Dict] = None):
+        super(EPLab, self).__init__()
+
+        if not json:
+            json = EPLab._default_json()
+
+        try:
+            jsonschema.validate(json, EPLab._schema())
+        except jsonschema.ValidationError as err:
+            raise InvalidJson("Validation error: " + str(err))
 
         self.mparams = {
             EPLab.Parameter.frequency:
-                MeasurementParameter(EPLab.Parameter.frequency, "Частота пробного сигнала", "Probe signal frequency",
-                                     [
-                                         MeasurementParameterOption("10hz", (10, 1000), "10 Гц", "10 Hz"),
-                                         MeasurementParameterOption("100hz", (100, 10000), "100 Гц", "100 Hz"),
-                                         MeasurementParameterOption("1khz", (1000, 100000), "1 кГц", "1 kHz"),
-                                         MeasurementParameterOption("10khz", (10000, 1000000), "10 кГц", "10 kHz"),
-                                         MeasurementParameterOption("100khz", (100000, 2000000), "100 кГц", "100 kHz")
-                                     ]),
+                MeasurementParameter(EPLab.Parameter.frequency,
+                                     [MeasurementParameterOption.from_json(x) for x in json["frequency"]]),
             EPLab.Parameter.voltage:
-                MeasurementParameter(EPLab.Parameter.voltage, "Амплитуда пробного сигнала", "Probe signal amplitude",
-                                     [
-                                         MeasurementParameterOption("1.2v", 1.2, "1.2 В", "1.2 V"),
-                                         MeasurementParameterOption("3.3v", 3.3, "3.3 В", "3.3 V"),
-                                         MeasurementParameterOption("5.0v", 5.0, "5.0 В", "5.0 V"),
-                                         MeasurementParameterOption("12.0v", 12.0, "12.0 В", "12.0 V")
-                                     ]),
+                MeasurementParameter(EPLab.Parameter.voltage,
+                                     [MeasurementParameterOption.from_json(x) for x in json["voltage"]]),
             EPLab.Parameter.sensitive:
-                MeasurementParameter(EPLab.Parameter.sensitive, "Чувствительность по току", "Current sensitive", [
-                    MeasurementParameterOption("low", 475.0, "Низкая", "Low"),
-                    MeasurementParameterOption("middle", 4750.0, "Средняя", "Middle"),
-                    MeasurementParameterOption("high", 47500.0, "Высокая", "High")
-                ])
+                MeasurementParameter(EPLab.Parameter.sensitive,
+                                     [MeasurementParameterOption.from_json(x) for x in json["sensitive"]])
         }
 
-    def get_current_options(self) -> Dict[Enum, str]:
-        settings = self.msystem.get_settings()
-
+    def settings_to_options(self, settings: MeasurementSettings) -> Dict[Enum, str]:
         options = {}
 
         for option in self.mparams[EPLab.Parameter.frequency].options:
-            if option.value == (settings.probe_signal_frequency, settings.sampling_rate):
+            if option.value == [settings.probe_signal_frequency, settings.sampling_rate]:
                 options[EPLab.Parameter.frequency] = option.name
         if not options.get(EPLab.Parameter.frequency):
             warn(f"Unknown device frequency and sampling rate {settings.probe_signal_frequency} "
@@ -178,26 +172,28 @@ class EPLab(ProductBase):
 
         return options
 
-    def set_settings_from_options(self, params: Dict[Enum, str]):
-        settings = self.msystem.get_settings()
-        if EPLab.Parameter.frequency in params:
+    def options_to_settings(self, options: Dict[Enum, str],
+                            settings: MeasurementSettings) -> MeasurementSettings:
+
+        if EPLab.Parameter.frequency in options:
             for option in self.mparams[EPLab.Parameter.frequency].options:
-                if option.name == params[EPLab.Parameter.frequency]:
+                if option.name == options[EPLab.Parameter.frequency]:
                     settings.probe_signal_frequency, settings.sampling_rate = option.value
 
-        if EPLab.Parameter.voltage in params:
+        if EPLab.Parameter.voltage in options:
             for option in self.mparams[EPLab.Parameter.voltage].options:
-                if option.name == params[EPLab.Parameter.voltage]:
+                if option.name == options[EPLab.Parameter.voltage]:
                     settings.max_voltage = option.value
 
-        if EPLab.Parameter.sensitive in params:
+        if EPLab.Parameter.sensitive in options:
             for option in self.mparams[EPLab.Parameter.sensitive].options:
-                if option.name == params[EPLab.Parameter.sensitive]:
+                if option.name == options[EPLab.Parameter.sensitive]:
                     settings.internal_resistance = option.value
 
-        self.msystem.set_settings(settings)
+        return settings
 
-    def adjust_plot_scale(self, settings: Optional[MeasurementSettings] = None) -> Tuple[float, float]:
+    def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
+
         scale_adjuster = {  # _scale_adjuster[V][Omh] -> Scale for x,y
             (1.2, 47500.0): (1.5, 0.04),
             (1.2, 4750.0): (1.5, 0.4),
@@ -220,14 +216,12 @@ class EPLab(ProductBase):
 
         return super(EPLab, self).adjust_plot_scale(settings)
 
-    def adjust_plot_borders(self, settings: Optional[MeasurementSettings] = None) -> Tuple[float, float]:
+    def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
         Adjust plot borders
         :param settings: MeasurementSettings
         :return: voltage, current border
         """
-        if not settings:
-            settings = self.msystem.get_settings()
 
         volt_border = 0
 
@@ -256,14 +250,12 @@ class EPLab(ProductBase):
 
         return volt_border, curr_border
 
-    def adjust_noise_amplitude(self, settings: Optional[MeasurementSettings] = None) -> Tuple[float, float]:
+    def adjust_noise_amplitude(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
         Get noise amplitude for specified settings
         :param settings: Measurement settings
         :return: v_amplitude, c_amplitude
         """
-        if not settings:
-            settings = self.msystem.get_settings()
 
         # max_voltage, internal_resistance -> v_amplitude, c_amplitude
         noise_adjuster = {

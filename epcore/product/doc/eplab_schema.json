@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EPLab product options schema format",
+  "description": "This describes format of EPLab options list config",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "frequency": {
+      "description": "Frequency options",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {},
+          "label_ru": {
+            "type": "string"
+          },
+          "label_en": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "voltage": {
+      "description": "Voltage options",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {},
+          "label_ru": {
+            "type": "string"
+          },
+          "label_en": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sensitive": {
+      "description": "Sensitive options",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {},
+          "label_ru": {
+            "type": "string"
+          },
+          "label_en": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
