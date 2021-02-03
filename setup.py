@@ -22,5 +22,7 @@ setup(
         "epcore.doc": ["p10_elements.schema.json",
                        "p10_elements_2.schema.json",
                        "ufiv.schema.json"],
+        "epcore.product": ["doc/eplab_schema.json",
+                           "eplab_default_options.json"]
     }
 )

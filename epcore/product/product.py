@@ -35,6 +35,16 @@ class MeasurementParameter:
     options: List[MeasurementParameterOption]
 
 
+@dataclass
+class PlotParameters:
+    ref_color: str
+    test_color: str
+
+    @classmethod
+    def from_json(cls, json: Dict) -> "PlotParameters":
+        return PlotParameters(json["ref_color"], json["test_color"])
+
+
 class ProductBase:
     """
     This class defines the whole system functionality.
@@ -107,6 +117,13 @@ class ProductBase:
 
         return settings.max_voltage / 20, settings.internal_resistance * 20
 
+    @property
+    def plot_parameters(self) -> PlotParameters:
+        """
+        Get plot parameters
+        """
+        return PlotParameters("#FF0000", "#0000FF")
+
 
 class EPLab(ProductBase):
 
@@ -128,7 +145,7 @@ class EPLab(ProductBase):
     def __init__(self, json: Optional[Dict] = None):
         super(EPLab, self).__init__()
 
-        if not json:
+        if json is None:
             json = EPLab._default_json()
 
         try:
@@ -136,17 +153,24 @@ class EPLab(ProductBase):
         except jsonschema.ValidationError as err:
             raise InvalidJson("Validation error: " + str(err))
 
+        json_options = json["options"]
+        self._plot_parameters = PlotParameters.from_json(json["plot_parameters"])
+
         self.mparams = {
             EPLab.Parameter.frequency:
                 MeasurementParameter(EPLab.Parameter.frequency,
-                                     [MeasurementParameterOption.from_json(x) for x in json["frequency"]]),
+                                     [MeasurementParameterOption.from_json(x) for x in json_options["frequency"]]),
             EPLab.Parameter.voltage:
                 MeasurementParameter(EPLab.Parameter.voltage,
-                                     [MeasurementParameterOption.from_json(x) for x in json["voltage"]]),
+                                     [MeasurementParameterOption.from_json(x) for x in json_options["voltage"]]),
             EPLab.Parameter.sensitive:
                 MeasurementParameter(EPLab.Parameter.sensitive,
-                                     [MeasurementParameterOption.from_json(x) for x in json["sensitive"]])
+                                     [MeasurementParameterOption.from_json(x) for x in json_options["sensitive"]])
         }
+
+    @property
+    def plot_parameters(self) -> PlotParameters:
+        return self._plot_parameters
 
     def settings_to_options(self, settings: MeasurementSettings) -> Dict[Enum, str]:
         options = {}
