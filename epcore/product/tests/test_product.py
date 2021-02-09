@@ -84,8 +84,10 @@ class TestEPLabProduct(unittest.TestCase):
         self.assertTrue(options[EPLab.Parameter.voltage].options[0].value == data["options"]["voltage"][0]["value"])
         self.assertTrue(len(options[EPLab.Parameter.frequency].options) == len(data["options"]["frequency"]))
         self.assertTrue(options[EPLab.Parameter.frequency].options[1].name == data["options"]["frequency"][1]["name"])
-        self.assertTrue(options[EPLab.Parameter.frequency].options[1].label_ru == data["options"]["frequency"][1]["label_ru"])
-        self.assertTrue(options[EPLab.Parameter.frequency].options[1].label_en == data["options"]["frequency"][1]["label_en"])
+        self.assertTrue(options[EPLab.Parameter.frequency].options[1].label_ru ==
+                        data["options"]["frequency"][1]["label_ru"])
+        self.assertTrue(options[EPLab.Parameter.frequency].options[1].label_en ==
+                        data["options"]["frequency"][1]["label_en"])
         self.assertTrue(options[EPLab.Parameter.frequency].options[1].value == data["options"]["frequency"][1]["value"])
         self.assertTrue(eplab.plot_parameters.ref_color == data["plot_parameters"]["ref_color"])
         self.assertTrue(eplab.plot_parameters.test_color == data["plot_parameters"]["test_color"])
