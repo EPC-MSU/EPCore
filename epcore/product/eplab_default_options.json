@@ -1,0 +1,86 @@
+{
+  "options": {
+    "frequency": [
+      {
+        "name": "10hz",
+        "value": [10, 1000],
+        "label_ru": "10 Гц",
+        "label_en": "10 Hz"
+      },
+      {
+        "name": "100hz",
+        "value": [100, 10000],
+        "label_ru": "100 Гц",
+        "label_en": "100 Hz"
+      },
+      {
+        "name": "1khz",
+        "value": [1000, 100000],
+        "label_ru": "1 кГц",
+        "label_en": "1 kHz"
+      },
+      {
+        "name": "10khz",
+        "value": [10000, 100000],
+        "label_ru": "10 кГц",
+        "label_en": "10 kHz"
+      },
+      {
+        "name": "100khz",
+        "value": [100000, 2000000],
+        "label_ru": "100 кГц",
+        "label_en": "100 kHz"
+      }
+    ],
+    "voltage": [
+      {
+        "name": "1.2v",
+        "value": 1.2,
+        "label_ru": "1.2 В",
+        "label_en": "1.2 V"
+      },
+      {
+        "name": "3.3v",
+        "value": 3.3,
+        "label_ru": "3.3 В",
+        "label_en": "3.3 V"
+      },
+      {
+        "name": "5v",
+        "value": 5,
+        "label_ru": "5.0 В",
+        "label_en": "5.0 V"
+      },
+      {
+        "name": "12v",
+        "value": 12.0,
+        "label_ru": "12.0 В",
+        "label_en": "12.0 V"
+      }
+    ],
+    "sensitive": [
+      {
+        "name": "low",
+        "value": 475.0,
+        "label_ru": "Низкая",
+        "label_en": "Low"
+      },
+      {
+        "name": "middle",
+        "value": 4750.0,
+        "label_ru": "Средняя",
+        "label_en": "Middle"
+      },
+      {
+        "name": "high",
+        "value": 47500.0,
+        "label_ru": "Высокая",
+        "label_en": "High"
+      }
+    ]
+  },
+  "plot_parameters": {
+    "test_color": "#0000FF",
+    "ref_color": "#FF0000"
+  }
+}
