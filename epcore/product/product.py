@@ -172,7 +172,7 @@ class EPLab(ProductBase):
     def plot_parameters(self) -> PlotParameters:
         return self._plot_parameters
 
-    def settings_to_options(self, settings: MeasurementSettings) -> Dict[Enum, str]:
+    def settings_to_options(self, settings: MeasurementSettings) -> Dict["Parameter", str]:
         options = {}
 
         for option in self.mparams[EPLab.Parameter.frequency].options:
@@ -196,7 +196,7 @@ class EPLab(ProductBase):
 
         return options
 
-    def options_to_settings(self, options: Dict[Enum, str],
+    def options_to_settings(self, options: Dict["Parameter", str],
                             settings: MeasurementSettings) -> MeasurementSettings:
 
         if EPLab.Parameter.frequency in options:
