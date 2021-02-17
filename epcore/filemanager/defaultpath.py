@@ -13,13 +13,13 @@ class DefaultPathError(OSError):
 
 
 class DefaultPathManager:
-    def __init__(self, device: str, subdir: str = "", prefix: str = "board", postfix: str = "json"):
+    def __init__(self, device: str, subdir: str = "", prefix: str = "board", postfix: str = "uzf"):
         """
         Create default path manager
         :param device: path to default root directory (path to usb flash drive, e.g. /mount/drive)
         :param subdir: path to sub-directory (e.g. eyepoint/screenshots)
         :param prefix: files prefix (e.g. "board" or "screen")
-        :param postfix: files postfix (e.g. "json" or "png")
+        :param postfix: files postfix (e.g. "uzf" or "png")
         """
         self._device = device
         self._subdirs = subdir

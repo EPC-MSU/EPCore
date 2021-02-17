@@ -142,7 +142,8 @@ def save_board_to_ufiv(path_to_file: str, board: Board):
     """
     global source_file
     if ".json" in path_to_file:
-        path_to_file = path_to_file.replace(".json", ".uzf")
+        raise ValueError("epcore moved to the new UZF format. JSON is not supported anymore. "
+                         "To save UZF file set .uzf extension.")
     t = TemporaryDirectory()
     source_file.json_pth = os.path.join(t.name, basename(path_to_file.replace(".uzf", ".json")))
     json = board.to_json()
