@@ -1,99 +1,152 @@
-from ..utils import convert_p10, convert_p10_2
+import json
+import os
 import zipfile
 from tempfile import TemporaryDirectory
-from os.path import isfile, basename
-import os
+from typing import Tuple
 from PIL import Image
 from ..elements import version
-from json import load
+from ..utils import convert_p10, convert_p10_2
 
 
 class FileUFIVFormat:
     """
-    Common class of board. Class not converters something and compatible with UFIV format file
+    Common class for board files (in UFIV format)
     """
+
     json_pth = ""
     img_pth = ""
 
-    def __init__(self, json_pth=None):
+    def __init__(self, json_path: str = None):
+        """
+        :param json_path: path to json file.
+        """
 
-        if json_pth is None:
+        if json_path is None:
             return
-        self.json_pth = json_pth
+        self.json_pth = json_path
         self.find_img()
 
-    def add_img_pth(self, img_pth):
-        self.img_pth = img_pth
+    def add_img_pth(self, img_path: str):
+        """
+        :param img_path: path to image of board.
+        """
+
+        self.img_pth = img_path
 
     def find_img(self):
+        """
+        Method finds board image in directory containing json file.
+        """
+
         directory = os.path.dirname(self.json_pth)
         for f in os.listdir(directory):
             if ".png" in f or ".jpg" in f or ".bmp" in f:
-                if f[:-4] == basename(self.json_pth)[:-5]:
+                if f[:-4] == os.path.basename(self.json_pth)[:-5]:
                     self.add_img_pth(os.path.join(directory, f))
 
-    def get_json_and_image(self):
+    def get_json_and_image(self) -> Tuple:
+        """
+        Method returns json file and image of board.
+        :return: json file content and image of board.
+        """
+
         with open(self.json_pth, "r") as file:
-            input_json = load(file)
+            input_json = json.load(file)
+        image = None
         if self.img_pth is not None:
-            image = Image.open(self.img_pth) if isfile(self.img_pth) else None
+            image = (Image.open(self.img_pth) if os.path.isfile(self.img_pth)
+                     else None)
         return input_json, image
 
 
 class FileP10NormalFormat(FileUFIVFormat):
+    """
+    Class for board files in P10 normal format.
+    """
 
-    def __init__(self, path):
-        super().__init__(json_pth=path)
+    def __init__(self, path: str):
+        """
+        :param path: path to json file.
+        """
+
+        super().__init__(path)
         directory = os.path.dirname(self.json_pth)
-        if not isfile(self.img_pth):
+        if not os.path.isfile(self.img_pth):
             self.add_img_pth(os.path.join(directory, "image.png"))
 
-    def get_json_and_image(self, p10_convert_flag):
+    def get_json_and_image(self, p10_convert_flag: bool) -> Tuple:
         """
-        Function converters from p10 format to UFIV and return json file and image
-        :param p10_convert_flag: True or False
-        :return:
+        Method converts from P10 format to UFIV and returns json file and
+        image of board.
+        :param p10_convert_flag: if True json file content will be converted
+        to UFIV format.
+        :return: json file content and image of board.
         """
+
         input_json, image = super().get_json_and_image()
         if p10_convert_flag:
-            input_json = convert_p10(input_json, version=version, force_reference=True)
+            input_json = convert_p10(input_json, version=version,
+                                     force_reference=True)
         return input_json, image
 
 
 class FileP10NewFormat(FileUFIVFormat):
+    """
+    Class for board files in P10 new format.
+    """
 
-    def __init__(self, path):
-        super().__init__(json_pth=path)
+    def __init__(self, path: str):
+        """
+        :param path: path to json file.
+        """
+
+        super().__init__(path)
         directory = os.path.dirname(self.json_pth)
-        if not isfile(self.img_pth):
+        if not os.path.isfile(self.img_pth):
             self.add_img_pth(os.path.join(directory, "image.png"))
 
-    def get_json_and_image(self, p10_convert_flag):
+    def get_json_and_image(self, p10_convert_flag) -> Tuple:
         """
-        Function converters from p10 format to UFIV and return json file and image
-        :param p10_convert_flag:
-        :return:
+        Method converts from P10 new format to UFIV and returns json file and
+        image of board.
+        :param p10_convert_flag: if True json file content will be converted
+        to UFIV format.
+        :return: json file content and image of board.
         """
+
         input_json, image = super().get_json_and_image()
         if p10_convert_flag:
-            input_json = convert_p10_2(input_json, version=version, force_reference=True)
+            input_json = convert_p10_2(input_json, version=version,
+                                       force_reference=True)
         return input_json, image
 
 
 class FileArchivedUFIVFormat(FileUFIVFormat):
+    """
+    Class for board files in UFIV zipped format.
+    """
 
-    def __init__(self, path):
-        json_pth = self.convert_to_ufiv(path)
-        super().__init__(json_pth=json_pth)
+    def __init__(self, path: str):
+        """
+        :param path: path to UFIV zipped file.
+        """
 
-    def convert_to_ufiv(self, path):
+        json_path = self.convert_to_ufiv(path)
+        super().__init__(json_path)
+
+    @staticmethod
+    def convert_to_ufiv(path: str) -> str:
         """
-        Function convert UFIV_archived format to UFIV
-        :param path:
-        :return:
+        Method extracts content from UFIV zipped file and returns path to
+        extracted json file.
+        :param path: path to UFIV zipped file.
+        :return: path to extracted json file.
         """
-        archive = zipfile.ZipFile(path, "r")
-        tempdir = TemporaryDirectory().name
-        archive.extractall(path=tempdir)
-        archive.close()
-        return os.path.join(tempdir, basename(path).replace(".uzf", ".json"))
+
+        with zipfile.ZipFile(path, "r") as archive:
+            temp_dir = TemporaryDirectory().name
+            archive.extractall(path=temp_dir)
+            for filename in archive.namelist():
+                if os.path.splitext(filename)[-1] == ".json":
+                    return os.path.join(temp_dir, filename)
+        return None
