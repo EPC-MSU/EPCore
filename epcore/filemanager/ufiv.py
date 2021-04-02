@@ -1,164 +1,164 @@
 """
-Operations with UFIV JSON files
+Operations with UFIV JSON files.
 UFIV - Universal file format for IV-curve measurements.
 """
-from ..elements import Board
-from .file_formats import FileUFIVFormat, FileP10NormalFormat, FileP10NewFormat, FileArchivedUFIVFormat
-from ..doc import path_to_ufiv_schema, path_to_p10_elements_schema, path_to_p10_elements_2_schema
-from os.path import isfile, basename
-import os
-from json import load, dump
-import logging
-from typing import Dict
-from PIL import Image
-from jsonschema import validate, ValidationError
+
 import enum
+import logging
+import os
 import zipfile
+from json import load, dump
 from tempfile import TemporaryDirectory
+from typing import Dict, Tuple
+from jsonschema import validate, ValidationError
+from PIL import Image
+from ..doc import (path_to_ufiv_schema, path_to_p10_elements_schema,
+                   path_to_p10_elements_2_schema)
+from ..elements import Board
+from .file_formats import (FileUFIVFormat, FileP10NormalFormat,
+                           FileP10NewFormat, FileArchivedUFIVFormat)
+
 
 MAX_ERR_MSG_LEN = 256
+# Path to the last image of board
+_image_path: str = None
 
 
 class Formats(enum.Enum):
-    Normal_P10 = 0
-    New_P10 = 1
+    NORMAL_P10 = 0
+    NEW_P10 = 1
     UFIV = 2
-    UFIV_archived = 3
+    UFIV_ARCHIVED = 3
 
 
 formats_to_file = {
     Formats.UFIV: FileUFIVFormat,
-    Formats.Normal_P10: FileP10NormalFormat,
-    Formats.New_P10: FileP10NewFormat,
-    Formats.UFIV_archived: FileArchivedUFIVFormat
+    Formats.NORMAL_P10: FileP10NormalFormat,
+    Formats.NEW_P10: FileP10NewFormat,
+    Formats.UFIV_ARCHIVED: FileArchivedUFIVFormat
 }
 
-source_file = FileUFIVFormat()
 
+def _validate_json_with_schema(input_json: Dict, schema: Dict) -> \
+        Tuple[bool, Exception]:
+    """
+    Function validates json. Raise ValidationError in case of invalid json.
+    :param input_json: json to be validated;
+    :param schema: json schema for validation.
+    :return: is_valid, error.
+    """
 
-def _validate_json_with_schema(input_json: Dict, validation_schema: Dict):
-    """
-    Validate json. Raise Validation Error in case of invalid json.
-    :param input_json: json to be validated
-    :param json: json schema for validation
-    :return: is_valid, error
-    """
     try:
-        validate(input_json, validation_schema)
+        validate(input_json, schema)
         return True, None
     except ValidationError as err:
-        err.message = "The input file has invalid format: " + err.message[:MAX_ERR_MSG_LEN]
+        err.message = ("The input file has invalid format: " +
+                       err.message[:MAX_ERR_MSG_LEN])
         return False, err
 
 
-def detect_format(path: str, validate_input: bool = True):
+def detect_format(path: str):
     """
-    Returned format of board file
-    :param path:
-    :param validate_input:
-    :return:
+    Function returns format of board file.
+    :param path: path to board file.
+    :return: format of board file.
     """
-    if ".uzf" in path:
-        return Formats.UFIV_archived
 
+    if ".uzf" in path:
+        return Formats.UFIV_ARCHIVED
     with open(path, "r") as file:
         input_json = load(file)
-
-    # Convert from old format if needed
     if "version" not in input_json:
-        # Old format. Should be converted first.
-        logging.info("No 'version' key found, try to convert board from P10 format...")
-
-        if validate_input:
-
-            logging.info("Check normal P10 format.")
-            with open(path_to_p10_elements_schema(), "r") as schema_file:
-                p10_elements_schema_json = load(schema_file)
-            is_valid, err = _validate_json_with_schema(input_json, p10_elements_schema_json)
-            if is_valid:
-                return Formats.Normal_P10
-
-            logging.info("Check alternative P10 format.")
-            with open(path_to_p10_elements_2_schema(), "r") as schema_2_file:
-                p10_elements_schema_2_json = load(schema_2_file)
-            is_valid, err = _validate_json_with_schema(input_json, p10_elements_schema_2_json)
-            if is_valid:
-                return Formats.New_P10
-            else:
-                raise err
-    else:
-        return Formats.UFIV
+        # Old format. Should be converted first
+        logging.info("Key 'version' not found, try to convert board from P10 "
+                     "format...")
+        logging.info("Check normal P10 format.")
+        with open(path_to_p10_elements_schema(), "r") as schema_file:
+            p10_schema = load(schema_file)
+        is_valid, err = _validate_json_with_schema(input_json, p10_schema)
+        if is_valid:
+            return Formats.NORMAL_P10
+        logging.info("Check alternative P10 format.")
+        with open(path_to_p10_elements_2_schema(), "r") as schema_file:
+            p10_new_schema = load(schema_file)
+        is_valid, err = _validate_json_with_schema(input_json, p10_new_schema)
+        if is_valid:
+            return Formats.NEW_P10
+        raise err
+    return Formats.UFIV
 
 
-def load_board_from_ufiv(path: str,
-                         validate_input: bool = True,
+def load_board_from_ufiv(path: str, validate_input: bool = True,
                          auto_convert_p10: bool = True) -> Board:
     """
-    Load board (json and png) from directory
-    :param path: path to JSON file
-    :param validate_input: validate JSON before load
-    :param auto_convert_p10: enable auto conversion p10->ufiv
-    :return:
+    Function loads board (json and png) from directory.
+    :param path: path to json file;
+    :param validate_input: if True function validates json content to schema
+    before load;
+    :param auto_convert_p10: enable auto conversion p10->ufiv.
+    :return: board.
     """
-    global source_file
-    _format = detect_format(path, validate_input)
+
+    global _image_path
+    _format = detect_format(path)
     source_file = formats_to_file[_format](path)
-    if _format is Formats.Normal_P10 or _format is Formats.New_P10:
+    _image_path = source_file.img_pth
+    if _format is Formats.NORMAL_P10 or _format is Formats.NEW_P10:
         input_json, image = source_file.get_json_and_image(auto_convert_p10)
     else:
         input_json, image = source_file.get_json_and_image()
     if validate_input:
         with open(path_to_ufiv_schema(), "r") as schema_file:
-            ufiv_schema_json = load(schema_file)
-
-    is_valid, err = _validate_json_with_schema(input_json, ufiv_schema_json)  # check input_json has ufiv format
-    if not is_valid:
-        raise err
+            ufiv_schema = load(schema_file)
+            is_valid, err = _validate_json_with_schema(input_json, ufiv_schema)
+            if not is_valid:
+                raise err
     board = Board.create_from_json(input_json)
     board.image = image
-
     return board
 
 
 def add_image_to_ufiv(path: str, board: Board) -> Board:
     """
-    Add board image to existing board
-    :param path:
-    :param board:
-    :return:
+    Function adds board image to existing board.
+    :param path: path to image;
+    :param board: board to which the image should be added.
+    :return: board.
     """
-    global source_file
+
+    global _image_path
+    _image_path = path
     board.image = Image.open(path)
-    source_file.add_img_pth(path)
     return board
 
 
-def save_board_to_ufiv(path_to_file: str, board: Board):
+def save_board_to_ufiv(path: str, board: Board):
     """
-    Save board(png, json) files
-    :param path_to_file:
-    :param board:
-    :return:
+    Function saves board (png, json) files.
+    :param path: path to saved file;
+    :param board: board that should be saved.
     """
-    global source_file
-    if ".json" in path_to_file:
-        raise ValueError("epcore moved to the new UZF format. JSON is not supported anymore. "
-                         "To save UZF file set .uzf extension.")
-    t = TemporaryDirectory()
-    source_file.json_pth = os.path.join(t.name, basename(path_to_file.replace(".uzf", ".json")))
-    json = board.to_json()
-    archive = zipfile.ZipFile(path_to_file, "w")
-    with open(source_file.json_pth, "w") as file:
-        dump(json, file, indent=1)
-    archive.write(source_file.json_pth, arcname=basename(source_file.json_pth))
-    if board.image is not None:
-        if not isfile(source_file.img_pth):
-            board.image.save(source_file.img_pth)
-            archive.write(source_file.img_pth,
-                          arcname=basename(source_file.img_pth).replace(basename(source_file.img_pth)[:-4],
-                                                                        basename(source_file.json_pth)[:-5]))
+
+    if ".json" in path:
+        raise ValueError(
+            "epcore moved to the new UZF format. JSON is not supported "
+            "anymore. To save UZF file set .uzf extension.")
+    temp_dir = TemporaryDirectory()
+    archive = zipfile.ZipFile(path, "w")
+    # Save json file in archive
+    json_name = os.path.basename(path.replace(".uzf", ".json"))
+    json_path = os.path.join(temp_dir.name, json_name)
+    json_file = board.to_json()
+    with open(json_path, "w") as file:
+        dump(json_file, file, indent=1)
+    archive.write(json_path, arcname=json_name)
+    # Save image in archive
+    img_name = os.path.basename(path.replace(".uzf", ".png"))
+    if board.image:
+        if not _image_path:
+            img_path = os.path.join(temp_dir.name, img_name)
+            board.image.save(img_path)
         else:
-            archive.write(source_file.img_pth,
-                          arcname=basename(source_file.img_pth).replace(basename(source_file.img_pth)[:-4],
-                                                                        basename(source_file.json_pth)[:-5]))
+            img_path = _image_path
+        archive.write(img_path, arcname=img_name)
     archive.close()
