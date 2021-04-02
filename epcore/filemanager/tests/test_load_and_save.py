@@ -1,12 +1,11 @@
-import unittest
-from os.path import join as join_path, dirname
+from os.path import isfile, join as join_path, dirname
 from tempfile import TemporaryDirectory
-from os.path import isfile
+import unittest
 import zipfile
-from PIL import Image
-from epcore.filemanager import load_board_from_ufiv, save_board_to_ufiv
-from epcore.elements import Board
 from jsonschema import ValidationError
+from PIL import Image
+from epcore.elements import Board
+from epcore.filemanager import load_board_from_ufiv, save_board_to_ufiv
 
 
 board_path = join_path(dirname(__file__), "testboard.json")
@@ -15,6 +14,8 @@ oldstyle_board_path = join_path(dirname(__file__), "oldstyleboard.json")
 invalid_oldstyle_board_path = join_path(dirname(__file__), "oldstyleboard_invalid.json")
 dummy_path = join_path(dirname(__file__), "no_such_file.json")
 image_path = join_path(dirname(__file__), "testboard.png")
+oldstyle_board_with_img_path = join_path(dirname(__file__), "testboard_with_img", "board.json")
+oldstyle_board_without_img_path = join_path(dirname(__file__), "testboard_without_img", "board.json")
 
 
 class LoadSaveTests(unittest.TestCase):
@@ -54,3 +55,11 @@ class LoadSaveTests(unittest.TestCase):
             files = archive.namelist()
             self.assertTrue("foo.json" in files)
             self.assertTrue("foo.png" in files)
+
+    def test_load_old_style_board_with_image(self):
+        board = load_board_from_ufiv(oldstyle_board_with_img_path)
+        self.assertTrue(bool(board.image))
+
+    def test_load_old_style_board_without_image(self):
+        board = load_board_from_ufiv(oldstyle_board_without_img_path)
+        self.assertFalse(bool(board.image))

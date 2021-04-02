@@ -20,6 +20,8 @@ from .file_formats import (FileUFIVFormat, FileP10NormalFormat,
 
 
 MAX_ERR_MSG_LEN = 256
+# Path to the last image of board
+_image_path: str = None
 
 
 class Formats(enum.Enum):
@@ -97,8 +99,10 @@ def load_board_from_ufiv(path: str, validate_input: bool = True,
     :return: board.
     """
 
+    global _image_path
     _format = detect_format(path)
     source_file = formats_to_file[_format](path)
+    _image_path = source_file.img_pth
     if _format is Formats.NORMAL_P10 or _format is Formats.NEW_P10:
         input_json, image = source_file.get_json_and_image(auto_convert_p10)
     else:
@@ -122,6 +126,8 @@ def add_image_to_ufiv(path: str, board: Board) -> Board:
     :return: board.
     """
 
+    global _image_path
+    _image_path = path
     board.image = Image.open(path)
     return board
 
@@ -148,8 +154,11 @@ def save_board_to_ufiv(path: str, board: Board):
     archive.write(json_path, arcname=json_name)
     # Save image in archive
     img_name = os.path.basename(path.replace(".uzf", ".png"))
-    img_path = os.path.join(temp_dir.name, img_name)
     if board.image:
-        board.image.save(img_path)
+        if not _image_path:
+            img_path = os.path.join(temp_dir.name, img_name)
+            board.image.save(img_path)
+        else:
+            img_path = _image_path
         archive.write(img_path, arcname=img_name)
     archive.close()
