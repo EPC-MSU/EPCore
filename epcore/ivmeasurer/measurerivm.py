@@ -59,7 +59,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         open_device_safe(self._url, IvmDeviceHandle, self._config, _logging_callback)
         if not defer_open:
             self.open_device()
-        super(IVMeasurerIVM10, self).__init__(url, name)
+        super(IVMeasurerIVM10, self).__init__(url, name, "IVM10")
 
     @_close_on_error
     def open_device(self):
@@ -221,3 +221,13 @@ class IVMeasurerIVM10(IVMeasurerBase):
                              kernel_size=self._SMOOTHING_KERNEL_SIZE)
 
         return curve
+
+    def set_value_to_parameter(self, attribute_name: str, value):
+        """
+        Method sets value to attribute of measurer with given name.
+        :param attribute_name: name of attribute;
+        :param value: value for attribute.
+        """
+
+        if attribute_name in self.__dict__:
+            setattr(self, attribute_name, value)

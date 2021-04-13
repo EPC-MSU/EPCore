@@ -1,11 +1,14 @@
+"""
+File with class for virtual current-voltage measurer.
+"""
+
+import copy
 import logging
 import time
 import numpy as np
-import copy
-
-from .base import IVMeasurerBase, IVMeasurerIdentityInformation, cache_curve
-from .processing import smooth_curve, interpolate_curve
-from ..elements import MeasurementSettings, IVCurve
+from .base import cache_curve, IVMeasurerBase, IVMeasurerIdentityInformation
+from .processing import interpolate_curve, smooth_curve
+from ..elements import IVCurve, MeasurementSettings
 
 
 def _check_open(func):
@@ -18,16 +21,19 @@ def _check_open(func):
 
 class IVMeasurerVirtual(IVMeasurerBase):
     """
-    Virtual IVMeasurer
+    Virtual IVMeasurer.
     """
-    def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
+
+    def __init__(self, url: str = "", name: str = "",
+                 defer_open: bool = False):
         """
-        :param url: url for device identification in computer system.
-        For serial devices url will be "com:\\\\.\\COMx" (for Windows)
-        or "com:///dev/tty/ttyACMx"
-        :param name: friendly name (for measurement system)
-        :param defer_open: don't open serial port during initialization
+        :param url: url for device identification in computer system. For
+        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
+        "com:///dev/tty/ttyACMx" (for Linux);
+        :param name: friendly name (for measurement system);
+        :param defer_open: don't open serial port during initialization.
         """
+
         self.url = url
         self.__default_settings = MeasurementSettings(
             sampling_rate=10000,
@@ -35,7 +41,6 @@ class IVMeasurerVirtual(IVMeasurerBase):
             max_voltage=5.,
             probe_signal_frequency=100
         )
-
         self.__last_curve = IVCurve()
         self.__ready_time = 0
         self.__measurement_is_ready = False
@@ -46,12 +51,10 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.noise_factor = 0.05
         self._SMOOTHING_KERNEL_SIZE = 5
         self._NORMAL_NUM_POINTS = 100
-
         if not defer_open:
             self.open_device()
-
         logging.debug("IVMeasurerVirtual created")
-        super(IVMeasurerVirtual, self).__init__(url, name, defer_open)
+        super(IVMeasurerVirtual, self).__init__(url, name, "VIRTUAL")
 
     def reconnect(self) -> bool:
         time.sleep(1)
@@ -88,13 +91,12 @@ class IVMeasurerVirtual(IVMeasurerBase):
     @_check_open
     def trigger_measurement(self):
         """
-        Trigger measurement manually.
-        You don’t need this if the hardware is in continuous mode.
+        Trigger measurement manually. You don’t need this if the hardware is
+        in continuous mode.
         """
 
         if self.is_freezed():
             return
-
         self.__measurement_is_ready = False
         if self.model == "resistor":
             self.__last_curve = self.__calculate_r_iv()
@@ -102,21 +104,19 @@ class IVMeasurerVirtual(IVMeasurerBase):
             self.__last_curve = self.__calculate_c_iv()
         else:
             raise NotImplementedError
-
         self.__measurement_is_ready = False
         self.__ready_time = time.time() + 2. / self.__settings.probe_signal_frequency
 
     @_check_open
     def measurement_is_ready(self) -> bool:
         """
-        Return true if new measurement is ready
+        Return True if new measurement is ready.
         """
+
         if self.is_freezed():
             return False
-
         if time.time() > self.__ready_time:
             self.__measurement_is_ready = True
-
         return self.__measurement_is_ready
 
     @_check_open
@@ -125,11 +125,10 @@ class IVMeasurerVirtual(IVMeasurerBase):
         """
         Return result of the last measurement.
         """
+
         if self.__measurement_is_ready is not True:
             raise RuntimeError("Measurement is not ready")
-
         curve = copy.deepcopy(self.__last_curve)
-
         curve = interpolate_curve(curve=curve,
                                   final_num_points=self._NORMAL_NUM_POINTS)
         curve = smooth_curve(curve=curve,
@@ -141,9 +140,20 @@ class IVMeasurerVirtual(IVMeasurerBase):
         """
         We don't need to calibrate virtual IVC
         :param args:
-        :return:
         """
+
         pass
+
+    @_check_open
+    def set_value_to_parameter(self, attribute_name: str, value):
+        """
+        Method sets value to attribute of measurer with given name.
+        :param attribute_name: name of attribute;
+        :param value: value for attribute.
+        """
+
+        if attribute_name in self.__dict__:
+            setattr(self, attribute_name, value)
 
     # =================== Internal methods =================================
     def __add_noise(self, voltages_arr, currents_arr):

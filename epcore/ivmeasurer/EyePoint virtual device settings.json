@@ -1,0 +1,41 @@
+{
+    "name": "EyePoint virtual device",
+    "elements":
+    [
+        {
+            "description": "Модель (резистор, конденсатор)",
+            "parameter": "model",
+            "parameter_name": "Модель",
+            "type": "radio_button",
+            "values":
+            [
+                {
+                    "label": "Конденсатор",
+                    "value": "capacitor"
+                },
+                {
+                    "label": "Резистор",
+                    "value": "resistor"
+                }
+            ]
+        },
+        {
+            "description": "Номинал резистора/конденсатора",
+            "parameter": "nominal",
+            "parameter_name": "Номинал",
+            "type": "line_edit",
+            "value_type": "int",
+            "min": 0,
+            "max": 100
+        },
+        {
+            "description": "Уровень шума",
+            "parameter": "noise_factor",
+            "parameter_name": "Уровень шума",
+            "type": "line_edit",
+            "value_type": "float",
+            "min": 0,
+            "max": 1
+        }
+    ]
+}

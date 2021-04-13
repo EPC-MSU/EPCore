@@ -1,19 +1,23 @@
+"""
+File with base class which implements standard interface for all IVMeasurers.
+"""
+
+import json
 import logging
+import os
 import time
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
-
-from typing import Callable
-
+from dataclasses import dataclass
+from typing import Any, Callable, Dict
 from ..elements import MeasurementSettings, IVCurve
 
 
 @dataclass
 class IVMeasurerIdentityInformation:
     """
-    Class for hardware identity information
-    in unified format
+    Class for hardware identity information in unified format.
     """
+
     manufacturer: str
     device_class: str
     device_name: str
@@ -25,19 +29,22 @@ class IVMeasurerIdentityInformation:
 
 class IVMeasurerBase(ABC):
     """
-    Base class, which implements standard interface for
-    all IVMeasurers
+    Base class, which implements standard interface for all IVMeasurers.
     """
-    def __init__(self, url: str = "", name: str = "", defer_open=False):
+
+    def __init__(self, url: str = "", name: str = "", measurer_name: str = ""):
         """
-        :param url: url for device identification in computer system.
-        For serial devices url will be "com:\\\\.\\COMx" (for Windows)
-        or "com:///dev/tty/ttyACMx"
-        :param name: friendly name (for measurement system)
-        :param defer_open: don't open serial port during initialization
+        :param url: url for device identification in computer system. For
+        serial devices url will be "com:\\.\\COMx" (for Windows) or
+        "com:///dev/tty/ttyACMx" (for Linux);
+        :param name: friendly name (for measurement system);
+        :param measurer_name: name of type of measurer (for example, VIRTUAL,
+        IVM10).
         """
+
         self.url = url
         self._name = name
+        self._measurer_name = measurer_name
         self._cashed_curve = None
         self._freeze = False
         logging.debug("IVMeasurerBase created")
@@ -49,8 +56,7 @@ class IVMeasurerBase(ABC):
     @abstractmethod
     def open_device(self):
         """
-        Open device (com-port). You don't need that if defer_open is False
-        :return:
+        Open device (com-port). You don't need that if defer_open is False.
         """
         raise NotImplementedError()
 
@@ -73,24 +79,23 @@ class IVMeasurerBase(ABC):
     @abstractmethod
     def trigger_measurement(self):
         """
-        Trigger measurement manually.
-        You don’t need this if the hardware is in continuous mode.
+        Trigger measurement manually. You don’t need this if the hardware is
+        in continuous mode.
         """
         raise NotImplementedError()
 
     @abstractmethod
     def measurement_is_ready(self) -> bool:
         """
-        Return true if new measurement is ready
+        Return True if new measurement is ready.
         """
         raise NotImplementedError()
 
     @abstractmethod
     def calibrate(self, *args):
         """
-        Calibrate
-        :param args:
-        :return:
+        Calibrate.
+        :param args: arguments.
         """
         raise NotImplementedError()
 
@@ -98,14 +103,15 @@ class IVMeasurerBase(ABC):
     def get_last_iv_curve(self) -> IVCurve:
         """
         Return result of the last measurement.
+        :return: last measurement.
         """
         raise NotImplementedError()
 
     def get_last_cached_iv_curve(self) -> IVCurve:
         """
-        Return result of the last measurement
-        Even if the result is not yet ready, the previous result will be returned
-        :return:
+        Return result of the last measurement. Even if the result is not yet
+        ready, the previous result will be returned.
+        :return: last measurement.
         """
         if self.measurement_is_ready():
             return self.get_last_iv_curve()
@@ -124,21 +130,46 @@ class IVMeasurerBase(ABC):
 
     def measure_iv_curve(self) -> IVCurve:
         """
-        Perform measurement and return result for the measurement, which was made.
-        Blocking function. May take some time.
+        Perform measurement and return result for the measurement, which was
+        made. Blocking function. May take some time.
         """
         if self._freeze:
             return self.get_last_cached_iv_curve()
-        else:
-            self.trigger_measurement()
-            while not self.measurement_is_ready():
-                time.sleep(0.05)
-            return self.get_last_iv_curve()
+        self.trigger_measurement()
+        while not self.measurement_is_ready():
+            time.sleep(0.05)
+        return self.get_last_iv_curve()
+
+    def get_all_settings(self) -> Dict:
+        """
+        Method returns all settings for measurer.
+        :return: dictionary with all settings.
+        """
+
+        identity_info = self.get_identity_information()
+        device_class = identity_info.device_class
+        dir_name = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(dir_name, f"{device_class} settings.json")
+        if not os.path.exists(filename):
+            return {}
+        with open(filename, "r", encoding="utf-8") as file:
+            settings = json.load(file)
+        return settings
+
+    @abstractmethod
+    def set_value_to_parameter(self, attribute_name: str, value: Any):
+        """
+        Method sets value to attribute of measurer with given name.
+        :param attribute_name: name of attribute;
+        :param value: value for attribute.
+        """
+
+        raise NotImplementedError()
 
 
-def cache_curve(function: Callable) -> Callable:
+def cache_curve(func: Callable) -> Callable:
     def wrap(self, *args, **kwargs):
-        curve = function(self, *args, **kwargs)
+        curve = func(self, *args, **kwargs)
         self._cashed_curve = curve
         return curve
     return wrap
