@@ -15,7 +15,8 @@ setup(
     package_data={
         "epcore.ivmeasurer": ["ivm-debian/libivm.so",
                               "ivm-win32/ivm.dll",
-                              "ivm-win64/ivm.dll"],
+                              "ivm-win64/ivm.dll",
+                              "EyePoint_virtual_device_settings.json"],
         "epcore.measurementmanager": ["ivcmp-debian/libivcmp.so",
                                       "ivcmp-win32/ivcmp.dll",
                                       "ivcmp-win64/ivcmp.dll"],
