@@ -158,6 +158,15 @@ class IVMeasurerBase(ABC):
         return settings
 
     @abstractmethod
+    def get_current_value_of_parameter(self, attribute_name: str) -> Any:
+        """
+        Method returns current value of measurer parameter with given name.
+        :return: current value of parameter.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
     def set_value_to_parameter(self, attribute_name: str, value: Any):
         """
         Method sets value to attribute of measurer with given name.

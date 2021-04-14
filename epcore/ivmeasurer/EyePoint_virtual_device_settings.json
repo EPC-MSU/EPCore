@@ -25,9 +25,9 @@
             "parameter": "nominal",
             "parameter_name": "Номинал",
             "type": "line_edit",
-            "value_type": "int",
+            "value_type": "float",
             "min": 0,
-            "max": 100
+            "max": 100000
         },
         {
             "description": "Уровень шума",

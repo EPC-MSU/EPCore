@@ -1,14 +1,15 @@
 """
 IVMeasurer Implementation for EyePoint IVM hardware measurer.
 """
+
+from typing import Any, Callable
+import numpy as np
 from . import IVMeasurerIdentityInformation
 from .base import IVMeasurerBase, cache_curve
 from .ivm import IvmDeviceHandle, _logging_callback
 from .processing import smooth_curve, interpolate_curve
-from ..elements import IVCurve, MeasurementSettings
-import numpy as np
-from typing import Callable
 from .safe_opener import open_device_safe
+from ..elements import IVCurve, MeasurementSettings
 
 
 def _close_on_error(func: Callable):
@@ -222,7 +223,15 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
         return curve
 
-    def set_value_to_parameter(self, attribute_name: str, value):
+    def get_current_value_of_parameter(self, attribute_name: str) -> Any:
+        """
+        Method returns current value of measurer parameter with given name.
+        :return: current value of parameter.
+        """
+
+        return getattr(self, attribute_name, None)
+
+    def set_value_to_parameter(self, attribute_name: str, value: Any):
         """
         Method sets value to attribute of measurer with given name.
         :param attribute_name: name of attribute;
