@@ -191,13 +191,14 @@ class IVMeasurerVirtual(IVMeasurerBase):
         r = self.__settings.internal_resistance
         n_points = self.__settings.sampling_rate // f
         t = np.linspace(0, 1 / f, n_points)
-        v_in = self.__settings.max_voltage * np.sin(self.phase + 2 * np.pi * t)
+        v_in = self.__settings.max_voltage * np.sin(self.phase + 2 * np.pi * f * t)
         #                  R
         # V_out = V_in ---------; R - model of connected resistor under test
         #               R + R_cs
         v_out = v_in * self.nominal / (self.nominal + r)
         # I_out = V_out / R
         i_out = v_out / self.nominal
+        print(v_in)
         v_out, i_out = self.__add_noise(v_out, i_out)
         return IVCurve(currents=i_out.tolist(), voltages=v_out.tolist())
 
