@@ -198,7 +198,6 @@ class IVMeasurerVirtual(IVMeasurerBase):
         v_out = v_in * self.nominal / (self.nominal + r)
         # I_out = V_out / R
         i_out = v_out / self.nominal
-        print(v_in)
         v_out, i_out = self.__add_noise(v_out, i_out)
         return IVCurve(currents=i_out.tolist(), voltages=v_out.tolist())
 
