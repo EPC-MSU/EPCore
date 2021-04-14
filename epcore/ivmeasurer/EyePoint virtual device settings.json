@@ -7,6 +7,7 @@
             "parameter": "model",
             "parameter_name": "Модель",
             "type": "radio_button",
+            "value_type": "str",
             "values":
             [
                 {
