@@ -150,6 +150,7 @@ class IVMeasurerBase(ABC):
         device_class = identity_info.device_class
         dir_name = os.path.dirname(os.path.abspath(__file__))
         filename = os.path.join(dir_name, f"{device_class} settings.json")
+        filename = filename.replace(" ", "_")
         if not os.path.exists(filename):
             return {}
         with open(filename, "r", encoding="utf-8") as file:
