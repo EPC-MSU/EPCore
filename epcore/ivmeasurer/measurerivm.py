@@ -14,11 +14,12 @@ from ..elements import IVCurve, MeasurementSettings
 
 def _close_on_error(func: Callable):
     """
-    Due to the nature of the uRPC library
-    uRPC device must be immediately closed after first error
-    :param func: IVMeasurerIVM10 method
-    :return: ... IVMeasurerIVM10 decorated method
+    Due to the nature of the uRPC library uRPC device must be immediately
+    closed after first error.
+    :param func: IVMeasurerIVM10 method;
+    :return: IVMeasurerIVM10 decorated method.
     """
+
     def handle(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
@@ -30,20 +31,22 @@ def _close_on_error(func: Callable):
 
 class IVMeasurerIVM10(IVMeasurerBase):
     """
-    Class for controlling EyePoint IVM devices with
-    API version 1.0.
-    All instances should be initialized with device URL.
-    Format for Windows: com:\\\\.\\COMx
-    Format for Linux: /dev/ttyACMx
+    Class for controlling EyePoint IVM devices with API version 1.0. All
+    instances should be initialized with device URL. Format for Windows:
+    "com:\\\\.\\COMx", format for Linux: "///dev/ttyACMx".
     """
-    def __init__(self, url: str = "", name: str = "", config="", defer_open=False):
+
+    def __init__(self, url: str = "", name: str = "", config="",
+                 defer_open: bool = False):
         """
-        :param url: url for device identification in computer system.
-        For serial devices url will be "com:\\\\.\\COMx" (for Windows)
-        or "com:///dev/tty/ttyACMx"
-        :param name: friendly name (for measurement system)
-        :param defer_open: don't open serial port during initialization
+        :param url: url for device identification in computer system. For
+        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
+        "com:///dev/tty/ttyACMx" (for Linux);
+        :param name: friendly name (for measurement system);
+        :param config:
+        :param defer_open: don't open serial port during initialization.
         """
+
         self._config = config
         self._url = url
         self._device = IvmDeviceHandle(url, defer_open=True)
@@ -55,12 +58,11 @@ class IVMeasurerIVM10(IVMeasurerBase):
             internal_resistance=475,
             max_voltage=5,
             probe_signal_frequency=100,
-            precharge_delay=0
-        )
+            precharge_delay=0)
         open_device_safe(self._url, IvmDeviceHandle, self._config, _logging_callback)
         if not defer_open:
             self.open_device()
-        super(IVMeasurerIVM10, self).__init__(url, name, "IVM10")
+        super().__init__(url, name)
 
     @_close_on_error
     def open_device(self):
@@ -84,40 +86,39 @@ class IVMeasurerIVM10(IVMeasurerBase):
     @_close_on_error
     def set_settings(self, settings: MeasurementSettings):
         device_settings = self._device.get_measurement_settings()
-
-        if ((int(settings.sampling_rate) < 100) or
-           (int(settings.sampling_rate) > 2000000)):
-            raise ValueError("Invalid value for sampling rate: {}. Should be in [100, 2000000]".format(
-                    settings.sampling_rate
-                ))
+        if (int(settings.sampling_rate) < 100 or
+           int(settings.sampling_rate) > 2000000):
+            raise ValueError(
+                f"Invalid value for sampling rate: {settings.sampling_rate}. "
+                f"Should be in [100, 2000000]")
         device_settings.sampling_rate = settings.sampling_rate
         device_settings.max_voltage = settings.max_voltage
         device_settings.probe_signal_frequency = settings.probe_signal_frequency
-
-        if ((int(device_settings.probe_signal_frequency) < 1) or
-           (int(device_settings.probe_signal_frequency) > 100000) or
-           (int(device_settings.probe_signal_frequency) > device_settings.sampling_rate / 5)):
-            raise ValueError("Invalid value for probe signal frequency: {}. Should be in [1, 100000]\
-                             and also should be much less than sampling rate.".format(
-                    device_settings.probe_signal_frequency
-                ))
-
+        if (int(device_settings.probe_signal_frequency) < 1 or
+                int(device_settings.probe_signal_frequency) > 100000 or
+                int(device_settings.probe_signal_frequency) > device_settings.sampling_rate / 5):
+            raise ValueError(
+                f"Invalid value for probe signal frequency: "
+                f"{device_settings.probe_signal_frequency}. Should be in [1, 100000] "
+                f"and also should be much less than sampling rate")
         # Choose one of available current sense resistors.
         if int(settings.internal_resistance) == 475:
-            device_settings.current_sensor_mode = device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_HIGH
+            device_settings.current_sensor_mode = \
+                device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_HIGH
         elif int(settings.internal_resistance) == 4750:
-            device_settings.current_sensor_mode = device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_MID
+            device_settings.current_sensor_mode = \
+                device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_MID
         elif int(settings.internal_resistance) == 47500:
-            device_settings.current_sensor_mode = device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_LOW
+            device_settings.current_sensor_mode = \
+                device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_LOW
         else:
-            msg = "EyePoint IVM measurer has only three internal resistances: \
-                   475 Ohm, 4750 Ohm and 47500 Ohm. Got internal resistance {} Ohm.".format(
-                       settings.internal_resistance
-                  )
-            raise ValueError(msg)
-
+            raise ValueError(
+                f"EyePoint IVM measurer has only three internal resistances: "
+                f"475 Ohm, 4750 Ohm and 47500 Ohm. Got internal resistance "
+                f"{settings.internal_resistance} Ohm")
         # We want only single sine period
-        device_settings.number_points = int(settings.sampling_rate // settings.probe_signal_frequency)
+        device_settings.number_points = int(settings.sampling_rate //
+                                            settings.probe_signal_frequency)
         if settings.precharge_delay is not None:
             device_settings.number_charge_points = settings.precharge_delay * settings.sampling_rate
         else:
@@ -128,41 +129,41 @@ class IVMeasurerIVM10(IVMeasurerBase):
     @_close_on_error
     def get_settings(self) -> MeasurementSettings:
         device_settings = self._device.get_measurement_settings()
-
-        if device_settings.current_sensor_mode == device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_HIGH:
+        if device_settings.current_sensor_mode == \
+                device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_HIGH:
             internal_resistance = 475.
-        elif device_settings.current_sensor_mode == device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_MID:
+        elif device_settings.current_sensor_mode == \
+                device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_MID:
             internal_resistance = 4750.
-        elif device_settings.current_sensor_mode == device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_LOW:
+        elif device_settings.current_sensor_mode == \
+                device_settings.current_sensor_mode.CURRENT_SENSE_MODE_I_LOW:
             internal_resistance = 47500.
         else:
-            raise ValueError("Got unexpected current_sensor_mode from IVM Device: {}".format(
-                device_settings.current_sensor_mode
-            ))
-
+            raise ValueError(
+                f"Got unexpected current_sensor_mode from IVM Device: "
+                f"{device_settings.current_sensor_mode}")
         precharge_delay = device_settings.number_charge_points / device_settings.sampling_rate
         if int(precharge_delay) == 0:
             precharge_delay = None
-
-        return MeasurementSettings(sampling_rate=device_settings.sampling_rate,
-                                   internal_resistance=internal_resistance,
-                                   max_voltage=device_settings.max_voltage,
-                                   probe_signal_frequency=device_settings.probe_signal_frequency,
-                                   precharge_delay=precharge_delay)
+        return MeasurementSettings(
+            sampling_rate=device_settings.sampling_rate,
+            internal_resistance=internal_resistance,
+            max_voltage=device_settings.max_voltage,
+            probe_signal_frequency=device_settings.probe_signal_frequency,
+            precharge_delay=precharge_delay)
 
     @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
         inf = self._device.get_identity_information()
         rank = self._device.get_device_rank().rank
-        return IVMeasurerIdentityInformation(manufacturer=bytes(inf.manufacturer).decode("utf-8").replace("\x00", ""),
-                                             device_name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
-                                             device_class=bytes(inf.product_name).decode("utf-8").replace("\x00", ""),
-                                             hardware_version=(inf.hardware_major, inf.hardware_minor,
-                                                               inf.hardware_bugfix),
-                                             firmware_version=(inf.firmware_major, inf.firmware_minor,
-                                                               inf.firmware_bugfix),
-                                             name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
-                                             rank=int(rank))
+        return IVMeasurerIdentityInformation(
+            manufacturer=bytes(inf.manufacturer).decode("utf-8").replace("\x00", ""),
+            device_name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
+            device_class=bytes(inf.product_name).decode("utf-8").replace("\x00", ""),
+            hardware_version=(inf.hardware_major, inf.hardware_minor, inf.hardware_bugfix),
+            firmware_version=(inf.firmware_major, inf.firmware_minor, inf.firmware_bugfix),
+            name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
+            rank=int(rank))
 
     @_close_on_error
     def trigger_measurement(self):
@@ -173,26 +174,26 @@ class IVMeasurerIVM10(IVMeasurerBase):
     def measurement_is_ready(self) -> bool:
         if self.is_freezed():
             return False
-
         return bool(self._device.check_measurement_status().ready_status.measurement_complete)
 
     @_close_on_error
     def calibrate(self, *args):
         """
-        Calibrate IVC
-        :param args:
-        :return:
+        Calibrate IVC.
+        :param args: arguments.
         """
+
         # TODO: calibration settings?
         self._device.start_autocalibration()
 
     @cache_curve
     @_close_on_error
-    def get_last_iv_curve(self, raw=False) -> IVCurve:
+    def get_last_iv_curve(self, raw: bool = False) -> IVCurve:
         """
         Return measured data from device.
-        If raw is True postprocessing (averaging) is not applied
+        :param raw: if raw is True postprocessing (averaging) is not applied.
         """
+
         device_settings = self._device.get_measurement_settings()
         voltages = []
         currents = []
@@ -200,27 +201,18 @@ class IVMeasurerIVM10(IVMeasurerBase):
             frame = self._device.get_measurement(frame_number)
             currents.extend(list(frame.current))
             voltages.extend(list(frame.voltage))
-
         # Device return currents in mA
         currents = (np.array(currents[:device_settings.number_points]) / 1000).tolist()
         voltages = voltages[:device_settings.number_points]
-
-        curve = IVCurve(
-            currents=currents,
-            voltages=voltages
-        )
-
+        curve = IVCurve(currents=currents, voltages=voltages)
         if raw is True:
             return curve
-
         # Postprocessing
         if device_settings.probe_signal_frequency > 20000:
             curve = interpolate_curve(curve=curve,
                                       final_num_points=self._NORMAL_NUM_POINTS)
-
         curve = smooth_curve(curve=curve,
                              kernel_size=self._SMOOTHING_KERNEL_SIZE)
-
         return curve
 
     def get_current_value_of_parameter(self, attribute_name: str) -> Any:

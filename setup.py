@@ -24,6 +24,13 @@ setup(
                        "p10_elements_2.schema.json",
                        "ufiv.schema.json"],
         "epcore.product": ["doc/eplab_schema.json",
-                           "eplab_default_options.json"]
+                           "eplab_default_options.json"],
+        "epcore.mdasameasurer": ["win32/asa.dll",
+                                 "win32/libxmlrpc.dll",
+                                 "win32/libxmlrpc_client.dll",
+                                 "win32/libxmlrpc_util.dll",
+                                 "win32/libxmlrpc_xmlparse.dll",
+                                 "win32/libxmlrpc_xmltok.dll",
+                                 "coefficients.txt"]
     }
 )

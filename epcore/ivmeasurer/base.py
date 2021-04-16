@@ -29,22 +29,19 @@ class IVMeasurerIdentityInformation:
 
 class IVMeasurerBase(ABC):
     """
-    Base class, which implements standard interface for all IVMeasurers.
+    Base class which implements standard interface for all IVMeasurers.
     """
 
-    def __init__(self, url: str = "", name: str = "", measurer_name: str = ""):
+    def __init__(self, url: str = "", name: str = ""):
         """
         :param url: url for device identification in computer system. For
-        serial devices url will be "com:\\.\\COMx" (for Windows) or
+        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
         "com:///dev/tty/ttyACMx" (for Linux);
-        :param name: friendly name (for measurement system);
-        :param measurer_name: name of type of measurer (for example, VIRTUAL,
-        IVM10).
+        :param name: friendly name (for measurement system).
         """
 
         self.url = url
         self._name = name
-        self._measurer_name = measurer_name
         self._cashed_curve = None
         self._freeze = False
         logging.debug("IVMeasurerBase created")
@@ -56,8 +53,9 @@ class IVMeasurerBase(ABC):
     @abstractmethod
     def open_device(self):
         """
-        Open device (com-port). You don't need that if defer_open is False.
+        Open device. You don't need that if defer_open is False.
         """
+
         raise NotImplementedError()
 
     @abstractmethod
@@ -82,6 +80,7 @@ class IVMeasurerBase(ABC):
         Trigger measurement manually. You don’t need this if the hardware is
         in continuous mode.
         """
+
         raise NotImplementedError()
 
     @abstractmethod
@@ -89,14 +88,16 @@ class IVMeasurerBase(ABC):
         """
         Return True if new measurement is ready.
         """
+
         raise NotImplementedError()
 
     @abstractmethod
     def calibrate(self, *args):
         """
-        Calibrate.
+        Calibrate IVC.
         :param args: arguments.
         """
+
         raise NotImplementedError()
 
     @abstractmethod
@@ -105,6 +106,26 @@ class IVMeasurerBase(ABC):
         Return result of the last measurement.
         :return: last measurement.
         """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_current_value_of_parameter(self, attribute_name: str) -> Any:
+        """
+        Method returns current value of measurer parameter with given name.
+        :return: current value of parameter.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def set_value_to_parameter(self, attribute_name: str, value: Any):
+        """
+        Method sets value to attribute of measurer with given name.
+        :param attribute_name: name of attribute;
+        :param value: value for attribute.
+        """
+
         raise NotImplementedError()
 
     def get_last_cached_iv_curve(self) -> IVCurve:
@@ -113,6 +134,7 @@ class IVMeasurerBase(ABC):
         ready, the previous result will be returned.
         :return: last measurement.
         """
+
         if self.measurement_is_ready():
             return self.get_last_iv_curve()
         if self._cashed_curve is None:
@@ -133,6 +155,7 @@ class IVMeasurerBase(ABC):
         Perform measurement and return result for the measurement, which was
         made. Blocking function. May take some time.
         """
+
         if self._freeze:
             return self.get_last_cached_iv_curve()
         self.trigger_measurement()
@@ -156,25 +179,6 @@ class IVMeasurerBase(ABC):
         with open(filename, "r", encoding="utf-8") as file:
             settings = json.load(file)
         return settings
-
-    @abstractmethod
-    def get_current_value_of_parameter(self, attribute_name: str) -> Any:
-        """
-        Method returns current value of measurer parameter with given name.
-        :return: current value of parameter.
-        """
-
-        raise NotImplementedError()
-
-    @abstractmethod
-    def set_value_to_parameter(self, attribute_name: str, value: Any):
-        """
-        Method sets value to attribute of measurer with given name.
-        :param attribute_name: name of attribute;
-        :param value: value for attribute.
-        """
-
-        raise NotImplementedError()
 
 
 def cache_curve(func: Callable) -> Callable:

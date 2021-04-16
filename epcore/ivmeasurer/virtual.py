@@ -55,16 +55,16 @@ class IVMeasurerVirtual(IVMeasurerBase):
         if not defer_open:
             self.open_device()
         logging.debug("IVMeasurerVirtual created")
-        super(IVMeasurerVirtual, self).__init__(url, name, "VIRTUAL")
+        super().__init__(url, name)
+
+    def open_device(self):
+        self._open = True
+        self.set_settings(self.__default_settings)
 
     def reconnect(self) -> bool:
         time.sleep(1)
         self.open_device()
         return True
-
-    def open_device(self):
-        self._open = True
-        self.set_settings(self.__default_settings)
 
     def close_device(self):
         self._open = False
@@ -86,8 +86,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
                 hardware_version=(0, 0, 0),
                 firmware_version=(0, 0, 0),
                 name="Virtual",
-                rank=0
-        )
+                rank=0)
 
     @_check_open
     def trigger_measurement(self):
@@ -121,6 +120,15 @@ class IVMeasurerVirtual(IVMeasurerBase):
         return self.__measurement_is_ready
 
     @_check_open
+    def calibrate(self, *args):
+        """
+        We don't need to calibrate virtual IVC.
+        :param args: arguments.
+        """
+
+        pass
+
+    @_check_open
     @cache_curve
     def get_last_iv_curve(self) -> IVCurve:
         """
@@ -135,15 +143,6 @@ class IVMeasurerVirtual(IVMeasurerBase):
         curve = smooth_curve(curve=curve,
                              kernel_size=self._SMOOTHING_KERNEL_SIZE)
         return curve
-
-    @_check_open
-    def calibrate(self, *args):
-        """
-        We don't need to calibrate virtual IVC.
-        :param args: arguments.
-        """
-
-        pass
 
     @_check_open
     def get_current_value_of_parameter(self, attribute_name: str) -> Any:
