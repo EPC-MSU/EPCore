@@ -343,7 +343,6 @@ if __name__ == "__main__":
     import sys
     sys.exit(1)
 
-
     iv_curve = IvCurve()
     status = GetIVCurve(server, iv_curve, settings.number_points)
     settings.voltage_ampl_v = c_double(15)
