@@ -45,13 +45,14 @@ class TestPlan(unittest.TestCase):
         measurer = IVMeasurerVirtual()
         measurer.model = "resistor"
         measurer.nominal = 1000
+        measurer.noise_factor = 0
         searcher = Searcher(measurer, EPLab().mparams)
         optimal_settings = searcher.search_optimal_settings()
         good_settings = MeasurementSettings(
-            sampling_rate=1000,
+            sampling_rate=100000,
             internal_resistance=475.0,
             max_voltage=3.3,
-            probe_signal_frequency=10
+            probe_signal_frequency=1000
         )
 
         # The measurer should have chosen good settings
@@ -64,6 +65,7 @@ class TestPlan(unittest.TestCase):
         measurer = IVMeasurerVirtual()
         measurer.model = "capacitor"
         measurer.nominal = 0.00001
+        measurer.noise_factor = 0
         searcher = Searcher(measurer, EPLab().mparams)
         optimal_settings = searcher.search_optimal_settings()
         good_settings = MeasurementSettings(
