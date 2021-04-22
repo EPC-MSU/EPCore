@@ -25,7 +25,7 @@ pydoc -w epcore.ivmeasurer
 """
 
 from .base import IVMeasurerBase, IVMeasurerIdentityInformation
-from .measurerasa import IVMeasurerASA
+from .measurerasa import IVMeasurerASA, IVMeasurerVirtualASA
 from .measurerivm import IVMeasurerIVM10
 from .virtual import IVMeasurerVirtual
 from .virtualbad import IVMeasurerVirtualBad
@@ -35,6 +35,7 @@ __all__ = ["IVMeasurerASA",
            "IVMeasurerIdentityInformation",
            "IVMeasurerIVM10",
            "IVMeasurerVirtual",
+           "IVMeasurerVirtualASA",
            "IVMeasurerVirtualBad"]
 
 __author__ = ""

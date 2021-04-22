@@ -3,6 +3,30 @@
     "elements":
     [
         {
+            "description": "Кнопка для проведения быстрой калибровки с закнутыми щупами",
+            "type": "button",
+            "title": "Быстрая калибровка с закнутыми щупами",
+            "func": "calibrate_fast_and_closed"
+        },
+        {
+            "description": "Кнопка для проведения быстрой калибровки с разомкнутыми щупами",
+            "type": "button",
+            "title": "Быстрая калибровка с разомкнутыми щупами",
+            "func": "calibrate_fast_and_open"
+        },
+        {
+            "description": "Кнопка для проведения полной калибровки с закнутыми щупами",
+            "type": "button",
+            "title": "Полная калибровка с закнутыми щупами",
+            "func": "calibrate_full_and_closed"
+        },
+        {
+            "description": "Кнопка для проведения полной калибровки с размкнутыми щупами",
+            "type": "button",
+            "title": "Полная калибровка с разомкнутыми щупами",
+            "func": "calibrate_full_and_open"
+        },
+        {
             "description": "Модель (резистор, конденсатор)",
             "parameter": "model_type",
             "parameter_name": "Модель",
@@ -28,6 +52,33 @@
             "value_type": "float",
             "min": 0,
             "max": 100000
+        },
+        {
+            "description": "",
+            "parameter": "flags",
+            "parameter_name": "flags",
+            "type": "line_edit",
+            "value_type": "int",
+            "min": 0,
+            "max": 10
+        },
+        {
+            "description": "",
+            "parameter": "n_charge_points",
+            "parameter_name": "n_charge_points",
+            "type": "line_edit",
+            "value_type": "int",
+            "min": 1,
+            "max": 1000
+        },
+        {
+            "description": "",
+            "parameter": "n_points",
+            "parameter_name": "n_points",
+            "type": "line_edit",
+            "value_type": "int",
+            "min": 1,
+            "max": 1000
         }
     ]
 }

@@ -83,21 +83,20 @@ class ProductBase:
         """
         raise NotImplementedError()
 
-    def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
+    def adjust_plot_scale(self, settings: MeasurementSettings) ->\
+            Tuple[float, float]:
         """
-        You can use this function for
-        setting IVCurve plot scale for current setting.
-        By default it returns:
+        You can use this function for setting IVCurve plot scale for current
+        setting. By default it returns:
         voltage = max_voltage * 1.2
-        current = max_voltage / internal_resistance * 1.2
-        If you want to adjust the scale for some modes,
-        you should redefine this function.
-        Note! This function return value in A,
-        but you probably will plot current in mA,
-        don’t forget to multiply by 1000
+        current = max_voltage * 1.2
+        If you want to adjust the scale for some modes, you should redefine
+        this function.
+        Note! This function return value in A, but you probably will plot
+        current in mA, don’t forget to multiply by 1000.
         """
 
-        return settings.max_voltage * 1.2, settings.max_voltage / settings.internal_resistance * 1.2
+        return 1.2 * settings.max_voltage, 1000 * 1.2 * settings.max_voltage / settings.internal_resistance
 
     @abstractmethod
     def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
@@ -134,12 +133,14 @@ class EPLab(ProductBase):
 
     @classmethod
     def _default_json(cls) -> Dict:
-        with open(join(dirname(__file__), "eplab_default_options.json"), "r", encoding="utf-8") as file:
+        with open(join(dirname(__file__), "eplab_default_options.json"), "r",
+                  encoding="utf-8") as file:
             return json.load(file)
 
     @classmethod
     def _schema(cls) -> Dict:
-        with open(join(dirname(__file__), "doc", "eplab_schema.json"), "r") as file:
+        with open(join(dirname(__file__), "doc", "eplab_schema.json"), "r",
+                  encoding="utf-8") as file:
             return json.load(file)
 
     def __init__(self, json_data: Optional[Dict] = None):
@@ -216,7 +217,8 @@ class EPLab(ProductBase):
 
         return settings
 
-    def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
+    def adjust_plot_scale(self, settings: MeasurementSettings) ->\
+            Tuple[float, float]:
 
         scale_adjuster = {  # _scale_adjuster[V][Omh] -> Scale for x,y
             (1.2, 47500.0): (1.5, 0.04),
@@ -230,14 +232,11 @@ class EPLab(ProductBase):
             (5.0, 475.0): (6.0, 15.0),
             (12.0, 47500.0): (14.0, 0.35),
             (12.0, 4750.0): (14.0, 2.8),
-            (12.0, 475.0): (14.0, 28.0)
-        }
-
+            (12.0, 475.0): (14.0, 28.0)}
         for key, value in scale_adjuster.items():
             if np.isclose(settings.max_voltage, key[0], atol=self._precision) and \
                     np.isclose(settings.internal_resistance, key[1], atol=self._precision):
                 return value
-
         return super(EPLab, self).adjust_plot_scale(settings)
 
     def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:

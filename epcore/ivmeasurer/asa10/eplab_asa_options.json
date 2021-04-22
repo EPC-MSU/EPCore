@@ -168,64 +168,52 @@
     ],
     "sensitive": [
       {
-        "name": "0.5ma",
-        "value": 0.5,
-        "label_ru": "0.5 мА",
-        "label_en": "0.5 mA"
+        "name": "100ohm",
+        "value": 100,
+        "label_ru": "100 Ом",
+        "label_en": "100 Ohm"
       },
       {
-        "name": "1ma",
-        "value": 1,
-        "label_ru": "1 мА",
-        "label_en": "1 mA"
+        "name": "111.11ohm",
+        "value": 111.11,
+        "label_ru": "111.11 Ом",
+        "label_en": "111.11 Ohm"
       },
       {
-        "name": "2ma",
-        "value": 2,
-        "label_ru": "2 мА",
-        "label_en": "2 mA"
+        "name": "200ohm",
+        "value": 200,
+        "label_ru": "200 Ом",
+        "label_en": "200 Ohm"
       },
       {
-        "name": "5ma",
-        "value": 5,
-        "label_ru": "5 мА",
-        "label_en": "5 mA"
+        "name": "300ohm",
+        "value": 300,
+        "label_ru": "300 Ом",
+        "label_en": "300 Ohm"
       },
       {
-        "name": "10ma",
-        "value": 10,
-        "label_ru": "10 мА",
-        "label_en": "10 mA"
+        "name": "400ohm",
+        "value": 400,
+        "label_ru": "400 Ом",
+        "label_en": "400 Ohm"
       },
       {
-        "name": "15ma",
-        "value": 15,
-        "label_ru": "15 мА",
-        "label_en": "15 mA"
+        "name": "670ohm",
+        "value": 670,
+        "label_ru": "670 Ом",
+        "label_en": "670 Ohm"
       },
       {
-        "name": "25ma",
-        "value": 25,
-        "label_ru": "25 мА",
-        "label_en": "25 mA"
+        "name": "1000ohm",
+        "value": 1000,
+        "label_ru": "1000 Ом",
+        "label_en": "1000 Ohm"
       },
       {
-        "name": "50ma",
-        "value": 50,
-        "label_ru": "50 мА",
-        "label_en": "50 mA"
-      },
-      {
-        "name": "75ma",
-        "value": 75,
-        "label_ru": "75 мА",
-        "label_en": "75 mA"
-      },
-      {
-        "name": "90ma",
-        "value": 90,
-        "label_ru": "90 мА",
-        "label_en": "90 mA"
+        "name": "2000ohm",
+        "value": 2000,
+        "label_ru": "2000 Ом",
+        "label_en": "2000 Ohm"
       }
     ]
   },

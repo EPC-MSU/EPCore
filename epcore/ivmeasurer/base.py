@@ -50,6 +50,10 @@ class IVMeasurerBase(ABC):
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, name: str):
+        self._name = name
+
     @abstractmethod
     def open_device(self):
         """

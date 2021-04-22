@@ -3,6 +3,7 @@ IVMeasurer implementation for ASA measurer. High frequency network IVMeasurer.
 The old name - Meridian.
 """
 
+import logging
 import time
 from ctypes import c_char_p, c_double, c_uint32
 from typing import Any, Callable, Dict, Tuple
@@ -11,6 +12,7 @@ from . import IVMeasurerIdentityInformation
 from .asa10 import libasa as asa
 from .base import IVMeasurerBase, cache_curve
 from .processing import smooth_curve, interpolate_curve
+from .virtual import IVMeasurerVirtual
 from ..elements import IVCurve, MeasurementSettings
 
 
@@ -47,6 +49,30 @@ def _parse_address(full_address: str) -> Tuple[str, str]:
     return ip_address, port
 
 
+class IVMeasurerVirtualASA(IVMeasurerVirtual):
+
+    def __init__(self, url: str = "", name: str = "",
+                 defer_open: bool = False):
+        """
+        :param url: url for device identification in computer system. For
+        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
+        "com:///dev/tty/ttyACMx" (for Linux);
+        :param name: friendly name (for measurement system);
+        :param defer_open: don't open serial port during initialization.
+        """
+
+        super().__init__(url, name, defer_open)
+        self.__default_settings = MeasurementSettings(
+            internal_resistance=1000.,
+            max_voltage=5.,
+            probe_signal_frequency=100,
+            sampling_rate=10000)
+
+    def open_device(self):
+        self._open = True
+        self.set_settings(self.__default_settings)
+
+
 class IVMeasurerASA(IVMeasurerBase):
     """
     Class for controlling EyePoint ASA devices (EP H10) with API version 1.0.1.
@@ -54,14 +80,19 @@ class IVMeasurerASA(IVMeasurerBase):
     xmlrpc:ip_address:port.
     """
 
+    _calibration_types = {"Быстрая калибровка. Замкнутые щупы": 0,
+                          "Быстрая калибровка. Разомкнутые щупы": 1,
+                          "Полная калибровка. Замкнутые щупы": 2,
+                          "Полная калибровка. Разомкнутые щупы": 3}
+
     # ASA device additional parameters
-    flags: int
-    max_current: float
-    mode: str
-    model_nominal: float
-    model_type: str
-    n_charge_points: int
-    n_points: int
+    flags: int = 3
+    max_current: float = 0.5
+    mode: str = "manual"
+    model_nominal: float = 1.0e-7
+    model_type: str = "capacitor"
+    n_charge_points: int = 512
+    n_points: int = 512
 
     def __init__(self, url: str = "", name: str = "",
                  defer_open: bool = False):
@@ -76,7 +107,11 @@ class IVMeasurerASA(IVMeasurerBase):
         self._name = name
         self._server: asa.Server = None
         self._asa_settings = asa.AsaSettings()
-        self._settings: MeasurementSettings = None
+        self._settings = MeasurementSettings(
+            internal_resistance=1000.,
+            max_voltage=5.,
+            probe_signal_frequency=100,
+            sampling_rate=10000)
         self._measurement_is_ready: bool = False
         self._SMOOTHING_KERNEL_SIZE = 5
         self._NORMAL_NUM_POINTS = 100
@@ -87,7 +122,8 @@ class IVMeasurerASA(IVMeasurerBase):
     @_close_on_error
     def open_device(self):
         self._set_server_host()
-        self._settings = self.get_settings()
+        # self._settings = self.get_settings()
+        self.set_settings()
 
     def close_device(self):
         pass
@@ -103,7 +139,7 @@ class IVMeasurerASA(IVMeasurerBase):
     def get_settings(self) -> MeasurementSettings:
         asa.GetSettings(self._server, self._asa_settings)
         settings, additional_settings = self._get_from_asa_settings(self._asa_settings)
-        if self._check_settings(settings, additional_settings):
+        if self._check_settings(settings):
             self.flags = additional_settings["flags"]
             self.max_current = additional_settings["max_current"]
             self.mode = additional_settings["mode"]
@@ -117,6 +153,7 @@ class IVMeasurerASA(IVMeasurerBase):
     def set_settings(self, settings: MeasurementSettings = None):
         if settings is None:
             settings = self._settings
+        self._check_settings(settings)
         try:
             self._convert_to_asa_settings(settings)
             status = asa.SetSettings(self._server, self._asa_settings)
@@ -124,7 +161,7 @@ class IVMeasurerASA(IVMeasurerBase):
             self._settings = settings
             self.max_current = self._asa_settings.max_current_m_a
         except AssertionError:
-            print("SetSettings failed: %s", str(status))
+            logging.error("SetSettings failed: %s", str(status))
 
     @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
@@ -153,14 +190,49 @@ class IVMeasurerASA(IVMeasurerBase):
         return self._measurement_is_ready
 
     @_close_on_error
-    def calibrate(self, *args):
+    def calibrate(self, value: int):
         """
         Calibrate ASA device.
-        :param args: arguments.
+        :param value: parameter that determines type of calibration.
         """
 
-        # TODO: calibration settings?
-        pass
+        try:
+            result = asa.Calibrate(self._server, value)
+            assert result >= 0
+        except AssertionError:
+            logging.error("Calibration has not been performed")
+
+    def calibrate_fast_and_closed(self):
+        """
+        Method performes calibration of type "Быстрая калибровка. Замкнутые
+        щупы".
+        """
+
+        self.calibrate(self._calibration_types["Быстрая калибровка. Замкнутые щупы"])
+
+    def calibrate_fast_and_open(self):
+        """
+        Method performes calibration of type "Быстрая калибровка. Разомкнутые
+        щупы".
+        """
+
+        self.calibrate(self._calibration_types["Быстрая калибровка. Разомкнутые щупы"])
+
+    def calibrate_full_and_closed(self):
+        """
+        Method performes calibration of type "Полная калибровка. Замкнутые
+        щупы".
+        """
+
+        self.calibrate(self._calibration_types["Полная калибровка. Замкнутые щупы"])
+
+    def calibrate_full_and_open(self):
+        """
+        Method performes calibration of type "Полная калибровка. Разомкнутые
+        щупы".
+        """
+
+        self.calibrate(self._calibration_types["Полная калибровка. Разомкнутые щупы"])
 
     @cache_curve
     @_close_on_error
@@ -177,10 +249,10 @@ class IVMeasurerASA(IVMeasurerBase):
             assert asa.GetIVCurve(self._server, curve, self._asa_settings.number_points) == 0
             n_points = asa.GetNumberPointsForSinglePeriod(self._asa_settings)
         except AssertionError:
-            print("Curve was not received. Something went wrong!")
+            logging.error("Curve was not received. Something went wrong")
             return IVCurve()
         except OSError:
-            print("Curve was not received!")
+            logging.error("Curve was not received")
             return IVCurve()
         # Device return currents in mA
         currents = list(np.array(curve.currents[:n_points]) / 1000)
@@ -214,13 +286,10 @@ class IVMeasurerASA(IVMeasurerBase):
         if attribute_name in self.__dict__:
             setattr(self, attribute_name, value)
 
-    @staticmethod
-    def _check_settings(settings: MeasurementSettings,
-                        additional_settings: Dict) -> bool:
+    def _check_settings(self, settings: MeasurementSettings) -> bool:
         """
         Method checks settings of ASA device on correctness.
-        :param settings: main settings;
-        :param additional_settings: additional settings for ASA device.
+        :param settings: main settings.
         :return: True if settings is correct.
         """
 
@@ -229,7 +298,7 @@ class IVMeasurerASA(IVMeasurerBase):
         voltage = settings.max_voltage
         all_allowable_voltages = (1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 6.7, 7.5, 10)
         allowable_voltages = {
-            3000000: (1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6),
+            3000000: (1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 6.7),
             6000000: (1, 1.5, 2, 2.5, 3),
             12000000: (1, 1.5, 2)}
         v_allowable = allowable_voltages.get(frequency, all_allowable_voltages)
@@ -238,25 +307,26 @@ class IVMeasurerASA(IVMeasurerBase):
                    f"probe signal frequency {frequency} Hz.\n"
                    f"Allowable max voltage values: {v_allowable} V")
             raise ValueError(msg)
-        # Check currents depending on voltages
-        current = additional_settings["max_current"]
-        default_allowable_currents = (0.5, 1, 5, 10)
-        allowable_currents = {
-            1.5: (5, 15),
-            2: (1, 2, 5, 10),
-            2.5: (25,),
-            3: (10, 15),
-            4: (2, 10),
-            5: (5, 25, 50),
-            6: (15,),
-            6.7: (10,),
-            7.5: (25, 75),
-            10: (5, 10, 25, 50, 90)}
-        i_allowable = allowable_currents.get(voltage, default_allowable_currents)
-        if current not in i_allowable:
-            msg = (f"Invalid value of max current {current} mA at the given value of "
-                   f"max voltage {voltage} V.\n"
-                   f"Allowable max current values: {i_allowable} mA")
+        # Check resistances depending on voltages
+        resistance = settings.internal_resistance
+        allowable_resistances = {
+            1: (2000, 1000, 200, 100),
+            1.5: (300, 100),
+            2: (2000, 1000, 400, 200),
+            2.5: (100,),
+            3: (300, 200),
+            4: (2000, 400),
+            4.5: (300,),
+            5: (1000, 200, 100),
+            6: (400,),
+            6.7: (670,),
+            7.5: (300, 100),
+            10: (2000, 1000, 400, 200, 111.11)}
+        r_allowable = allowable_resistances.get(voltage, tuple())
+        if resistance not in r_allowable:
+            msg = (f"Invalid value of internal resistance {resistance} Ohm at "
+                   f"the given value of max voltage {voltage} V.\n"
+                   f"Allowable resistance values: {r_allowable} Ohm")
             raise ValueError(msg)
         return True
 
@@ -334,7 +404,7 @@ class IVMeasurerASA(IVMeasurerBase):
         try:
             assert len(self._host) > 0
         except AssertionError:
-            print("Server host is empty")
+            logging.error("Server host is empty")
             return
         c_host = c_char_p(self._host.encode("utf-8"))
         c_port = c_char_p(self._port.encode("utf-8"))

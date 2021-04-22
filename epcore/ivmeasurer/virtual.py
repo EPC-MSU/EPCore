@@ -70,8 +70,9 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self._open = False
 
     @_check_open
-    def set_settings(self, settings: MeasurementSettings):
-        self.__settings = settings
+    def set_settings(self, settings: MeasurementSettings = None):
+        if settings:
+            self.__settings = settings
 
     @_check_open
     def get_settings(self) -> MeasurementSettings:
