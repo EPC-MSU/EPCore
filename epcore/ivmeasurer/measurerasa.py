@@ -3,6 +3,7 @@ IVMeasurer implementation for ASA measurer. High frequency network IVMeasurer.
 The old name - Meridian.
 """
 
+import time
 from ctypes import c_char_p, c_double, c_uint32
 from typing import Any, Callable, Dict, Tuple
 import numpy as np
@@ -10,16 +11,14 @@ from . import IVMeasurerIdentityInformation
 from .asa10 import libasa as asa
 from .base import IVMeasurerBase, cache_curve
 from .processing import smooth_curve, interpolate_curve
-from .safe_opener import open_device_safe
 from ..elements import IVCurve, MeasurementSettings
 
 
 def _close_on_error(func: Callable):
     """
-    Due to the nature of the uRPC library uRPC device must be immediately
-    closed after first error.
-    :param func: IVMeasurerIVM10 method.
-    :return: IVMeasurerIVM10 decorated method.
+    Function handles an error when working with IVMeasurerASA.
+    :param func: IVMeasurerASA method.
+    :return: IVMeasurerASA decorated method.
     """
 
     def handle(self, *args, **kwargs):
@@ -43,7 +42,7 @@ def _parse_address(full_address: str) -> Tuple[str, str]:
         protocol, ip_address, port = address_parts
     else:
         protocol, ip_address = address_parts
-    if protocol != "xmlrpc":
+    if protocol.lower() != "xmlrpc":
         raise ValueError("Wrong protocol for ASA measurer")
     return ip_address, port
 
@@ -52,7 +51,7 @@ class IVMeasurerASA(IVMeasurerBase):
     """
     Class for controlling EyePoint ASA devices (EP H10) with API version 1.0.1.
     All instances should be initialized with device URL. Format:
-    xmlrpr:xxx.xxx.xxx.xxx:x.
+    xmlrpc:ip_address:port.
     """
 
     # ASA device additional parameters
@@ -78,7 +77,7 @@ class IVMeasurerASA(IVMeasurerBase):
         self._server: asa.Server = None
         self._asa_settings = asa.AsaSettings()
         self._settings: MeasurementSettings = None
-        self._FRAME_SIZE = 25
+        self._measurement_is_ready: bool = False
         self._SMOOTHING_KERNEL_SIZE = 5
         self._NORMAL_NUM_POINTS = 100
         if not defer_open:
@@ -123,8 +122,9 @@ class IVMeasurerASA(IVMeasurerBase):
             status = asa.SetSettings(self._server, self._asa_settings)
             assert status >= 0
             self._settings = settings
+            self.max_current = self._asa_settings.max_current_m_a
         except AssertionError:
-            self.logger.error("SetSettings failed: %s", str(status))
+            print("SetSettings failed: %s", str(status))
 
     @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
@@ -140,13 +140,17 @@ class IVMeasurerASA(IVMeasurerBase):
     @_close_on_error
     def trigger_measurement(self):
         if not self.is_freezed():
+            self._measurement_is_ready = False
             asa.TriggerMeasurement(self._server)
+            while asa.GetLastOperationResult(self._server) != 0:
+                time.sleep(0.2)
+            self._measurement_is_ready = True
 
     @_close_on_error
     def measurement_is_ready(self) -> bool:
         if self.is_freezed():
             return False
-        return True
+        return self._measurement_is_ready
 
     @_close_on_error
     def calibrate(self, *args):
@@ -171,15 +175,16 @@ class IVMeasurerASA(IVMeasurerBase):
         try:
             asa.GetSettings(self._server, self._asa_settings)
             assert asa.GetIVCurve(self._server, curve, self._asa_settings.number_points) == 0
+            n_points = asa.GetNumberPointsForSinglePeriod(self._asa_settings)
         except AssertionError:
-            self.logger.error("Curve was not received. Something went wrong!")
-            return None, None
+            print("Curve was not received. Something went wrong!")
+            return IVCurve()
         except OSError:
-            self.logger.error("Curve was not received!")
-            return None, None
+            print("Curve was not received!")
+            return IVCurve()
         # Device return currents in mA
-        currents = curve.currents
-        voltages = curve.voltages
+        currents = list(np.array(curve.currents[:n_points]) / 1000)
+        voltages = curve.voltages[:n_points]
         curve = IVCurve(currents=currents, voltages=voltages)
         if raw is True:
             return curve
@@ -210,7 +215,8 @@ class IVMeasurerASA(IVMeasurerBase):
             setattr(self, attribute_name, value)
 
     @staticmethod
-    def _check_settings(settings: MeasurementSettings, additional_settings: Tuple) -> bool:
+    def _check_settings(settings: MeasurementSettings,
+                        additional_settings: Dict) -> bool:
         """
         Method checks settings of ASA device on correctness.
         :param settings: main settings;
@@ -218,6 +224,40 @@ class IVMeasurerASA(IVMeasurerBase):
         :return: True if settings is correct.
         """
 
+        # Check voltages depending on frequency
+        frequency = settings.probe_signal_frequency
+        voltage = settings.max_voltage
+        all_allowable_voltages = (1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 6.7, 7.5, 10)
+        allowable_voltages = {
+            3000000: (1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6),
+            6000000: (1, 1.5, 2, 2.5, 3),
+            12000000: (1, 1.5, 2)}
+        v_allowable = allowable_voltages.get(frequency, all_allowable_voltages)
+        if voltage not in v_allowable:
+            msg = (f"Invalid value of max voltage {voltage} V at the given value of "
+                   f"probe signal frequency {frequency} Hz.\n"
+                   f"Allowable max voltage values: {v_allowable} V")
+            raise ValueError(msg)
+        # Check currents depending on voltages
+        current = additional_settings["max_current"]
+        default_allowable_currents = (0.5, 1, 5, 10)
+        allowable_currents = {
+            1.5: (5, 15),
+            2: (1, 2, 5, 10),
+            2.5: (25,),
+            3: (10, 15),
+            4: (2, 10),
+            5: (5, 25, 50),
+            6: (15,),
+            6.7: (10,),
+            7.5: (25, 75),
+            10: (5, 10, 25, 50, 90)}
+        i_allowable = allowable_currents.get(voltage, default_allowable_currents)
+        if current not in i_allowable:
+            msg = (f"Invalid value of max current {current} mA at the given value of "
+                   f"max voltage {voltage} V.\n"
+                   f"Allowable max current values: {i_allowable} mA")
+            raise ValueError(msg)
         return True
 
     def _convert_to_asa_settings(self, settings: MeasurementSettings):
@@ -230,26 +270,30 @@ class IVMeasurerASA(IVMeasurerBase):
         self._asa_settings.number_points = c_uint32(self.n_points)
         self._asa_settings.number_charge_points = c_uint32(self.n_charge_points)
         self._asa_settings.measure_flags = c_uint32(self.flags)
-        self._asa_settings.probe_signal_frequency_hz = c_double(int(settings.probe_signal_frequency))
+        self._asa_settings.probe_signal_frequency_hz = \
+            c_double(int(settings.probe_signal_frequency))
         self._asa_settings.voltage_ampl_v = c_double(settings.max_voltage)
-        self._asa_settings.max_current_m_a = c_double(self.max_current)
+        max_current = 1000 * settings.max_voltage / settings.internal_resistance
+        self._asa_settings.max_current_m_a = c_double(max_current)
         self._asa_settings.debug_model_type = \
-            c_uint32(2 * (self.model_type.lower() == "capacitor") + (self.model_type.lower() == "resistor"))
-        self._asa_settings.trigger_mode = c_uint32(self.mode == "Manual")
+            c_uint32(2 * (self.model_type.lower() == "capacitor") +
+                     (self.model_type.lower() == "resistor"))
+        self._asa_settings.trigger_mode = c_uint32(self.mode.lower() == "manual")
         self._asa_settings.debug_model_nominal = c_double(self.model_nominal)
 
     @staticmethod
-    def _get_from_asa_settings(asa_settings) -> Tuple[MeasurementSettings, Dict]:
+    def _get_from_asa_settings(asa_settings: asa.AsaSettings) ->\
+            Tuple[MeasurementSettings, Dict]:
         """
-        Method get values of settings from ASA format.
+        Method gets values of settings from ASA format.
         :return: main and additional measurement settings.
         """
 
         sampling_rate = int(asa_settings.sampling_rate_hz)
         probe_signal_frequency = int(asa_settings.probe_signal_frequency_hz)
-        max_current = float(asa_settings.voltage_ampl_v)
-        max_voltage = float(asa_settings.max_current_m_a)
-        internal_resistance = max_voltage / max_current
+        max_voltage = float(asa_settings.voltage_ampl_v)
+        max_current = float(asa_settings.max_current_m_a)
+        internal_resistance = 1000 * max_voltage / max_current
         n_points = int(asa_settings.number_points)
         n_charge_points = int(asa_settings.number_charge_points)
         flags = int(asa_settings.measure_flags)
@@ -258,9 +302,9 @@ class IVMeasurerASA(IVMeasurerBase):
         else:
             model_type = "capacitor"
         if int(asa_settings.trigger_mode) == 1:
-            mode = "Manual"
+            mode = "manual"
         else:
-            mode = "Auto"
+            mode = "auto"
         model_nominal = float(asa_settings.debug_model_nominal)
         precharge_delay = n_charge_points / sampling_rate
         if int(precharge_delay) == 0:
@@ -290,7 +334,7 @@ class IVMeasurerASA(IVMeasurerBase):
         try:
             assert len(self._host) > 0
         except AssertionError:
-            self.logger.info("Server host is empty!")
+            print("Server host is empty")
             return
         c_host = c_char_p(self._host.encode("utf-8"))
         c_port = c_char_p(self._port.encode("utf-8"))

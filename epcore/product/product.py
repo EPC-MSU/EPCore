@@ -22,11 +22,11 @@ class MeasurementParameterOption:
     label_en: str
 
     @classmethod
-    def from_json(cls, json: Dict) -> "MeasurementParameterOption":
-        return MeasurementParameterOption(name=json["name"],
-                                          value=json["value"],
-                                          label_ru=json["label_ru"],
-                                          label_en=json["label_en"])
+    def from_json(cls, json_data: Dict) -> "MeasurementParameterOption":
+        return MeasurementParameterOption(name=json_data["name"],
+                                          value=json_data["value"],
+                                          label_ru=json_data["label_ru"],
+                                          label_en=json_data["label_en"])
 
 
 @dataclass
@@ -41,8 +41,8 @@ class PlotParameters:
     test_color: str
 
     @classmethod
-    def from_json(cls, json: Dict) -> "PlotParameters":
-        return PlotParameters(json["ref_color"], json["test_color"])
+    def from_json(cls, json_data: Dict) -> "PlotParameters":
+        return PlotParameters(json_data["ref_color"], json_data["test_color"])
 
 
 class ProductBase:
@@ -142,19 +142,19 @@ class EPLab(ProductBase):
         with open(join(dirname(__file__), "doc", "eplab_schema.json"), "r") as file:
             return json.load(file)
 
-    def __init__(self, json: Optional[Dict] = None):
+    def __init__(self, json_data: Optional[Dict] = None):
         super(EPLab, self).__init__()
 
-        if json is None:
-            json = EPLab._default_json()
+        if json_data is None:
+            json_data = EPLab._default_json()
 
         try:
-            jsonschema.validate(json, EPLab._schema())
+            jsonschema.validate(json_data, EPLab._schema())
         except jsonschema.ValidationError as err:
             raise InvalidJson("Validation error: " + str(err))
 
-        json_options = json["options"]
-        self._plot_parameters = PlotParameters.from_json(json["plot_parameters"])
+        json_options = json_data["options"]
+        self._plot_parameters = PlotParameters.from_json(json_data["plot_parameters"])
 
         self.mparams = {
             EPLab.Parameter.frequency:

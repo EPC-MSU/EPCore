@@ -1,0 +1,33 @@
+{
+    "name": "ASA device",
+    "elements":
+    [
+        {
+            "description": "Модель (резистор, конденсатор)",
+            "parameter": "model_type",
+            "parameter_name": "Модель",
+            "type": "radio_button",
+            "value_type": "str",
+            "values":
+            [
+                {
+                    "label": "Конденсатор",
+                    "value": "capacitor"
+                },
+                {
+                    "label": "Резистор",
+                    "value": "resistor"
+                }
+            ]
+        },
+        {
+            "description": "Номинал резистора/конденсатора",
+            "parameter": "model_nominal",
+            "parameter_name": "Номинал",
+            "type": "line_edit",
+            "value_type": "float",
+            "min": 0,
+            "max": 100000
+        }
+    ]
+}
