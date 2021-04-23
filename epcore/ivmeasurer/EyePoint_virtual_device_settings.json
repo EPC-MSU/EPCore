@@ -5,17 +5,20 @@
         {
             "description": "Модель (резистор, конденсатор)",
             "parameter": "model",
-            "parameter_name": "Модель",
+            "parameter_name_ru": "Модель",
+            "parameter_name_en": "Model",
             "type": "radio_button",
             "value_type": "str",
             "values":
             [
                 {
-                    "label": "Конденсатор",
+                    "label_ru": "Конденсатор",
+                    "label_en": "Capacitor",
                     "value": "capacitor"
                 },
                 {
-                    "label": "Резистор",
+                    "label_ru": "Резистор",
+                    "label_en": "Resistor",
                     "value": "resistor"
                 }
             ]
@@ -23,7 +26,8 @@
         {
             "description": "Номинал резистора/конденсатора",
             "parameter": "nominal",
-            "parameter_name": "Номинал",
+            "parameter_name_ru": "Номинал",
+            "parameter_name_en": "Nominal",
             "type": "line_edit",
             "value_type": "float",
             "min": 0,
@@ -32,7 +36,8 @@
         {
             "description": "Уровень шума",
             "parameter": "noise_factor",
-            "parameter_name": "Уровень шума",
+            "parameter_name_ru": "Уровень шума",
+            "parameter_name_en": "Noise level",
             "type": "line_edit",
             "value_type": "float",
             "min": 0,

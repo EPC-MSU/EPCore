@@ -5,41 +5,48 @@
         {
             "description": "Кнопка для проведения быстрой калибровки с закнутыми щупами",
             "type": "button",
-            "title": "Быстрая калибровка с закнутыми щупами",
+            "label_ru": "Быстрая калибровка с закнутыми щупами",
+            "label_en": "Fast calibration with closed probes",
             "func": "calibrate_fast_and_closed"
         },
         {
             "description": "Кнопка для проведения быстрой калибровки с разомкнутыми щупами",
             "type": "button",
-            "title": "Быстрая калибровка с разомкнутыми щупами",
+            "label_ru": "Быстрая калибровка с разомкнутыми щупами",
+            "label_en": "Fast calibration with open probes",
             "func": "calibrate_fast_and_open"
         },
         {
             "description": "Кнопка для проведения полной калибровки с закнутыми щупами",
             "type": "button",
-            "title": "Полная калибровка с закнутыми щупами",
+            "label_ru": "Полная калибровка с закнутыми щупами",
+            "label_en": "Full calibration with closed probes",
             "func": "calibrate_full_and_closed"
         },
         {
             "description": "Кнопка для проведения полной калибровки с размкнутыми щупами",
             "type": "button",
-            "title": "Полная калибровка с разомкнутыми щупами",
+            "label_ru": "Полная калибровка с разомкнутыми щупами",
+            "label_en": "Full calibration with open probes",
             "func": "calibrate_full_and_open"
         },
         {
             "description": "Модель (резистор, конденсатор)",
             "parameter": "model_type",
-            "parameter_name": "Модель",
+            "parameter_name_ru": "Модель",
+            "parameter_name_en": "Model",
             "type": "radio_button",
             "value_type": "str",
             "values":
             [
                 {
-                    "label": "Конденсатор",
+                    "label_ru": "Конденсатор",
+                    "label_en": "Capacitor",
                     "value": "capacitor"
                 },
                 {
-                    "label": "Резистор",
+                    "label_ru": "Резистор",
+                    "label_en": "Resistor",
                     "value": "resistor"
                 }
             ]
@@ -47,7 +54,8 @@
         {
             "description": "Номинал резистора/конденсатора",
             "parameter": "model_nominal",
-            "parameter_name": "Номинал",
+            "parameter_name_ru": "Номинал",
+            "parameter_name_en": "Nominal",
             "type": "line_edit",
             "value_type": "float",
             "min": 0,
@@ -56,7 +64,8 @@
         {
             "description": "",
             "parameter": "flags",
-            "parameter_name": "flags",
+            "parameter_name_ru": "Флаг",
+            "parameter_name_en": "Flag",
             "type": "line_edit",
             "value_type": "int",
             "min": 0,
@@ -65,7 +74,8 @@
         {
             "description": "",
             "parameter": "n_charge_points",
-            "parameter_name": "n_charge_points",
+            "parameter_name_ru": "n_charge_points",
+            "parameter_name_en": "n_charge_points",
             "type": "line_edit",
             "value_type": "int",
             "min": 1,
@@ -74,7 +84,8 @@
         {
             "description": "",
             "parameter": "n_points",
-            "parameter_name": "n_points",
+            "parameter_name_ru": "n_points",
+            "parameter_name_en": "n_points",
             "type": "line_edit",
             "value_type": "int",
             "min": 1,
