@@ -122,7 +122,6 @@ class IVMeasurerASA(IVMeasurerBase):
     @_close_on_error
     def open_device(self):
         self._set_server_host()
-        # self._settings = self.get_settings()
         self.set_settings()
 
     def close_device(self):
@@ -154,14 +153,13 @@ class IVMeasurerASA(IVMeasurerBase):
         if settings is None:
             settings = self._settings
         self._check_settings(settings)
-        try:
-            self._convert_to_asa_settings(settings)
-            status = asa.SetSettings(self._server, self._asa_settings)
-            assert status >= 0
-            self._settings = settings
-            self.max_current = self._asa_settings.max_current_m_a
-        except AssertionError:
+        self._convert_to_asa_settings(settings)
+        status = asa.SetSettings(self._server, self._asa_settings)
+        if status != 0:
             logging.error("SetSettings failed: %s", str(status))
+            raise Exception("SetSettings failed")
+        self._settings = settings
+        self.max_current = self._asa_settings.max_current_m_a
 
     @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
