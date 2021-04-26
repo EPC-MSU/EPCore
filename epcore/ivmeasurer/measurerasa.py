@@ -248,9 +248,13 @@ class IVMeasurerASA(IVMeasurerBase):
             n_points = asa.GetNumberPointsForSinglePeriod(self._asa_settings)
         except AssertionError:
             logging.error("Curve was not received. Something went wrong")
+            if self._cashed_curve:
+                return self._cashed_curve
             return IVCurve()
         except OSError:
             logging.error("Curve was not received")
+            if self._cashed_curve:
+                return self._cashed_curve
             return IVCurve()
         # Device return currents in mA
         currents = list(np.array(curve.currents[:n_points]) / 1000)
