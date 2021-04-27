@@ -32,7 +32,7 @@ def _get_path(dir_name: str, file_name: str) -> str:
     return os.path.join(base_dir_name, dir_name, file_name)
 
 
-def _get_dll():
+def get_dll():
     if system() == "Linux":
         return CDLL(_get_path("debian", "libasa.so"))
     elif system() == "Windows":
@@ -44,7 +44,7 @@ def _get_dll():
         raise NotImplementedError(f"Unsupported platform {system()}")
 
 
-lib = _get_dll()
+# lib = _get_dll()
 MAX_NUM_POINTS = 1000
 NUM_COMBINATION = 380
 _host = "172.16.3.213"
@@ -80,7 +80,6 @@ def _normalize_arg(value, desired_ctype):
 
 
 class Version(_IterableStructure):
-
     _fields_ = (
         ("major", c_uint8),
         ("minor", c_uint8),
@@ -89,7 +88,6 @@ class Version(_IterableStructure):
 
 
 class Server(_IterableStructure):
-
     _fields_ = (
           ("host", c_char_p),
           ("port", c_char_p)
@@ -152,7 +150,7 @@ class IvCurve(_IterableStructure):
         self.length = MAX_NUM_POINTS
 
 
-def GetLibraryVersion():
+def GetLibraryVersion(lib):
     version = lib.GetLibraryVersion
     version.argtype = None
     version.restype = Version
@@ -163,7 +161,7 @@ def GetLibraryVersion():
     return res.major, res.minor, res.bugfix
 
 
-def GetAPIVersion():
+def GetAPIVersion(lib):
     version = lib.GetAPIVersion
     version.argtype = None
     version.restype = Version
@@ -174,7 +172,7 @@ def GetAPIVersion():
     return res.major, res.minor, res.bugfix
 
 
-def SetSettings(server, settings):
+def SetSettings(lib, server, settings):
     lib_func = lib.SetSettings
     lib_func.argtype = Server, AsaSettings
     lib_func.restype = c_int8
@@ -182,7 +180,7 @@ def SetSettings(server, settings):
     return res
 
 
-def GetSettings(server, settings):
+def GetSettings(lib, server, settings):
     lib_func = lib.GetSettings
     lib_func.argtype = Server, AsaSettings
     lib_func.restype = c_int8
@@ -190,7 +188,7 @@ def GetSettings(server, settings):
     return res
 
 
-def GetIVCurve(server, iv_curve, size):
+def GetIVCurve(lib, server, iv_curve, size):
     lib_func = lib.GetIVCurve
     lib_func.argtype = Server, IvCurve, c_uint32
     lib_func.restype = c_int8
@@ -198,7 +196,7 @@ def GetIVCurve(server, iv_curve, size):
     return res
 
 
-def TriggerMeasurement(server):
+def TriggerMeasurement(lib, server):
     lib_func = lib.TriggerMeasurement
     lib_func.argtype = Server
     lib_func.restype = c_int8
@@ -206,7 +204,7 @@ def TriggerMeasurement(server):
     return res
 
 
-def Calibrate(server, _type):
+def Calibrate(lib, server, _type):
     lib_func = lib.Calibrate
     lib_func.argtype = Server, c_uint8
     lib_func.restype = c_int8
@@ -214,7 +212,7 @@ def Calibrate(server, _type):
     return res
 
 
-def GetStatusButtons(server, button_pressed):
+def GetStatusButtons(lib, server, button_pressed):
     lib_func = lib.GetStatusButtons
     lib_func.argtype = Server, Buttons
     lib_func.restype = c_int8
@@ -222,7 +220,7 @@ def GetStatusButtons(server, button_pressed):
     return res
 
 
-def GetTempProbes(server, temperature):
+def GetTempProbes(lib, server, temperature):
     lib_func = lib.GetTempProbes
     lib_func.argtype = Server, Temperature
     lib_func.restype = c_int8
@@ -230,13 +228,13 @@ def GetTempProbes(server, temperature):
     return res
 
 
-def SetMinVC(min_var_v, min_var_c):
+def SetMinVC(lib, min_var_v, min_var_c):
     lib_func = lib.SetMinVC
     lib_func.argtype = c_double, c_double
     lib_func(c_double(min_var_v), c_double(min_var_c))
 
 
-def CompareIvc(first_iv_curve, second_iv_curve):
+def CompareIvc(lib, first_iv_curve, second_iv_curve):
     lib_func = lib.CompareIVC
     lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
     lib_func.restype = c_double
@@ -246,7 +244,7 @@ def CompareIvc(first_iv_curve, second_iv_curve):
     return res
 
 
-def GetNumberPointsForSinglePeriod(settings):
+def GetNumberPointsForSinglePeriod(lib, settings):
     lib_func = lib.GetNumberPointsForSinglePeriod
     lib_func.argtype = AsaSettings
     lib_func.restype = c_uint32
@@ -254,7 +252,7 @@ def GetNumberPointsForSinglePeriod(settings):
     return res
 
 
-def GetLastOperationResult(server):
+def GetLastOperationResult(lib, server):
     lib_func = lib.GetLastOperationResult
     lib_func.argtype = Server
     lib_func.restype = c_int8
@@ -262,21 +260,21 @@ def GetLastOperationResult(server):
     return res
 
 
-def LoadCoefficients(file_name, coefficients):
+def LoadCoefficients(lib, file_name, coefficients):
     lib_func = lib.LoadCoefficientTable
     lib_func.argtype = c_char_p, AsaCoefficients
     lib_func.restype = None
     lib_func(file_name, byref(coefficients))
 
 
-def SaveCoefficients(file_name, coefficients):
+def SaveCoefficients(lib, file_name, coefficients):
     lib_func = lib.SaveCoefficientTable
     lib_func.argtype = c_char_p, AsaCoefficients
     lib_func.restype = None
     lib_func(file_name, byref(coefficients))
 
 
-def SetCoefficients(server, coefficients):
+def SetCoefficients(lib, server, coefficients):
     lib_func = lib.SetCoefficients
     lib_func.argtype = Server, AsaCoefficients
     lib_func.restype = c_int8
@@ -284,7 +282,7 @@ def SetCoefficients(server, coefficients):
     return res
 
 
-def GetCoefficients(server, coefficients):
+def GetCoefficients(lib, server, coefficients):
     lib_func = lib.GetCoefficients
     lib_func.argtype = Server, AsaCoefficients
     lib_func.restype = c_int8
@@ -295,20 +293,21 @@ def GetCoefficients(server, coefficients):
 if __name__ == "__main__":
 
     def wait_finish():
-        while GetLastOperationResult(server) != 0:
+        while GetLastOperationResult(lib, server) != 0:
             import time
             time.sleep(0.2)
 
+    lib = get_dll()
     server = Server(HOST, PORT)
     coef = AsaCoefficients()
     dir_name = os.path.dirname(os.path.abspath(__file__))
     file_name = os.path.join(dir_name, "coefficients.txt")
-    LoadCoefficients(c_char_p(file_name.encode("utf-8")), coef)
-    SetCoefficients(server, coef)
+    LoadCoefficients(lib, c_char_p(file_name.encode("utf-8")), coef)
+    SetCoefficients(lib, server, coef)
     wait_finish()
 
     settings_from_device = AsaSettings()
-    GetSettings(server, settings_from_device)
+    GetSettings(lib, server, settings_from_device)
     wait_finish()
     print(settings_from_device.sampling_rate_hz)
     print(settings_from_device.debug_model_nominal)
@@ -324,39 +323,37 @@ if __name__ == "__main__":
     settings.debug_model_type = c_uint32(1)
     settings.debug_model_nominal = c_double(0.20)
     settings.trigger_mode = c_uint32(0)
-    SetSettings(server, settings)
+    SetSettings(lib, server, settings)
     wait_finish()
 
-    GetSettings(server, settings_from_device)
+    GetSettings(lib, server, settings_from_device)
     wait_finish()
     print(settings_from_device.sampling_rate_hz)
     print(settings_from_device.debug_model_nominal)
 
     settings.debug_model_nominal = c_double(12783)
-    SetSettings(server, settings)
+    SetSettings(lib, server, settings)
     wait_finish()
 
-    GetSettings(server, settings_from_device)
+    GetSettings(lib, server, settings_from_device)
     wait_finish()
 
     print(settings_from_device.debug_model_nominal)
-    import sys
-    sys.exit(1)
 
     iv_curve = IvCurve()
-    status = GetIVCurve(server, iv_curve, settings.number_points)
+    status = GetIVCurve(lib, server, iv_curve, settings.number_points)
     settings.voltage_ampl_v = c_double(15)
-    SetSettings(server, settings)
+    SetSettings(lib, server, settings)
     ivc_curve = IvCurve()
     # status = CalibrateVoltage(server)
-    status = GetIVCurve(server, ivc_curve, settings.number_points)
-    SetMinVC(0, 0)
-    f = CompareIvc(iv_curve, ivc_curve)
+    status = GetIVCurve(lib, server, ivc_curve, settings.number_points)
+    SetMinVC(lib, 0, 0)
+    f = CompareIvc(lib, iv_curve, ivc_curve)
     temp = Temperature()
     button_pressed = Buttons()
-    GetStatusButtons(server, button_pressed)
-    GetTempProbes(server, temp)
-    n_p = GetNumberPointsForSinglePeriod(settings)
+    GetStatusButtons(lib, server, button_pressed)
+    GetTempProbes(lib, server, temp)
+    n_p = GetNumberPointsForSinglePeriod(lib, settings)
     print("N_P: {}\n".format(n_p))
     print(temp.overheat_blue, button_pressed.gray_button)
     # print(f)

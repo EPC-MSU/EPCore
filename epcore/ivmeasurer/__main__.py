@@ -42,7 +42,7 @@ if __name__ == "__main__":
         logging.debug("Measurement finished")
         plot_curve(ivc)
 
-    # Work with IVMeasurerASA
+    # Work with IVMeasurerASA. You should start the server at IP 172.16.3.213
     measurer = IVMeasurerASA("xmlrpc:172.16.3.213", "asa_measurer", True)
     measurer.open_device()
     settings = measurer.get_settings()

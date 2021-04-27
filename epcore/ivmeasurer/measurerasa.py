@@ -105,6 +105,7 @@ class IVMeasurerASA(IVMeasurerBase):
 
         self._host, self._port = _parse_address(url)
         self._name = name
+        self._lib = asa.get_dll()
         self._server: asa.Server = None
         self._asa_settings = asa.AsaSettings()
         self._settings = MeasurementSettings(
@@ -136,7 +137,7 @@ class IVMeasurerASA(IVMeasurerBase):
 
     @_close_on_error
     def get_settings(self) -> MeasurementSettings:
-        asa.GetSettings(self._server, self._asa_settings)
+        asa.GetSettings(self._lib, self._server, self._asa_settings)
         settings, additional_settings = self._get_from_asa_settings(self._asa_settings)
         if self._check_settings(settings):
             self.flags = additional_settings["flags"]
@@ -154,7 +155,7 @@ class IVMeasurerASA(IVMeasurerBase):
             settings = self._settings
         self._check_settings(settings)
         self._convert_to_asa_settings(settings)
-        status = asa.SetSettings(self._server, self._asa_settings)
+        status = asa.SetSettings(self._lib, self._server, self._asa_settings)
         if status != 0:
             logging.error("SetSettings failed: %s", str(status))
             raise Exception("SetSettings failed")
@@ -176,8 +177,8 @@ class IVMeasurerASA(IVMeasurerBase):
     def trigger_measurement(self):
         if not self.is_freezed():
             self._measurement_is_ready = False
-            asa.TriggerMeasurement(self._server)
-            while asa.GetLastOperationResult(self._server) != 0:
+            asa.TriggerMeasurement(self._lib, self._server)
+            while asa.GetLastOperationResult(self._lib, self._server) != 0:
                 time.sleep(0.2)
             self._measurement_is_ready = True
 
@@ -195,7 +196,7 @@ class IVMeasurerASA(IVMeasurerBase):
         """
 
         try:
-            result = asa.Calibrate(self._server, value)
+            result = asa.Calibrate(self._lib, self._server, value)
             assert result >= 0
         except AssertionError:
             logging.error("Calibration has not been performed")
@@ -241,11 +242,12 @@ class IVMeasurerASA(IVMeasurerBase):
         """
 
         curve = asa.IvCurve()
-        asa.GetIVCurve(self._server, curve, self._asa_settings.number_points)
+        asa.GetIVCurve(self._lib, self._server, curve, self._asa_settings.number_points)
         try:
-            asa.GetSettings(self._server, self._asa_settings)
-            assert asa.GetIVCurve(self._server, curve, self._asa_settings.number_points) == 0
-            n_points = asa.GetNumberPointsForSinglePeriod(self._asa_settings)
+            asa.GetSettings(self._lib, self._server, self._asa_settings)
+            assert asa.GetIVCurve(self._lib, self._server, curve,
+                                  self._asa_settings.number_points) == 0
+            n_points = asa.GetNumberPointsForSinglePeriod(self._lib, self._asa_settings)
         except AssertionError:
             logging.error("Curve was not received. Something went wrong")
             if self._cashed_curve:
