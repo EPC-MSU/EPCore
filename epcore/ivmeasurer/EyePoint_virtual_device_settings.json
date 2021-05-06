@@ -30,7 +30,7 @@
             "parameter_name_en": "Nominal",
             "type": "line_edit",
             "value_type": "float",
-            "min": 0,
+            "min": 1.0e-20,
             "max": 100000
         },
         {
@@ -40,7 +40,7 @@
             "parameter_name_en": "Noise level",
             "type": "line_edit",
             "value_type": "float",
-            "min": 0,
+            "min": 1.0e-100,
             "max": 1
         }
     ]

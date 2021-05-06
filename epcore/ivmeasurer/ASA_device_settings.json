@@ -58,7 +58,7 @@
             "parameter_name_en": "Nominal",
             "type": "line_edit",
             "value_type": "float",
-            "min": 0,
+            "min": 1.0e-20,
             "max": 100000
         },
         {

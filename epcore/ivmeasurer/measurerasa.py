@@ -66,7 +66,7 @@ class IVMeasurerVirtualASA(IVMeasurerVirtual):
             internal_resistance=1000.,
             max_voltage=5.,
             probe_signal_frequency=100,
-            sampling_rate=10000)
+            sampling_rate=12254)
 
     def open_device(self):
         self._open = True
@@ -87,7 +87,6 @@ class IVMeasurerASA(IVMeasurerBase):
 
     # ASA device additional parameters
     flags: int = 3
-    max_current: float = 0.5
     mode: str = "manual"
     model_nominal: float = 1.0e-7
     model_type: str = "capacitor"
@@ -112,7 +111,7 @@ class IVMeasurerASA(IVMeasurerBase):
             internal_resistance=1000.,
             max_voltage=5.,
             probe_signal_frequency=100,
-            sampling_rate=10000)
+            sampling_rate=12254)
         self._measurement_is_ready: bool = False
         self._SMOOTHING_KERNEL_SIZE = 5
         self._NORMAL_NUM_POINTS = 100
@@ -124,6 +123,8 @@ class IVMeasurerASA(IVMeasurerBase):
     def open_device(self):
         self._set_server_host()
         self.set_settings()
+        while asa.GetLastOperationResult(self._lib, self._server) != 0:
+            time.sleep(0.2)
 
     def close_device(self):
         pass
@@ -141,7 +142,6 @@ class IVMeasurerASA(IVMeasurerBase):
         settings, additional_settings = self._get_from_asa_settings(self._asa_settings)
         if self._check_settings(settings):
             self.flags = additional_settings["flags"]
-            self.max_current = additional_settings["max_current"]
             self.mode = additional_settings["mode"]
             self.model_nominal = additional_settings["model_nominal"]
             self.model_type = additional_settings["model_type"]
@@ -160,7 +160,6 @@ class IVMeasurerASA(IVMeasurerBase):
             logging.error("SetSettings failed: %s", str(status))
             raise Exception("SetSettings failed")
         self._settings = settings
-        self.max_current = self._asa_settings.max_current_m_a
 
     @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
@@ -314,18 +313,18 @@ class IVMeasurerASA(IVMeasurerBase):
         # Check resistances depending on voltages
         resistance = settings.internal_resistance
         allowable_resistances = {
-            1: (2000, 1000, 200, 100),
-            1.5: (300, 100),
-            2: (2000, 1000, 400, 200),
+            1: (100, 200, 1000, 2000),
+            1.5: (100, 300),
+            2: (200, 400, 1000, 2000),
             2.5: (100,),
-            3: (300, 200),
-            4: (2000, 400),
+            3: (200, 300),
+            4: (400, 2000),
             4.5: (300,),
-            5: (1000, 200, 100),
+            5: (100, 200, 1000),
             6: (400,),
             6.7: (670,),
-            7.5: (300, 100),
-            10: (2000, 1000, 400, 200, 111.11)}
+            7.5: (100, 300),
+            10: (111, 200, 400, 1000, 2000)}
         r_allowable = allowable_resistances.get(voltage, tuple())
         if resistance not in r_allowable:
             msg = (f"Invalid value of internal resistance {resistance} Ohm at "
@@ -347,7 +346,7 @@ class IVMeasurerASA(IVMeasurerBase):
         self._asa_settings.probe_signal_frequency_hz = \
             c_double(int(settings.probe_signal_frequency))
         self._asa_settings.voltage_ampl_v = c_double(settings.max_voltage)
-        max_current = 1000 * settings.max_voltage / settings.internal_resistance
+        max_current = int(1000 * settings.max_voltage / settings.internal_resistance)
         self._asa_settings.max_current_m_a = c_double(max_current)
         self._asa_settings.debug_model_type = \
             c_uint32(2 * (self.model_type.lower() == "capacitor") +
@@ -367,7 +366,7 @@ class IVMeasurerASA(IVMeasurerBase):
         probe_signal_frequency = int(asa_settings.probe_signal_frequency_hz)
         max_voltage = float(asa_settings.voltage_ampl_v)
         max_current = float(asa_settings.max_current_m_a)
-        internal_resistance = 1000 * max_voltage / max_current
+        internal_resistance = int(1000 * max_voltage / max_current)
         n_points = int(asa_settings.number_points)
         n_charge_points = int(asa_settings.number_charge_points)
         flags = int(asa_settings.measure_flags)
@@ -390,7 +389,6 @@ class IVMeasurerASA(IVMeasurerBase):
             probe_signal_frequency=probe_signal_frequency,
             precharge_delay=precharge_delay)
         additional_settings = {"flags": flags,
-                               "max_current": max_current,
                                "mode": mode,
                                "model_nominal": model_nominal,
                                "model_type": model_type,
