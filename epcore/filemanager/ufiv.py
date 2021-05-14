@@ -6,6 +6,7 @@ UFIV - Universal file format for IV-curve measurements.
 import enum
 import logging
 import os
+import re
 import zipfile
 from json import load, dump
 from tempfile import TemporaryDirectory
@@ -132,17 +133,16 @@ def add_image_to_ufiv(path: str, board: Board) -> Board:
     return board
 
 
-def save_board_to_ufiv(path: str, board: Board):
+def save_board_to_ufiv(path: str, board: Board) -> str:
     """
     Function saves board (png, json) files.
     :param path: path to saved file;
     :param board: board that should be saved.
+    :return: path to saved file.
     """
 
-    if ".json" in path:
-        raise ValueError(
-            "epcore moved to the new UZF format. JSON is not supported "
-            "anymore. To save UZF file set .uzf extension.")
+    if not re.match(r"^.*\.uzf$", path):
+        path += ".uzf"
     temp_dir = TemporaryDirectory()
     archive = zipfile.ZipFile(path, "w")
     # Save json file in archive
@@ -162,3 +162,4 @@ def save_board_to_ufiv(path: str, board: Board):
             img_path = _image_path
         archive.write(img_path, arcname=img_name)
     archive.close()
+    return path
