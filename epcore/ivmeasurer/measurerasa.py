@@ -122,7 +122,15 @@ class IVMeasurerASA(IVMeasurerBase):
     @_close_on_error
     def open_device(self):
         self._set_server_host()
-        self.set_settings()
+        attempt_number = 0
+        while attempt_number < 3:
+            try:
+                self.set_settings()
+            except Exception:
+                print(attempt_number)
+                attempt_number += 1
+                continue
+            break
         while asa.GetLastOperationResult(self._lib, self._server) != 0:
             time.sleep(0.2)
 
