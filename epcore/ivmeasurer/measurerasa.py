@@ -50,6 +50,9 @@ def _parse_address(full_address: str) -> Tuple[str, str]:
 
 
 class IVMeasurerVirtualASA(IVMeasurerVirtual):
+    """
+    Class for virtual EyePoint ASA device.
+    """
 
     def __init__(self, url: str = "", name: str = "",
                  defer_open: bool = False):
@@ -126,8 +129,8 @@ class IVMeasurerASA(IVMeasurerBase):
         while attempt_number < 3:
             try:
                 self.set_settings()
+                self.get_settings()
             except Exception:
-                print(attempt_number)
                 attempt_number += 1
                 continue
             break
@@ -297,7 +300,8 @@ class IVMeasurerASA(IVMeasurerBase):
         if attribute_name in self.__dict__:
             setattr(self, attribute_name, value)
 
-    def _check_settings(self, settings: MeasurementSettings) -> bool:
+    @staticmethod
+    def _check_settings(settings: MeasurementSettings) -> bool:
         """
         Method checks settings of ASA device on correctness.
         :param settings: main settings.
