@@ -1,6 +1,7 @@
-from typing import List, Optional, Dict
 import time
 from copy import deepcopy
+from typing import List, Optional, Dict
+import numpy as np
 from ..elements import MeasurementSettings, IVCurve
 from ..ivmeasurer import IVMeasurerBase
 
@@ -57,17 +58,21 @@ class MeasurementSystem:
 
     def get_settings(self) -> MeasurementSettings:
         """
-        Check wether all measurers have the same settings.
+        Check whether all measurers have the same settings.
         If the same - return. Else throw RuntimeError.
         """
-        all_settings = [s.get_settings() for s in self.measurers]
 
+        all_settings = [s.get_settings() for s in self.measurers]
         if not all_settings:
             raise ValueError("No ivc measurers")
-
-        if not all(all_settings[0] == s for s in all_settings):
-            raise ValueError("Settings are different for measurers")
-
+        precision = 0.01
+        s0 = all_settings[0]
+        for s in all_settings:
+            if (not np.isclose(s.internal_resistance, s0.internal_resistance, atol=precision) or
+                    s.sampling_rate != s0.sampling_rate or
+                    s.probe_signal_frequency != s0.probe_signal_frequency or
+                    not np.isclose(s.max_voltage, s0.max_voltage, atol=precision)):
+                raise ValueError("Settings are different for measurers")
         return deepcopy(all_settings[0])
 
     def unfreeze(self):
