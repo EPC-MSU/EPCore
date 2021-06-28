@@ -13,7 +13,8 @@ setup(
         "scipy==1.5.4"  # for curve interpolation
     ],
     package_data={
-        "epcore.ivmeasurer": ["ivm10/ivm-debian/libivm.so",
+        "epcore.ivmeasurer": ["ivm10/ivm-arm64/libivm.so",
+                              "ivm10/ivm-debian/libivm.so",
                               "ivm10/ivm-win32/ivm.dll",
                               "ivm10/ivm-win64/ivm.dll",
                               "asa10/debian/libasa.so",
@@ -23,7 +24,8 @@ setup(
                               "asa10/win32/libxmlrpc_util.dll",
                               "asa10/win32/libxmlrpc_xmlparse.dll",
                               "asa10/win32/libxmlrpc_xmltok.dll"],
-        "epcore.measurementmanager": ["ivcmp-debian/libivcmp.so",
+        "epcore.measurementmanager": ["ivcmp-arm64/libivcmp.so",
+                                      "ivcmp-debian/libivcmp.so",
                                       "ivcmp-win32/ivcmp.dll",
                                       "ivcmp-win64/ivcmp.dll"],
         "epcore.doc": ["p10_elements.schema.json",
