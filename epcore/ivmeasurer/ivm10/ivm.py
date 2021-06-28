@@ -92,7 +92,7 @@ def _get_dll():
         if uname()[4] == "aarch64":
             lib = CDLL(_fullpath_lib("ivm-arm64/libivm.so"))
         else:
-            lib = CDLL(_fullpath_lib("ivcmp-debian/libivm.so"))
+            lib = CDLL(_fullpath_lib("ivm-debian/libivm.so"))
     else:
         raise NotImplementedError("Unsupported platform {}".format(os_kind))
     return lib
