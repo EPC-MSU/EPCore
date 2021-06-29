@@ -11,15 +11,21 @@ def _fullpath_lib(name: str) -> str:
 
 
 def _get_dll():
-    if system() == "Linux":
-        return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
-    elif system() == "Windows":
+    lib = None
+    os_kind = system().lower()
+    if os_kind == "windows":
         if 8 * struct.calcsize("P") == 32:
-            return CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
+            lib = CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
         else:
-            return CDLL(_fullpath_lib("ivcmp-win64/ivcmp.dll"))
+            lib = CDLL(_fullpath_lib("ivcmp-win64/ivcmp.dll"))
+    elif os_kind == "freebsd" or "linux" in os_kind:
+        if uname()[4] == "aarch64":
+            lib = CDLL(_fullpath_lib("ivcmp-arm64/libivcmp.so"))
+        else:
+            lib = CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
     else:
-        raise NotImplementedError("Unsupported platform {0}".format(system()))
+        raise NotImplementedError("Unsupported platform {}".format(os_kind))
+    return lib
 
 
 def _to_c_array(arr: List[float]) -> Array:
