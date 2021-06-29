@@ -1,5 +1,5 @@
 from ctypes import CDLL, c_double, c_size_t, POINTER, Array
-from platform import system
+from platform import system, uname
 from typing import List
 import struct
 from ..elements import IVCurve
