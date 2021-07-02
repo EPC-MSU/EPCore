@@ -146,7 +146,7 @@ class Searcher:
         # state
         initial_settings = self._measurer.get_settings()
         # Search optimal settings
-        i_new_frequency = 3
+        i_new_frequency = 4
         i_new_resistance = 1
         i_new_voltage = 3
         for _ in range(1, self._ITERATIONS):
