@@ -2,6 +2,12 @@
   "options": {
     "frequency": [
       {
+        "name": "1hz",
+        "value": [1, 100],
+        "label_ru": "1 Гц",
+        "label_en": "1 Hz"
+      },
+      {
         "name": "10hz",
         "value": [10, 1000],
         "label_ru": "10 Гц",
