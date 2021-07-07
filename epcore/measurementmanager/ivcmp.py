@@ -1,8 +1,9 @@
-from ctypes import CDLL, Structure, Array, c_ubyte, \
-    c_double, c_size_t, POINTER
-from platform import system
-import numpy as np
+from ctypes import CDLL, Structure, Array, c_ubyte,  c_double, c_size_t, POINTER
+from platform import system, uname
 import struct
+import numpy as np
+
+
 VOLTAGE_AMPL = 12.
 R_CS = 475.
 CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
@@ -14,15 +15,21 @@ def _fullpath_lib(name: str) -> str:
 
 
 def _get_dll():
-    if system() == "Linux":
-        return CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
-    elif system() == "Windows":
+    lib = None
+    os_kind = system().lower()
+    if os_kind == "windows":
         if 8 * struct.calcsize("P") == 32:
-            return CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
+            lib = CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
         else:
-            return CDLL(_fullpath_lib("ivcmp-win64/ivcmp.dll"))
+            lib = CDLL(_fullpath_lib("ivcmp-win64/ivcmp.dll"))
+    elif os_kind == "freebsd" or "linux" in os_kind:
+        if uname()[4] == "aarch64":
+            lib = CDLL(_fullpath_lib("ivcmp-arm64/libivcmp.so"))
+        else:
+            lib = CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
     else:
-        raise NotImplementedError("Unsupported platform {0}".format(system()))
+        raise NotImplementedError("Unsupported platform {}".format(os_kind))
+    return lib
 
 
 lib = _get_dll()
@@ -39,7 +46,7 @@ def _normalize_arg(value, desired_ctype):
 
     if isinstance(value, desired_ctype):
         return value
-    elif issubclass(desired_ctype, Array) and isinstance(value, Sequence):
+    if issubclass(desired_ctype, Array) and isinstance(value, Sequence):
         member_type = desired_ctype._type_
 
         if desired_ctype._length_ < len(value):
@@ -47,12 +54,10 @@ def _normalize_arg(value, desired_ctype):
 
         if issubclass(member_type, c_ubyte) and isinstance(value, bytes):
             return desired_ctype.from_buffer_copy(value)
-        elif issubclass(member_type, c_ubyte) and isinstance(value, bytearray):
+        if issubclass(member_type, c_ubyte) and isinstance(value, bytearray):
             return value
-        else:
-            return desired_ctype(*value)
-    else:
-        return value
+        return desired_ctype(*value)
+    return value
 
 
 class IvCurve(_IterableStructure):

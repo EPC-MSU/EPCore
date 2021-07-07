@@ -2,13 +2,14 @@ import unittest
 
 from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.elements import MeasurementSettings
-from epcore.measurementmanager import search_optimal_settings
+from epcore.measurementmanager import Searcher
+from epcore.product import EPLab
 
 
 class TestPlan(unittest.TestCase):
+
     def test_optimal_settings_search_settings_returned(self):
         measurer = IVMeasurerVirtual()
-
         test_settings = MeasurementSettings(
             sampling_rate=10000,
             probe_signal_frequency=100,
@@ -16,9 +17,8 @@ class TestPlan(unittest.TestCase):
             max_voltage=5.0
         )
         measurer.set_settings(test_settings)
-
-        search_optimal_settings(measurer)
-
+        searcher = Searcher(measurer, EPLab().mparams)
+        searcher.search_optimal_settings()
         settings_after_search = measurer.get_settings()
 
         # The measurer should have initial settings after search
@@ -26,7 +26,6 @@ class TestPlan(unittest.TestCase):
 
     def test_optimal_settings_set_new_settings(self):
         measurer = IVMeasurerVirtual()
-
         test_settings = MeasurementSettings(
             sampling_rate=100000,
             probe_signal_frequency=1000,
@@ -34,11 +33,9 @@ class TestPlan(unittest.TestCase):
             max_voltage=12.0
         )
         measurer.set_settings(test_settings)
-
-        optimal_settings = search_optimal_settings(measurer)
-
+        searcher = Searcher(measurer, EPLab().mparams)
+        optimal_settings = searcher.search_optimal_settings()
         measurer.set_settings(optimal_settings)
-
         settings_after_search = measurer.get_settings()
 
         # The measurer should have new settings set
@@ -48,12 +45,14 @@ class TestPlan(unittest.TestCase):
         measurer = IVMeasurerVirtual()
         measurer.model = "resistor"
         measurer.nominal = 1000
-        optimal_settings = search_optimal_settings(measurer)
+        measurer.noise_factor = 0
+        searcher = Searcher(measurer, EPLab().mparams)
+        optimal_settings = searcher.search_optimal_settings()
         good_settings = MeasurementSettings(
-            sampling_rate=1000,
+            sampling_rate=100000,
             internal_resistance=475.0,
             max_voltage=3.3,
-            probe_signal_frequency=10
+            probe_signal_frequency=1000
         )
 
         # The measurer should have chosen good settings
@@ -66,7 +65,9 @@ class TestPlan(unittest.TestCase):
         measurer = IVMeasurerVirtual()
         measurer.model = "capacitor"
         measurer.nominal = 0.00001
-        optimal_settings = search_optimal_settings(measurer)
+        measurer.noise_factor = 0
+        searcher = Searcher(measurer, EPLab().mparams)
+        optimal_settings = searcher.search_optimal_settings()
         good_settings = MeasurementSettings(
             sampling_rate=1000,
             internal_resistance=475.0,

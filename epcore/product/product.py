@@ -134,7 +134,7 @@ class EPLab(ProductBase):
 
     @classmethod
     def _default_json(cls) -> Dict:
-        with open(join(dirname(__file__), "eplab_default_options.json"), "r") as file:
+        with open(join(dirname(__file__), "eplab_default_options.json"), "r", encoding="utf-8") as file:
             return json.load(file)
 
     @classmethod
