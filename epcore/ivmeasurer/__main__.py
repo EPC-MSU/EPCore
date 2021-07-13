@@ -2,21 +2,22 @@ import logging
 import argparse
 from .virtual import IVMeasurerVirtual
 from .measurerivm import IVMeasurerIVM10
+from .measurerivm02 import IVMeasurerIVM02
 from .utils import plot_curve
 
 if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)-8s %(message)s")
 
-    logging.debug("IVMeasurere example")
+    logging.debug("IVMeasurer example")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", action="store", dest="port",
-                        help="Real IVM measurer COM port. Fotmat: com:\\\\.\\COMx or /dev/ttyACM0")
+                        help="Real IVM measurer COM port. Format: com:\\\\.\\COMx or /dev/ttyACM0")
     args = parser.parse_args()
 
     if args.port is not None:
-        m = IVMeasurerIVM10(args.port)
+        m = IVMeasurerIVM02(args.port, config="config.ini")
     else:
         m = IVMeasurerVirtual()
 
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     m.set_settings(s)
     logging.debug("Settings: " + str(s))
 
-    if isinstance(m, IVMeasurerIVM10):
+    if isinstance(m, IVMeasurerIVM02):
         logging.debug("Get IV curve from device")
         ivc = m.measure_iv_curve()
         plot_curve(ivc)
