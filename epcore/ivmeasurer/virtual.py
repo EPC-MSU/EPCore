@@ -51,7 +51,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
             self.open_device()
 
         logging.debug("IVMeasurerVirtual created")
-        super(IVMeasurerVirtual, self).__init__(url, name, defer_open)
+        super(IVMeasurerVirtual, self).__init__(url, name)
 
     def reconnect(self) -> bool:
         time.sleep(1)

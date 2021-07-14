@@ -9,7 +9,7 @@ setup(
         "dataclasses==0.8",  # for elements module
         "Pillow==8.0.1",  # for Board image class
         "jsonschema==3.2.0",  # for converter (utils) and format validation (different tests)
-        "numpy==1.14.5",  # for test_iv_curve
+        "numpy==1.18.1",  # for test_iv_curve
         "scipy==1.5.4"  # for curve interpolation
     ],
     package_data={

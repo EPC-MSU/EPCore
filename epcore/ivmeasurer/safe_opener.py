@@ -1,3 +1,10 @@
+"""
+This module provides functionality for firmware and library compatibility check for URPC devices.
+
+This is a part of xigen2_utils
+Don’t modify this outside xigen2_utils repository!!!
+"""
+
 import os
 import configparser
 from distutils.version import StrictVersion
@@ -72,7 +79,14 @@ class _OpenManager:
         if self._force and not critical:
             self._log(1, "Error occurred, but device will be opened because force_open flag is set to True", 0)
         else:
-            self._device.close()
+            if "close_device" in dir(self._device):
+                # Current naming
+                self._device.close_device()
+            elif "open" in dir(self._device):
+                # Legacy naming
+                self._device.close()
+            else:
+                raise RuntimeError("The device class doesn't have close_device() method")
             raise err
 
     def get_from_config(self, section: str, parameter: str):
@@ -94,7 +108,14 @@ class _OpenManager:
 
     def open_device(self):
         try:
-            self._device.open()
+            if "open_device" in dir(self._device):
+                # Current naming
+                self._device.open_device()
+            elif "open" in dir(self._device):
+                # Legacy naming
+                self._device.open()
+            else:
+                raise RuntimeError("The device class doesn't have open_device() method")
         except RuntimeError:
             self.error(OpenDeviceError(), critical=True)
 
