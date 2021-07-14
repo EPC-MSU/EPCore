@@ -28,7 +28,7 @@ class IVMeasurerBase(ABC):
     Base class, which implements standard interface for
     all IVMeasurers
     """
-    def __init__(self, url: str = "", name: str = "", defer_open=False):
+    def __init__(self, url: str = "", name: str = ""):
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows)
@@ -36,7 +36,7 @@ class IVMeasurerBase(ABC):
         :param name: friendly name (for measurement system)
         :param defer_open: don't open serial port during initialization
         """
-        self.url = url
+        self._url = url
         self._name = name
         self._cashed_curve = None
         self._freeze = False

@@ -44,8 +44,8 @@ class IVMeasurerIVM02(IVMeasurerBase):
         :param name: friendly name (for measurement system)
         :param defer_open: don't open serial port during initialization
         """
+        super(IVMeasurerIVM02, self).__init__(url, name)
         self._config = config
-        self._url = url
         self._device = Ivm02Handle(url, defer_open=True)
         self._FRAME_SIZE = 25
         self._SMOOTHING_KERNEL_SIZE = 5
@@ -60,7 +60,6 @@ class IVMeasurerIVM02(IVMeasurerBase):
         open_device_safe(self._url, Ivm02Handle, self._config, _logging_ivm02)
         if not defer_open:
             self.open_device()
-        super(IVMeasurerIVM02, self).__init__(url, name)
 
     @_close_on_error
     def open_device(self):
@@ -238,8 +237,8 @@ class IVMeasurerIVM10(IVMeasurerBase):
         :param name: friendly name (for measurement system)
         :param defer_open: don't open serial port during initialization
         """
+        super(IVMeasurerIVM10, self).__init__(url, name)
         self._config = config
-        self._url = url
         self._device = Ivm10Handle(url, defer_open=True)
         self._FRAME_SIZE = 25
         self._SMOOTHING_KERNEL_SIZE = 5
@@ -254,7 +253,6 @@ class IVMeasurerIVM10(IVMeasurerBase):
         open_device_safe(self._url, Ivm10Handle, self._config, _logging_ivm10)
         if not defer_open:
             self.open_device()
-        super(IVMeasurerIVM10, self).__init__(url, name)
 
     @_close_on_error
     def open_device(self):

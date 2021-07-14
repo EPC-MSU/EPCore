@@ -27,8 +27,7 @@ pydoc -w epcore.ivmeasurer
 from .base import IVMeasurerBase, IVMeasurerIdentityInformation
 from .virtual import IVMeasurerVirtual
 from .virtualbad import IVMeasurerVirtualBad
-from .measurerivm02 import IVMeasurerIVM02
-from .measurerivm import IVMeasurerIVM10
+from .measurerivm import IVMeasurerIVM02, IVMeasurerIVM10
 
 __all__ = ["IVMeasurerBase",
            "IVMeasurerVirtual",
