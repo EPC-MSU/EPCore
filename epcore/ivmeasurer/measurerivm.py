@@ -3,7 +3,8 @@ IVMeasurer Implementation for EyePoint IVM hardware measurer.
 """
 from . import IVMeasurerIdentityInformation
 from .base import IVMeasurerBase, cache_curve
-from epcore.ivmeasurer.ivm10.ivm import IvmDeviceHandle, _logging_callback
+from epcore.ivmeasurer.ivm02.ivm import IvmDeviceHandle as Ivm02Handle, _logging_callback as _logging_ivm02
+from epcore.ivmeasurer.ivm10.ivm import IvmDeviceHandle as Ivm10Handle, _logging_callback as _logging_ivm10
 from .processing import smooth_curve, interpolate_curve
 from ..elements import IVCurve, MeasurementSettings
 import numpy as np
@@ -27,6 +28,200 @@ def _close_on_error(func: Callable):
     return handle
 
 
+class IVMeasurerIVM02(IVMeasurerBase):
+    """
+    Class for controlling EyePoint IVM devices with
+    API version 0.2.
+    All instances should be initialized with device URL.
+    Format for Windows: com:\\\\.\\COMx
+    Format for Linux: /dev/ttyACMx
+    """
+    def __init__(self, url: str = "", name: str = "", config="", defer_open=False):
+        """
+        :param url: url for device identification in computer system.
+        For serial devices url will be "com:\\\\.\\COMx" (for Windows)
+        or "com:///dev/tty/ttyACMx"
+        :param name: friendly name (for measurement system)
+        :param defer_open: don't open serial port during initialization
+        """
+        self._config = config
+        self._url = url
+        self._device = Ivm02Handle(url, defer_open=True)
+        self._FRAME_SIZE = 25
+        self._SMOOTHING_KERNEL_SIZE = 5
+        self._NORMAL_NUM_POINTS = 100
+        self._default_settings = MeasurementSettings(
+            sampling_rate=10000,
+            internal_resistance=475,
+            max_voltage=5,
+            probe_signal_frequency=100,
+            precharge_delay=0
+        )
+        open_device_safe(self._url, Ivm02Handle, self._config, _logging_ivm02)
+        if not defer_open:
+            self.open_device()
+        super(IVMeasurerIVM02, self).__init__(url, name)
+
+    @_close_on_error
+    def open_device(self):
+        self._device.open_device()
+        self.set_settings(self._default_settings)
+
+    def close_device(self):
+        try:
+            self._device.close_device()
+        except (RuntimeError, OSError):
+            pass
+
+    def reconnect(self) -> bool:
+        self.close_device()
+        try:
+            self.open_device()
+            return True
+        except (RuntimeError, OSError):
+            return False
+
+    @_close_on_error
+    def set_settings(self, settings: MeasurementSettings):
+        device_settings = self._device.get_measure_settings()
+
+        if ((int(settings.sampling_rate) < 100) or
+           (int(settings.sampling_rate) > 2000000)):
+            raise ValueError("Invalid value for sampling rate: {}. Should be in [100, 2000000]".format(
+                    settings.sampling_rate
+                ))
+        device_settings.desc_frequency = settings.sampling_rate
+        device_settings.max_voltage = settings.max_voltage
+        device_settings.probe_signal_frequency = settings.probe_signal_frequency
+
+        if ((int(device_settings.probe_signal_frequency) < 1) or
+           (int(device_settings.probe_signal_frequency) > 100000) or
+           (int(device_settings.probe_signal_frequency) > device_settings.desc_frequency / 5)):
+            raise ValueError("Invalid value for probe signal frequency: {}. Should be in [1, 100000]\
+                             and also should be much less than sampling rate.".format(
+                    device_settings.probe_signal_frequency
+                ))
+
+        # Choose one of available current sense resistors.
+        if int(settings.internal_resistance) == 475:
+            device_settings.measure_flags = device_settings.MeasureFlags.CURRENT_SENSE_MODE_25MA
+        elif int(settings.internal_resistance) == 4750:
+            device_settings.measure_flags = device_settings.MeasureFlags.CURRENT_SENSE_MODE_2M5A
+        elif int(settings.internal_resistance) == 47500:
+            device_settings.measure_flags = device_settings.MeasureFlags.CURRENT_SENSE_MODE_250UA
+        else:
+            msg = "EyePoint IVM measurer has only three internal resistances: \
+                   475 Ohm, 4750 Ohm and 47500 Ohm. Got internal resistance {} Ohm.".format(
+                       settings.internal_resistance
+                  )
+            raise ValueError(msg)
+
+        # We want only single sine period
+        device_settings.number_points = int(settings.sampling_rate // settings.probe_signal_frequency)
+        if settings.precharge_delay is not None:
+            device_settings.number_charge_points = settings.precharge_delay * settings.sampling_rate
+        else:
+            device_settings.number_charge_points = 0
+        self._device.set_measure_settings(device_settings)
+
+    @_close_on_error
+    def get_settings(self) -> MeasurementSettings:
+        device_settings = self._device.get_measure_settings()
+
+        if device_settings.measure_flags == device_settings.MeasureFlags.CURRENT_SENSE_MODE_25MA:
+            internal_resistance = 475.
+        elif device_settings.measure_flags == device_settings.MeasureFlags.CURRENT_SENSE_MODE_2M5A:
+            internal_resistance = 4750.
+        elif device_settings.measure_flags == device_settings.MeasureFlags.CURRENT_SENSE_MODE_250UA:
+            internal_resistance = 47500.
+        else:
+            raise ValueError("Got unexpected current_sensor_mode from IVM Device: {}".format(
+                device_settings.current_sensor_mode
+            ))
+
+        precharge_delay = device_settings.number_charge_points / device_settings.desc_frequency
+        if int(precharge_delay) == 0:
+            precharge_delay = None
+
+        return MeasurementSettings(sampling_rate=device_settings.desc_frequency,
+                                   internal_resistance=internal_resistance,
+                                   max_voltage=device_settings.max_voltage,
+                                   probe_signal_frequency=device_settings.probe_signal_frequency,
+                                   precharge_delay=precharge_delay)
+
+    @_close_on_error
+    def get_identity_information(self) -> IVMeasurerIdentityInformation:
+        inf = self._device.get_identity_information()
+        return IVMeasurerIdentityInformation(manufacturer=bytes(inf.manufacturer).decode("utf-8").replace("\x00", ""),
+                                             device_name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
+                                             device_class=bytes(inf.product_name).decode("utf-8").replace("\x00", ""),
+                                             hardware_version=(inf.hardware_major, inf.hardware_minor,
+                                                               inf.hardware_bugfix),
+                                             firmware_version=(inf.firmware_major, inf.firmware_minor,
+                                                               inf.firmware_bugfix),
+                                             name=bytes(inf.controller_name).decode("utf-8").replace("\x00", ""),
+                                             rank=0)
+
+    @_close_on_error
+    def trigger_measurement(self):
+        if not self.is_freezed():
+            self._device.start_measurement()
+
+    @_close_on_error
+    def measurement_is_ready(self) -> bool:
+        if self.is_freezed():
+            return False
+
+        return bool(self._device.measurement_ready())
+
+    @_close_on_error
+    def calibrate(self, *args):
+        """
+        Calibrate IVC
+        :param args:
+        :return:
+        """
+        # TODO: calibration settings?
+        self._device.calibrate()
+
+    @cache_curve
+    @_close_on_error
+    def get_last_iv_curve(self, raw=False) -> IVCurve:
+        """
+        Return measured data from device.
+        If raw is True postprocessing (averaging) is not applied
+        """
+        device_settings = self._device.get_measure_settings()
+        voltages = []
+        currents = []
+        for frame_number in range((device_settings.number_points - 1) // self._FRAME_SIZE + 1):
+            frame = self._device.get_measurement(frame_number)
+            currents.extend(list(frame.current))
+            voltages.extend(list(frame.voltage))
+
+        # Device return currents in mA
+        currents = (np.array(currents[:device_settings.number_points]) / 1000).tolist()
+        voltages = voltages[:device_settings.number_points]
+
+        curve = IVCurve(
+            currents=currents,
+            voltages=voltages
+        )
+
+        if raw is True:
+            return curve
+
+        # Postprocessing
+        if device_settings.probe_signal_frequency > 20000:
+            curve = interpolate_curve(curve=curve,
+                                      final_num_points=self._NORMAL_NUM_POINTS)
+
+        curve = smooth_curve(curve=curve,
+                             kernel_size=self._SMOOTHING_KERNEL_SIZE)
+
+        return curve
+
+
 class IVMeasurerIVM10(IVMeasurerBase):
     """
     Class for controlling EyePoint IVM devices with
@@ -45,7 +240,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         """
         self._config = config
         self._url = url
-        self._device = IvmDeviceHandle(url, defer_open=True)
+        self._device = Ivm10Handle(url, defer_open=True)
         self._FRAME_SIZE = 25
         self._SMOOTHING_KERNEL_SIZE = 5
         self._NORMAL_NUM_POINTS = 100
@@ -56,19 +251,19 @@ class IVMeasurerIVM10(IVMeasurerBase):
             probe_signal_frequency=100,
             precharge_delay=0
         )
-        open_device_safe(self._url, IvmDeviceHandle, self._config, _logging_callback)
+        open_device_safe(self._url, Ivm10Handle, self._config, _logging_ivm10)
         if not defer_open:
             self.open_device()
         super(IVMeasurerIVM10, self).__init__(url, name)
 
     @_close_on_error
     def open_device(self):
-        self._device.open()
+        self._device.open_device()
         self.set_settings(self._default_settings)
 
     def close_device(self):
         try:
-            self._device.close()
+            self._device.close_device()
         except (RuntimeError, OSError):
             pass
 

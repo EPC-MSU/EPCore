@@ -2,8 +2,7 @@ import logging
 import argparse
 from .safe_opener import BadFirmwareVersion, BadConfig
 from .virtual import IVMeasurerVirtual
-from .measurerivm import IVMeasurerIVM10
-from .measurerivm02 import IVMeasurerIVM02
+from .measurerivm import IVMeasurerIVM02, IVMeasurerIVM10
 from .utils import plot_curve
 
 if __name__ == "__main__":
@@ -42,7 +41,7 @@ if __name__ == "__main__":
     m.set_settings(s)
     logging.debug("Settings: " + str(s))
 
-    if isinstance(m, IVMeasurerIVM02):
+    if isinstance(m, (IVMeasurerIVM02, IVMeasurerIVM10)):
         logging.debug("Get IV curve from device")
         ivc = m.measure_iv_curve()
         plot_curve(ivc)
