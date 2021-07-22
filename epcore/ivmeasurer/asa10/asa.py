@@ -1,53 +1,26 @@
-"""
-File with library for working with Meridian device functions.
-"""
-
-import os
-import struct
-from ctypes import (Array, byref, c_char_p,  c_double, c_int8, c_size_t,
-                    c_ubyte, c_uint32, c_uint8, CDLL, POINTER, Structure)
+from ctypes import (c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8,
+                    Array, byref, CDLL, POINTER, Structure)
+from os.path import abspath, dirname, join
 from platform import system
 
 
-def _determine_bitness() -> str:
-    """
-    Function returns bitness of OS.
-    :return: bitness.
-    """
-
-    if 8 * struct.calcsize("P") == 32:
-        return "32"
-    return "64"
-
-
-def _get_path(dir_name: str, file_name: str) -> str:
-    """
-    Function returns path to file.
-    :param dir_name: name of directory in which file is located;
-    :param file_name: name of file.
-    :return: path.
-    """
-
-    base_dir_name = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base_dir_name, dir_name, file_name)
+def _fullpath_lib(name: str) -> str:
+    return join(dirname(abspath(__file__)), name)
 
 
 def get_dll():
     if system() == "Linux":
-        return CDLL(_get_path("debian", "libasa.so"))
+        return CDLL(_fullpath_lib("libasa-debian/libasa.so"))
     elif system() == "Windows":
-        bitness = _determine_bitness()
-        if bitness == "32":
-            return CDLL(_get_path("win32", "asa.dll"))
-        raise NotImplementedError(f"Unsupported platform {system()} (64 bit)")
+        return CDLL(_fullpath_lib("libasa-win32/asa.dll"))
     else:
-        raise NotImplementedError(f"Unsupported platform {system()}")
+        raise NotImplementedError("Unsupported platform {0}".format(system()))
 
 
 # lib = _get_dll()
 MAX_NUM_POINTS = 1000
 NUM_COMBINATION = 380
-_host = "172.16.3.213"
+_host = "172.16.128.137"
 _port = "8888"
 HOST = c_char_p(_host.encode("utf-8"))
 PORT = c_char_p(_port.encode("utf-8"))
@@ -80,6 +53,7 @@ def _normalize_arg(value, desired_ctype):
 
 
 class Version(_IterableStructure):
+
     _fields_ = (
         ("major", c_uint8),
         ("minor", c_uint8),
@@ -88,6 +62,7 @@ class Version(_IterableStructure):
 
 
 class Server(_IterableStructure):
+
     _fields_ = (
           ("host", c_char_p),
           ("port", c_char_p)
@@ -236,7 +211,8 @@ def SetMinVC(lib, min_var_v, min_var_c):
 
 def CompareIvc(lib, first_iv_curve, second_iv_curve):
     lib_func = lib.CompareIVC
-    lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
+    lib_func.argtype = (POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double),
+                        POINTER(c_double), c_size_t)
     lib_func.restype = c_double
     res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, len(first_iv_curve.voltages),
                    second_iv_curve.voltages, second_iv_curve.currents, len(second_iv_curve.voltages))
@@ -299,13 +275,6 @@ if __name__ == "__main__":
 
     lib = get_dll()
     server = Server(HOST, PORT)
-    coef = AsaCoefficients()
-    dir_name = os.path.dirname(os.path.abspath(__file__))
-    file_name = os.path.join(dir_name, "coefficients.txt")
-    LoadCoefficients(lib, c_char_p(file_name.encode("utf-8")), coef)
-    SetCoefficients(lib, server, coef)
-    wait_finish()
-
     settings_from_device = AsaSettings()
     GetSettings(lib, server, settings_from_device)
     wait_finish()

@@ -9,7 +9,7 @@ from ctypes import c_char_p, c_double, c_uint32
 from typing import Any, Callable, Dict, Tuple
 import numpy as np
 from . import IVMeasurerIdentityInformation
-from .asa10 import libasa as asa
+from .asa10 import asa
 from .base import IVMeasurerBase, cache_curve
 from .processing import smooth_curve, interpolate_curve
 from .virtual import IVMeasurerVirtual
