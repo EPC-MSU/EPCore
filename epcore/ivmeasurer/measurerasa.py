@@ -157,7 +157,7 @@ class IVMeasurerASA(IVMeasurerBase):
             self.model_nominal = additional_settings["model_nominal"]
             self.model_type = additional_settings["model_type"]
             self.n_charge_points = additional_settings["n_charge_points"]
-            self.n_points = additional_settings["n_points"]
+            # self.n_points = additional_settings["n_points"]
         return settings
 
     @_close_on_error
@@ -358,7 +358,7 @@ class IVMeasurerASA(IVMeasurerBase):
         self._asa_settings.probe_signal_frequency_hz = \
             c_double(int(settings.probe_signal_frequency))
         self._asa_settings.voltage_ampl_v = c_double(settings.max_voltage)
-        max_current = int(1000 * settings.max_voltage / settings.internal_resistance)
+        max_current = round(1000 * settings.max_voltage / settings.internal_resistance, 1)
         self._asa_settings.max_current_m_a = c_double(max_current)
         self._asa_settings.debug_model_type = \
             c_uint32(2 * (self.model_type.lower() == "capacitor") +
@@ -394,12 +394,11 @@ class IVMeasurerASA(IVMeasurerBase):
         precharge_delay = n_charge_points / sampling_rate
         if int(precharge_delay) == 0:
             precharge_delay = None
-        settings = MeasurementSettings(
-            sampling_rate=sampling_rate,
-            internal_resistance=internal_resistance,
-            max_voltage=max_voltage,
-            probe_signal_frequency=probe_signal_frequency,
-            precharge_delay=precharge_delay)
+        settings = MeasurementSettings(sampling_rate=sampling_rate,
+                                       internal_resistance=internal_resistance,
+                                       max_voltage=max_voltage,
+                                       probe_signal_frequency=probe_signal_frequency,
+                                       precharge_delay=precharge_delay)
         additional_settings = {"flags": flags,
                                "mode": mode,
                                "model_nominal": model_nominal,
