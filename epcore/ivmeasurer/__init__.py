@@ -28,7 +28,7 @@ from .base import IVMeasurerBase, IVMeasurerIdentityInformation
 from .measurerasa import IVMeasurerASA, IVMeasurerVirtualASA
 from .measurerivm import IVMeasurerIVM10
 from .virtual import IVMeasurerVirtual
-from .virrtualbad import IVMeasurerVirtualBad
+from .virtualbad import IVMeasurerVirtualBad
 
 __all__ = ["IVMeasurerASA",
            "IVMeasurerBase",

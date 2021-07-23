@@ -7,6 +7,7 @@ import numpy as np
 from epcore.ivmeasurer.ivm10.ivm import IvmDeviceHandle, _logging_callback
 from . import IVMeasurerIdentityInformation
 from .base import IVMeasurerBase, cache_curve
+from epcore.ivmeasurer.ivm02.ivm import IvmDeviceHandle as Ivm02Handle, _logging_callback as _logging_ivm02
 from epcore.ivmeasurer.ivm10.ivm import IvmDeviceHandle as Ivm10Handle, _logging_callback as _logging_ivm10
 from .processing import smooth_curve, interpolate_curve
 from .safe_opener import open_device_safe
@@ -240,7 +241,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         :param config:
         :param defer_open: don't open serial port during initialization.
         """
-        super(IVMeasurerIVM10, self).__init__(url, name)
+
         self._config = config
         self._device = Ivm10Handle(url, defer_open=True)
         self._FRAME_SIZE = 25
