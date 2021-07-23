@@ -11,7 +11,6 @@ class MeasurementSystem:
     Provide mass operations with a number of IVMeasurers.
     If you have only single IVMeasurer, it is recommended to use
     this class for compatibility.
-
     """
     measurers: List[IVMeasurerBase]
     measurers_map: Dict[str, IVMeasurerBase]
@@ -27,6 +26,7 @@ class MeasurementSystem:
         """
         Trigger measurements on all devices
         """
+
         for m in self.measurers:
             m.trigger_measurement()
 
@@ -35,24 +35,24 @@ class MeasurementSystem:
         Return True if all measurers
         have done their Job
         """
+
         return all([m.measurement_is_ready() for m in self.measurers if not m.is_freezed()])
 
     def measure_iv_curves(self) -> List[IVCurve]:
         """
-        Make measurements and
-        get new curves from all devices.
+        Make measurements and get new curves from all devices.
         """
-        self.trigger_measurements()
 
+        self.trigger_measurements()
         while not self.measurements_are_ready():
             time.sleep(0.05)
-
         return [m.get_last_iv_curve() for m in self.measurers]
 
     def set_settings(self, settings: MeasurementSettings):
         """
         Assign same settings for all measurers.
         """
+
         for measurer in self.measurers:
             measurer.set_settings(settings)
 
@@ -78,7 +78,6 @@ class MeasurementSystem:
     def unfreeze(self):
         """
         Unfreeze all measurers
-        :return:
         """
         for m in self.measurers:
             m.unfreeze()
