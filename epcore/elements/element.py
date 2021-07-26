@@ -3,6 +3,7 @@ from typing import List, Optional, Dict, Tuple
 from .abstract import JsonConvertible
 from .pin import Pin
 
+import numpy as np
 
 @dataclass
 class Element(JsonConvertible):
@@ -15,11 +16,21 @@ class Element(JsonConvertible):
     pins: List[Pin]
     name: Optional[str] = None
     package: Optional[str] = None
-    center: Optional[Tuple[float, float]] = None
+    # center: Optional[Tuple[float, float]] = None
     bounding_zone: Optional[List[Tuple[float, float]]] = None
     rotation: Optional[float] = None
     width: Optional[float] = None
     height: Optional[float] = None
+
+    @property
+    def center(self):
+        if len(self.pins) > 0:
+            arr_xy = [(p.x, p.y) for p in self.pins]
+            return np.mean(np.array(arr_xy), axis=0)
+        elif len(self.bounding_zone) > 0:
+            return np.mean(np.array(self.bounding_zone), axis=0)
+        else:
+            return None
 
     def to_json(self) -> Dict:
         """
