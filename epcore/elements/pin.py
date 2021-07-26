@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from .measurement import Measurement
 from .abstract import JsonConvertible
@@ -9,10 +9,9 @@ class Pin(JsonConvertible):
     """
     Class for a pin of electric component.
     """
-
     x: float
     y: float
-    measurements: List[Measurement]
+    measurements: Optional[List[Measurement]] = field(default_factory=list)
     comment: Optional[str] = None
 
     def get_main_measurement(self) -> Optional[Measurement]:
