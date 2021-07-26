@@ -40,7 +40,7 @@ class IVMeasurerBase(ABC):
         :param name: friendly name (for measurement system).
         """
 
-        self.url = url
+        self._url = url
         self._name = name
         self._cashed_curve = None
         self._freeze = False

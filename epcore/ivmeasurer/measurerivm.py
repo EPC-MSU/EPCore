@@ -222,6 +222,24 @@ class IVMeasurerIVM02(IVMeasurerBase):
 
         return curve
 
+    def get_current_value_of_parameter(self, attribute_name: str) -> Any:
+        """
+        Method returns current value of measurer parameter with given name.
+        :return: current value of parameter.
+        """
+
+        return getattr(self, attribute_name, None)
+
+    def set_value_to_parameter(self, attribute_name: str, value: Any):
+        """
+        Method sets value to attribute of measurer with given name.
+        :param attribute_name: name of attribute;
+        :param value: value for attribute.
+        """
+
+        if attribute_name in self.__dict__:
+            setattr(self, attribute_name, value)
+
 
 class IVMeasurerIVM10(IVMeasurerBase):
     """
@@ -233,16 +251,15 @@ class IVMeasurerIVM10(IVMeasurerBase):
     def __init__(self, url: str = "", name: str = "", config="",
                  defer_open: bool = False):
         """
-        :param url: url for device identification in computer system. For
-        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
-        "com:///dev/tty/ttyACMx" (for Linux);
-        :param name: friendly name (for measurement system);
-        :param config:
-        :param defer_open: don't open serial port during initialization.
+        :param url: url for device identification in computer system.
+        For serial devices url will be "com:\\\\.\\COMx" (for Windows)
+        or "com:///dev/tty/ttyACMx"
+        :param name: friendly name (for measurement system)
+        :param defer_open: don't open serial port during initialization
         """
-
+        super(IVMeasurerIVM10, self).__init__(url, name)
         self._config = config
-        self._device = Ivm10Handle(url, defer_open=True)
+        self._device = Ivm02Handle(url, defer_open=True)
         self._FRAME_SIZE = 25
         self._SMOOTHING_KERNEL_SIZE = 5
         self._NORMAL_NUM_POINTS = 100
@@ -251,11 +268,11 @@ class IVMeasurerIVM10(IVMeasurerBase):
             internal_resistance=475,
             max_voltage=5,
             probe_signal_frequency=100,
-            precharge_delay=0)
+            precharge_delay=0
+        )
         open_device_safe(self._url, Ivm10Handle, self._config, _logging_ivm10)
         if not defer_open:
             self.open_device()
-        super().__init__(url, name)
 
     @_close_on_error
     def open_device(self):
