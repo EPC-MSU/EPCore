@@ -41,6 +41,7 @@ if __name__ == "__main__":
                    currents=CURRENT_AMPL * np.sin(2 * np.pi * t))
 
     comp = IVCComparator()
+    comp.set_min_ivc(0., 0.)
     score1 = comp.compare_ivc(ivc1, ivc0)
     logging.debug("     Close curves: {}".format(score1))
     score2 = comp.compare_ivc(ivc2, ivc0)
