@@ -24,11 +24,11 @@ class Element(JsonConvertible):
 
     @property
     def center(self):
-        if len(self.pins) > 0:
+        if len(self.bounding_zone) > 0:
+            return np.mean(np.array(self.bounding_zone), axis=0).tolist()
+        elif len(self.pins) > 0:
             arr_xy = [(p.x, p.y) for p in self.pins]
-            return np.mean(np.array(arr_xy), axis=0)
-        elif len(self.bounding_zone) > 0:
-            return np.mean(np.array(self.bounding_zone), axis=0)
+            return np.mean(np.array(arr_xy), axis=0).tolist()
         else:
             return None
 
@@ -61,7 +61,7 @@ class Element(JsonConvertible):
             pins=[Pin.create_from_json(pin) for pin in json_data["pins"]],
             name=json_data.get("name"),
             package=json_data.get("package"),
-            center=json_data.get("center"),
+            # center=json_data.get("center"),
             bounding_zone=json_data.get("bounding_zone"),
             rotation=json_data.get("rotation"),
             width=json_data.get("width"),
