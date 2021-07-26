@@ -10,10 +10,34 @@ class Pin(JsonConvertible):
     Class for a pin of electric component.
     """
 
-    x: float
-    y: float
-    measurements: List[Measurement]
-    comment: Optional[str] = None
+    def __init__(self, x=None, y=None, measurements=[], comment=None, xy=None):
+        if xy is None:
+            self.x = float(x)
+            self.y = float(y)
+        else:
+            self.x = float(xy[0])
+            self.y = float(xy[0])
+        self.measurements = measurements
+        self.comment = comment
+
+    def __repr__(self):
+        return f"Pin(x={self.x}, y={self.y}, measurements={self.measurements}, comment={self.comment})"
+
+    def __setitem__(self, index: int, item: Optional[float]) -> None:
+        if index == 0:
+            self.x = float(item)
+        elif index == 1:
+            self.y = float(item)
+        else:
+            raise IndexError("Index out of range")
+
+    def __getitem__(self, index: int) -> Optional[float]:
+        if index == 0:
+            return self.x
+        elif index == 1:
+            return self.y
+        else:
+            raise IndexError("Index out of range")
 
     def get_reference_measurement(self) -> Optional[Measurement]:
         reference_measures = [m for m in self.measurements if m.is_reference]
