@@ -16,10 +16,11 @@ class Pin(JsonConvertible):
     comment: Optional[str] = None
 
     def get_main_measurement(self) -> Optional[Measurement]:
-        for m in self.measurements:
-            if not m.is_reference:
-                return m
-        return None
+        non_ref = self.get_non_reference_measurements()
+        return None if len(non_ref) == 0 else non_ref[0]
+
+    def get_non_reference_measurements(self) -> Optional[List[Measurement]]:
+        return [m for m in self.measurements if not m.is_reference]
 
     def get_reference_measurement(self) -> Optional[Measurement]:
         reference_measures = [m for m in self.measurements if m.is_reference]
