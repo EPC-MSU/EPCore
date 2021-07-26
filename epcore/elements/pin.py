@@ -4,24 +4,38 @@ from .measurement import Measurement
 from .abstract import JsonConvertible
 
 
-@dataclass
+@dataclass(init=True, repr=True, eq=True)
 class Pin(JsonConvertible):
     """
     Class for a pin of electric component.
     """
+    x: Optional[float] = None
+    y: Optional[float] = None
+    xy: Optional[tuple] = None
+    measurements: Optional[List[Measurement]] = None
+    comment: Optional[str] = None
 
-    def __init__(self, x=None, y=None, measurements=[], comment=None, xy=None):
-        if xy is None:
-            self.x = float(x)
-            self.y = float(y)
-        else:
-            self.x = float(xy[0])
-            self.y = float(xy[0])
-        self.measurements = measurements
-        self.comment = comment
+    def __post_init__(self):
+        if self.xy is not None and self.x is not None or self.y is not None:
+            raise TypeError("Duplicate parameters provided (xy and x,y)")
+        elif self.xy is not None:
+            self.x = self.xy[0]
+            self.y = self.xy[1]
+            delattr(self, "xy")
 
-    def __repr__(self):
-        return f"Pin(x={self.x}, y={self.y}, measurements={self.measurements}, comment={self.comment})"
+
+    # def __init__(self, x=None, y=None, measurements=[], comment=None, xy=None):
+    #     if xy is None:
+    #         self.x = float(x)
+    #         self.y = float(y)
+    #     else:
+    #         self.x = float(xy[0])
+    #         self.y = float(xy[0])
+    #     self.measurements = measurements
+    #     self.comment = comment
+    #
+    # def __repr__(self):
+    #     return f"Pin(x={self.x}, y={self.y}, measurements={self.measurements}, comment={self.comment})"
 
     def __setitem__(self, index: int, item: Optional[float]) -> None:
         if index == 0:
@@ -38,6 +52,10 @@ class Pin(JsonConvertible):
             return self.y
         else:
             raise IndexError("Index out of range")
+
+    # @property
+    # def xy(self):
+    #     return self.x, self.y
 
     def get_reference_measurement(self) -> Optional[Measurement]:
         reference_measures = [m for m in self.measurements if m.is_reference]
