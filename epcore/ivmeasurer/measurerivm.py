@@ -259,7 +259,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         """
         super(IVMeasurerIVM10, self).__init__(url, name)
         self._config = config
-        self._device = Ivm02Handle(url, defer_open=True)
+        self._device = Ivm10Handle(url, defer_open=True)
         self._FRAME_SIZE = 25
         self._SMOOTHING_KERNEL_SIZE = 5
         self._NORMAL_NUM_POINTS = 100
