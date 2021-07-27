@@ -176,7 +176,7 @@
             "maxItems": 12,
             "type": "array",
             "items": {
-              "description": "A 2D coordinates of bounding_zone polygon.",
+              "description": "A 2D coordinates of bounding_zone polygon. First x, then y.",
               "type": "array",
               "items": {
                 "type": "number"

@@ -5,6 +5,7 @@ from .pin import Pin
 
 import numpy as np
 
+
 @dataclass
 class Element(JsonConvertible):
     """
@@ -21,6 +22,7 @@ class Element(JsonConvertible):
     rotation: Optional[float] = None
     width: Optional[float] = None
     height: Optional[float] = None
+    set_automatically: Optional[bool] = False
 
     @property
     def center(self):
@@ -40,6 +42,7 @@ class Element(JsonConvertible):
 
         json_data = {
             "name": self.name,
+            "set_automatically" : self.set_automatically,
             "pins": [pin.to_json() for pin in self.pins],
             "package": self.package,
             "center": self.center,
@@ -59,6 +62,7 @@ class Element(JsonConvertible):
         """
         return Element(
             pins=[Pin.create_from_json(pin) for pin in json_data["pins"]],
+            set_automatically=json_data.get("set_automatically"),
             name=json_data.get("name"),
             package=json_data.get("package"),
             # center=json_data.get("center"),
