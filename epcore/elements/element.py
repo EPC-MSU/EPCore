@@ -13,37 +13,26 @@ class Element(JsonConvertible):
     In most cases it has a number of pins
     which can be tested electrically
     """
-
     pins: List[Pin]
     name: Optional[str] = None
     package: Optional[str] = None
-    center: Optional[Tuple[float, float]] = None
+    # center: Optional[Tuple[float, float]] = None
     bounding_zone: Optional[List[Tuple[float, float]]] = field(default_factory=list)
     rotation: Optional[float] = None
     width: Optional[float] = None
     height: Optional[float] = None
     set_automatically: Optional[bool] = None
 
-    def __post_init__(self):
+    @property
+    def center(self):
         if self.bounding_zone is not None:
-            if len(self.bounding_zone) == 4 or len(self.bounding_zone) == 12:
-                self.center = np.mean(np.array(self.bounding_zone), axis=0).tolist()
+            if len(self.bounding_zone) > 0:
+                return np.mean(np.array(self.bounding_zone), axis=0).tolist()
         elif len(self.pins) > 0:
             arr_xy = [(p.x, p.y) for p in self.pins]
-            self.center = np.mean(np.array(arr_xy), axis=0).tolist()
+            return np.mean(np.array(arr_xy), axis=0).tolist()
         else:
-            self.center = None
-
-    # @property
-    # def center(self):
-    #     if self.bounding_zone is not None:
-    #         if len(self.bounding_zone) > 0:
-    #             return np.mean(np.array(self.bounding_zone), axis=0).tolist()
-    #     elif len(self.pins) > 0:
-    #         arr_xy = [(p.x, p.y) for p in self.pins]
-    #         return np.mean(np.array(arr_xy), axis=0).tolist()
-    #     else:
-    #         return None
+            return None
 
     def to_json(self) -> Dict:
         """
