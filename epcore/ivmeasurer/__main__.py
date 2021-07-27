@@ -27,7 +27,6 @@ def work_with_asa_device(ip_address: str):
     settings.max_voltage = 5
     settings.internal_resistance = 1000 * 5 / 5
     measurer.set_settings(settings)
-    new_settings = measurer.get_settings()
     ivc = measurer.measure_iv_curve()
     plot_curve(ivc)
 
@@ -39,7 +38,6 @@ def work_with_asa_device(ip_address: str):
     settings.max_voltage = 10
     settings.internal_resistance = 1000 * 10 / 5
     measurer.set_settings(settings)
-    new_settings = measurer.get_settings()
     ivc = measurer.measure_iv_curve()
     plot_curve(ivc)
 
