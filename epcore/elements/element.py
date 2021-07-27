@@ -46,7 +46,7 @@ class Element(JsonConvertible):
             "pins": [pin.to_json() for pin in self.pins],
             "package": self.package,
             "center": self.center,
-            "bounding_zone": self.bounding_zone,
+            "bounding_zone": tuple(tuple(map(float, p)) for p in self.bounding_zone),
             "rotation": self.rotation,
             "width": self.width,
             "height": self.height
