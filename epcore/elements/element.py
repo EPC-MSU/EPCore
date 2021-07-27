@@ -28,7 +28,7 @@ class Element(JsonConvertible):
         if self.bounding_zone is not None:
             if len(self.bounding_zone) > 0:
                 return np.mean(np.array(self.bounding_zone), axis=0).tolist()
-        elif len(self.pins) > 0:
+        if len(self.pins) > 0:
             arr_xy = [(p.x, p.y) for p in self.pins]
             return np.mean(np.array(arr_xy), axis=0).tolist()
         else:
