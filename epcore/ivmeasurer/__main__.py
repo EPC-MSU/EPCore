@@ -1,10 +1,48 @@
 import argparse
 import logging
+import sys
 from .safe_opener import BadFirmwareVersion, BadConfig
 from .measurerasa import IVMeasurerASA
 from .measurerivm import IVMeasurerIVM02, IVMeasurerIVM10
 from .utils import plot_curve
 from .virtual import IVMeasurerVirtual
+
+
+def work_with_asa_device(ip_address: str):
+    """
+    Function to work with ASA device.
+    :param ip_address: IP address of ASA device server.
+    """
+
+    measurer = IVMeasurerASA(ip_address, "asa_measurer", True)
+    measurer.open_device()
+    settings = measurer.get_settings()
+
+    logging.debug("Test virtual ASA resistor")
+    measurer.set_value_to_parameter("model_type", "resistor")
+    measurer.set_value_to_parameter("model_nominal", 100)
+    measurer.set_value_to_parameter("mode", "manual")
+    settings.probe_signal_frequency = 100
+    settings.sampling_rate = 10000
+    settings.max_voltage = 5
+    settings.internal_resistance = 1000 * 5 / 5
+    measurer.set_settings(settings)
+    new_settings = measurer.get_settings()
+    ivc = measurer.measure_iv_curve()
+    plot_curve(ivc)
+
+    logging.debug("Test virtual ASA capacitor")
+    measurer.set_value_to_parameter("model_type", "capacitor")
+    measurer.set_value_to_parameter("model_nominal", 0.000001)
+    settings.probe_signal_frequency = 1500
+    settings.sampling_rate = 150000
+    settings.max_voltage = 10
+    settings.internal_resistance = 1000 * 10 / 5
+    measurer.set_settings(settings)
+    new_settings = measurer.get_settings()
+    ivc = measurer.measure_iv_curve()
+    plot_curve(ivc)
+
 
 if __name__ == "__main__":
 
@@ -20,6 +58,9 @@ if __name__ == "__main__":
     firmware_vs_handler = {"0.2": IVMeasurerIVM02,
                            "1.0": IVMeasurerIVM10}
     if args.port is not None:
+        if "xmlrpc" in args.port:
+            work_with_asa_device(args.port)
+            sys.exit(0)
         handler = firmware_vs_handler.get(args.firmware, None)
         if handler is None:
             supported_vers = ", ".join(firmware_vs_handler.keys())
@@ -55,33 +96,3 @@ if __name__ == "__main__":
         ivc = m.measure_iv_curve()
         logging.debug("Measurement finished")
         plot_curve(ivc)
-
-    # Work with IVMeasurerASA. You should start the server at IP 172.16.3.213
-    measurer = IVMeasurerASA("xmlrpc:172.16.3.213", "asa_measurer", True)
-    measurer.open_device()
-    settings = measurer.get_settings()
-
-    logging.debug("Test virtual ASA resistor")
-    measurer.set_value_to_parameter("model_type", "resistor")
-    measurer.set_value_to_parameter("model_nominal", 100)
-    measurer.set_value_to_parameter("mode", "manual")
-    settings.probe_signal_frequency = 100
-    settings.sampling_rate = 10000
-    settings.max_voltage = 5
-    settings.internal_resistance = 1000 * 5 / 5
-    measurer.set_settings(settings)
-    new_settings = measurer.get_settings()
-    ivc = measurer.measure_iv_curve()
-    plot_curve(ivc)
-
-    logging.debug("Test virtual ASA capacitor")
-    measurer.set_value_to_parameter("model_type", "capacitor")
-    measurer.set_value_to_parameter("model_nominal", 0.000001)
-    settings.probe_signal_frequency = 1500
-    settings.sampling_rate = 150000
-    settings.max_voltage = 10
-    settings.internal_resistance = 1000 * 10 / 5
-    measurer.set_settings(settings)
-    new_settings = measurer.get_settings()
-    ivc = measurer.measure_iv_curve()
-    plot_curve(ivc)
