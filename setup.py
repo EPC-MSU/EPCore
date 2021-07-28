@@ -13,7 +13,10 @@ setup(
         "scipy==1.5.4"  # for curve interpolation
     ],
     package_data={
-        "epcore.ivmeasurer": ["ivm10/ivm-arm64/libivm.so",
+        "epcore.ivmeasurer": ["ivm02/ivm-debian/libivm.so",
+                              "ivm02/ivm-win32/ivm.dll",
+                              "ivm02/ivm-win64/ivm.dll"
+                              "ivm10/ivm-arm64/libivm.so",
                               "ivm10/ivm-debian/libivm.so",
                               "ivm10/ivm-win32/ivm.dll",
                               "ivm10/ivm-win64/ivm.dll",
