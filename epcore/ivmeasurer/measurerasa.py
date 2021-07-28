@@ -134,8 +134,7 @@ class IVMeasurerASA(IVMeasurerBase):
                 attempt_number += 1
                 continue
             break
-        while asa.GetLastOperationResult(self._lib, self._server) != 0:
-            time.sleep(0.2)
+        self._wait_for_completion()
 
     def close_device(self):
         pass
@@ -170,6 +169,7 @@ class IVMeasurerASA(IVMeasurerBase):
         if status != 0:
             logging.error("SetSettings failed: %s", str(status))
             raise Exception("SetSettings failed")
+        self._wait_for_completion()
         self._settings = settings
 
     @_close_on_error
@@ -188,8 +188,7 @@ class IVMeasurerASA(IVMeasurerBase):
         if not self.is_freezed():
             self._measurement_is_ready = False
             asa.TriggerMeasurement(self._lib, self._server)
-            while asa.GetLastOperationResult(self._lib, self._server) != 0:
-                time.sleep(0.2)
+            self._wait_for_completion()
             self._measurement_is_ready = True
 
     @_close_on_error
@@ -422,3 +421,11 @@ class IVMeasurerASA(IVMeasurerBase):
         c_host = c_char_p(self._host.encode("utf-8"))
         c_port = c_char_p(self._port.encode("utf-8"))
         self._server = asa.Server(c_host, c_port)
+
+    def _wait_for_completion(self):
+        """
+        Method is waiting for the last operation to complete.
+        """
+
+        while asa.GetLastOperationResult(self._lib, self._server) != 0:
+            time.sleep(0.2)
