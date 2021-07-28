@@ -54,9 +54,13 @@ class IVMeasurerBase(ABC):
     def name(self, name: str):
         self._name = name
 
-    @name.setter
-    def name(self, name: str):
-        self._name = name
+    @property
+    def url(self):
+        return self._url
+
+    @url.setter
+    def url(self, url: str):
+        self._url = url
 
     @abstractmethod
     def open_device(self):
