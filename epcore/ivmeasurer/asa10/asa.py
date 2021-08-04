@@ -11,9 +11,11 @@ def _get_full_path(name: str) -> str:
 
 def get_dll() -> CDLL:
     if system() == "Linux":
-        return CDLL(_get_full_path("libasa-debian/libasa.so"))
+        full_path = _get_full_path("libasa-debian/libasa.so")
+        return CDLL(full_path)
     if system() == "Windows":
-        return CDLL(_get_full_path("libasa-win32/asa.dll"))
+        full_path = _get_full_path("libasa-win32/asa.dll")
+        return CDLL(full_path)
     raise NotImplementedError("Unsupported platform {0}".format(system()))
 
 
