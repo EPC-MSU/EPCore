@@ -1,9 +1,7 @@
-from ..elements import Board, Pin, Measurement, Element
-from ..ivmeasurer import IVMeasurerBase
-
 from copy import deepcopy
-
 from typing import Iterable, Tuple
+from ..elements import Board, Element, Measurement, Pin
+from ..ivmeasurer import IVMeasurerBase
 
 
 class MeasurementPlan(Board):
@@ -16,17 +14,16 @@ class MeasurementPlan(Board):
     there is a single next point and a single previous point.
     The initial board structure should be saved.
     """
+
     def __init__(self, board: Board, measurer: IVMeasurerBase):
         super(MeasurementPlan, self).__init__(elements=board.elements, image=board.image)
 
         self._original_elements = deepcopy(board.elements)
-
         self.measurer = measurer
         self._all_pins = []
         for element in self.elements:
             for pin in element.pins:
                 self._all_pins.append(pin)
-
         self._current_pin_index = 0
 
     def get_current_index(self) -> int:
@@ -59,9 +56,9 @@ class MeasurementPlan(Board):
 
     def save_last_measurement_as_reference(self):
         """
-        Turn last measurement for current pin
-        to a reference measurement.
+        Turn last measurement for current pin to a reference measurement.
         """
+
         curve = self.measurer.get_last_cached_iv_curve()
         settings = self.measurer.get_settings()
         measurement = Measurement(settings=deepcopy(settings),
@@ -73,8 +70,8 @@ class MeasurementPlan(Board):
     def restore_original_board(self):
         """
         Remove all changes in board like: adding new pins, measures, etc
-        :return:
         """
+
         self.elements = deepcopy(self._original_elements)
 
     def all_pins_iterator(self) -> Iterable[Tuple[int, Pin]]:

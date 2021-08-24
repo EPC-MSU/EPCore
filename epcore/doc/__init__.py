@@ -17,6 +17,4 @@ def path_to_p10_elements_2_schema() -> str:
     return _path_to_p10_elements_2_schema
 
 
-__all__ = ["path_to_ufiv_schema",
-           "path_to_p10_elements_schema",
-           "path_to_p10_elements_2_schema"]
+__all__ = ["path_to_ufiv_schema", "path_to_p10_elements_schema", "path_to_p10_elements_2_schema"]

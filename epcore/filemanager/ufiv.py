@@ -10,14 +10,13 @@ import re
 import zipfile
 from json import load, dump
 from tempfile import TemporaryDirectory
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 from jsonschema import validate, ValidationError
 from PIL import Image
-from ..doc import (path_to_ufiv_schema, path_to_p10_elements_schema,
-                   path_to_p10_elements_2_schema)
+from ..doc import path_to_ufiv_schema, path_to_p10_elements_schema, path_to_p10_elements_2_schema
 from ..elements import Board
-from .file_formats import (FileUFIVFormat, FileP10NormalFormat,
-                           FileP10NewFormat, FileArchivedUFIVFormat)
+from .file_formats import (FileArchivedUFIVFormat, FileP10NewFormat, FileP10NormalFormat,
+                           FileUFIVFormat)
 
 
 MAX_ERR_MSG_LEN = 256
@@ -40,8 +39,7 @@ formats_to_file = {
 }
 
 
-def _validate_json_with_schema(input_json: Dict, schema: Dict) -> \
-        Tuple[bool, Exception]:
+def _validate_json_with_schema(input_json: Dict, schema: Dict) -> Tuple[bool, Optional[Exception]]:
     """
     Function validates json. Raise ValidationError in case of invalid json.
     :param input_json: json to be validated;
@@ -53,12 +51,11 @@ def _validate_json_with_schema(input_json: Dict, schema: Dict) -> \
         validate(input_json, schema)
         return True, None
     except ValidationError as err:
-        err.message = ("The input file has invalid format: " +
-                       err.message[:MAX_ERR_MSG_LEN])
+        err.message = ("The input file has invalid format: " + err.message[:MAX_ERR_MSG_LEN])
         return False, err
 
 
-def detect_format(path: str):
+def detect_format(path: str) -> Formats:
     """
     Function returns format of board file.
     :param path: path to board file.
@@ -71,8 +68,7 @@ def detect_format(path: str):
         input_json = load(file)
     if "version" not in input_json:
         # Old format. Should be converted first
-        logging.info("Key 'version' not found, try to convert board from P10 "
-                     "format...")
+        logging.info("Key 'version' not found, try to convert board from P10 format...")
         logging.info("Check normal P10 format.")
         with open(path_to_p10_elements_schema(), "r") as schema_file:
             p10_schema = load(schema_file)
