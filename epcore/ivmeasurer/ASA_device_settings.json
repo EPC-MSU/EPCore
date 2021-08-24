@@ -54,8 +54,8 @@
         {
             "description": "Номинал резистора/конденсатора",
             "parameter": "model_nominal",
-            "parameter_name_ru": "Номинал",
-            "parameter_name_en": "Nominal",
+            "parameter_name_ru": "Номинал. [R] = Ом, [C] = Ф",
+            "parameter_name_en": "Nominal. [R] = Ohm, [C] = [F]",
             "type": "line_edit",
             "value_type": "float",
             "min": 1.0e-20,
