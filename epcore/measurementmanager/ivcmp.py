@@ -1,39 +1,14 @@
-from ctypes import CDLL, Structure, Array, c_ubyte,  c_double, c_size_t, POINTER
-from platform import system, uname
-import struct
+from collections import Sequence
+from ctypes import Array, c_double, c_size_t, c_ubyte, POINTER, Structure
 import numpy as np
+from .ivc_comparator import get_dll
 
 
 VOLTAGE_AMPL = 12.
 R_CS = 475.
 CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
-
-
-def _fullpath_lib(name: str) -> str:
-    from os.path import dirname, join
-    return join(dirname(__file__), name)
-
-
-def _get_dll():
-    lib = None
-    os_kind = system().lower()
-    if os_kind == "windows":
-        if 8 * struct.calcsize("P") == 32:
-            lib = CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
-        else:
-            lib = CDLL(_fullpath_lib("ivcmp-win64/ivcmp.dll"))
-    elif os_kind == "freebsd" or "linux" in os_kind:
-        if uname()[4] == "aarch64":
-            lib = CDLL(_fullpath_lib("ivcmp-arm64/libivcmp.so"))
-        else:
-            lib = CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
-    else:
-        raise NotImplementedError("Unsupported platform {}".format(os_kind))
-    return lib
-
-
-lib = _get_dll()
 MAX_NUM_POINTS = 1000
+lib = get_dll()
 
 
 class _IterableStructure(Structure):
@@ -42,8 +17,6 @@ class _IterableStructure(Structure):
 
 
 def _normalize_arg(value, desired_ctype):
-    from collections import Sequence
-
     if isinstance(value, desired_ctype):
         return value
     if issubclass(desired_ctype, Array) and isinstance(value, Sequence):
@@ -79,7 +52,8 @@ def SetMinVC(min_var_v, min_var_c):
 
 def CompareIvc(first_iv_curve, second_iv_curve):
     lib_func = lib.CompareIVC
-    lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
+    lib_func.argtype = (POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double),
+                        POINTER(c_double), c_size_t)
     lib_func.restype = c_double
     res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, first_iv_curve.length,
                    second_iv_curve.voltages, second_iv_curve.currents, second_iv_curve.length)

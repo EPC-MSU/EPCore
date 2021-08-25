@@ -1,8 +1,8 @@
 import time
 from copy import deepcopy
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 import numpy as np
-from ..elements import MeasurementSettings, IVCurve
+from ..elements import IVCurve, MeasurementSettings
 from ..ivmeasurer import IVMeasurerBase
 
 
@@ -12,6 +12,7 @@ class MeasurementSystem:
     If you have only single IVMeasurer, it is recommended to use
     this class for compatibility.
     """
+
     measurers: List[IVMeasurerBase]
     measurers_map: Dict[str, IVMeasurerBase]
 
@@ -24,16 +25,15 @@ class MeasurementSystem:
 
     def trigger_measurements(self):
         """
-        Trigger measurements on all devices
+        Trigger measurements on all devices.
         """
 
-        for m in self.measurers:
-            m.trigger_measurement()
+        for measurer in self.measurers:
+            measurer.trigger_measurement()
 
     def measurements_are_ready(self) -> bool:
         """
-        Return True if all measurers
-        have done their Job
+        Return True if all measurers have done their job.
         """
 
         return all([m.measurement_is_ready() for m in self.measurers if not m.is_freezed()])
@@ -46,7 +46,7 @@ class MeasurementSystem:
         self.trigger_measurements()
         while not self.measurements_are_ready():
             time.sleep(0.05)
-        return [m.get_last_iv_curve() for m in self.measurers]
+        return [measurer.get_last_iv_curve() for measurer in self.measurers]
 
     def set_settings(self, settings: MeasurementSettings):
         """
@@ -62,7 +62,7 @@ class MeasurementSystem:
         If the same - return. Else throw RuntimeError.
         """
 
-        all_settings = [s.get_settings() for s in self.measurers]
+        all_settings = [measurer.get_settings() for measurer in self.measurers]
         if not all_settings:
             raise ValueError("No ivc measurers")
         precision = 0.01
@@ -79,12 +79,12 @@ class MeasurementSystem:
         """
         Unfreeze all measurers
         """
-        for m in self.measurers:
-            m.unfreeze()
+        for measurer in self.measurers:
+            measurer.unfreeze()
 
     def calibrate(self):
-        for m in self.measurers:
-            m.calibrate()
+        for measurer in self.measurers:
+            measurer.calibrate()
 
     def reconnect(self) -> bool:
-        return all([m.reconnect() for m in self.measurers])
+        return all([measurer.reconnect() for measurer in self.measurers])

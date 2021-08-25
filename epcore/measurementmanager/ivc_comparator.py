@@ -1,28 +1,27 @@
-from ctypes import CDLL, c_double, c_size_t, POINTER, Array
-from platform import system, uname
-from typing import List
 import struct
+from ctypes import Array, c_double, c_size_t, CDLL, POINTER
+from os.path import abspath, dirname, join
+from platform import uname, system
+from typing import List
 from ..elements import IVCurve
 
 
-def _fullpath_lib(name: str) -> str:
-    from os.path import dirname, join
-    return join(dirname(__file__), name)
+def get_full_path(name: str) -> str:
+    return join(dirname(abspath(__file__)), name)
 
 
-def _get_dll():
-    lib = None
+def get_dll() -> CDLL:
     os_kind = system().lower()
     if os_kind == "windows":
         if 8 * struct.calcsize("P") == 32:
-            lib = CDLL(_fullpath_lib("ivcmp-win32/ivcmp.dll"))
+            lib = CDLL(get_full_path("ivcmp-win32/ivcmp.dll"))
         else:
-            lib = CDLL(_fullpath_lib("ivcmp-win64/ivcmp.dll"))
+            lib = CDLL(get_full_path("ivcmp-win64/ivcmp.dll"))
     elif os_kind == "freebsd" or "linux" in os_kind:
         if uname()[4] == "aarch64":
-            lib = CDLL(_fullpath_lib("ivcmp-arm64/libivcmp.so"))
+            lib = CDLL(get_full_path("ivcmp-arm64/libivcmp.so"))
         else:
-            lib = CDLL(_fullpath_lib("ivcmp-debian/libivcmp.so"))
+            lib = CDLL(get_full_path("ivcmp-debian/libivcmp.so"))
     else:
         raise NotImplementedError("Unsupported platform {}".format(os_kind))
     return lib
@@ -39,12 +38,10 @@ class IVCComparator:
     max_num_points = 10
 
     def __init__(self):
-        self._lib = _get_dll()
-
+        self._lib = get_dll()
         self._lib.SetMinVC.argtype = c_double, c_double
-
-        self._lib.CompareIVC.argtype = POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double), \
-            c_size_t
+        self._lib.CompareIVC.argtype = (POINTER(c_double), POINTER(c_double), POINTER(c_double),
+                                        POINTER(c_double), c_size_t)
         self._lib.CompareIVC.restype = c_double
 
     def set_min_ivc(self, min_var_v: float, min_var_c: float):

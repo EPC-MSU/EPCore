@@ -1,13 +1,13 @@
-from dataclasses import dataclass
-from abc import abstractmethod
-from typing import List, Dict, Any, Tuple, Optional
-from epcore.elements import MeasurementSettings
-from warnings import warn
-from os.path import join, dirname
-import numpy as np
-import jsonschema
 import json
-from enum import Enum, auto
+from abc import abstractmethod
+from dataclasses import dataclass
+from enum import auto, Enum
+from os.path import join, dirname
+from typing import Any, Dict, List, Optional, Tuple
+from warnings import warn
+import jsonschema
+import numpy as np
+from epcore.elements import MeasurementSettings
 
 
 class InvalidJson(ValueError):
@@ -47,11 +47,11 @@ class PlotParameters:
 
 class ProductBase:
     """
-    This class defines the whole system functionality.
-    If you want to add additional information, limitations or
-    change behavior for some methods, simply derive an other class
-    for your product from this base class.
+    This class defines the whole system functionality. If you want to add
+    additional information, limitations or change behavior for some methods,
+    simply derive an other class for your product from this base class.
     """
+
     _precision = 0.01
 
     def __init__(self):
@@ -59,32 +59,33 @@ class ProductBase:
 
     def get_all_available_options(self) -> Dict[Enum, MeasurementParameter]:
         """
-        Get all parameters and all available options.
-        If you have a state machine and from current state
-        only subset of options is available,
+        Get all parameters and all available options. If you have a state
+        machine and from current state only subset of options is available,
         you should redefine this function and add additional logic here.
         """
+
         return self.mparams
 
     @abstractmethod
     def settings_to_options(self, settings: MeasurementSettings) -> Dict[Enum, str]:
         """
-        Convert measurement settings to options set
-        If you want to add additional limitations for parameter combinations in your product,
+        Convert measurement settings to options set. If you want to add
+        additional limitations for parameter combinations in your product,
         redefine this function.
         """
+
         raise NotImplementedError()
 
     @abstractmethod
     def options_to_settings(self, options: Dict[Enum, str],
                             settings: MeasurementSettings) -> MeasurementSettings:
         """
-        Convert options set to measurement settings
+        Convert options set to measurement settings.
         """
+
         raise NotImplementedError()
 
-    def adjust_plot_scale(self, settings: MeasurementSettings) ->\
-            Tuple[float, float]:
+    def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
         You can use this function for setting IVCurve plot scale for current
         setting. By default it returns:
@@ -96,22 +97,23 @@ class ProductBase:
         current in mA, don’t forget to multiply by 1000.
         """
 
-        return 1.2 * settings.max_voltage, 1000 * 1.2 * settings.max_voltage / settings.internal_resistance
+        voltage_scale = 1.2 * settings.max_voltage
+        current_scale = 1000 * 1.2 * settings.max_voltage / settings.internal_resistance
+        return voltage_scale, current_scale
 
     @abstractmethod
     def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Adjust plot borders
-        :param settings:
-        :return:
+        Adjust plot borders.
         """
+
         raise NotImplementedError()
 
     def adjust_noise_amplitude(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Get noise amplitude for specified settings
-        :param settings: Measurement settings
-        :return: v_amplitude, c_amplitude
+        Get noise amplitude for specified settings.
+        :param settings: measurement settings.
+        :return: v_amplitude, c_amplitude.
         """
 
         return settings.max_voltage / 20, settings.internal_resistance * 20
@@ -119,8 +121,9 @@ class ProductBase:
     @property
     def plot_parameters(self) -> PlotParameters:
         """
-        Get plot parameters
+        Get plot parameters.
         """
+
         return PlotParameters("#FF0000", "#0000FF")
 
 
@@ -144,15 +147,14 @@ class EPLab(ProductBase):
             return json.load(file)
 
     def __init__(self, json_data: Optional[Dict] = None):
-        super(EPLab, self).__init__()
 
+        super(EPLab, self).__init__()
         if json_data is None:
             json_data = EPLab._default_json()
-
         try:
             jsonschema.validate(json_data, EPLab._schema())
         except jsonschema.ValidationError as err:
-            raise InvalidJson("Validation error: " + str(err))
+            raise InvalidJson("Validation error: " + str(err)) from err
 
         json_options = json_data["options"]
         self._plot_parameters = PlotParameters.from_json(json_data["plot_parameters"])
@@ -217,8 +219,7 @@ class EPLab(ProductBase):
 
         return settings
 
-    def adjust_plot_scale(self, settings: MeasurementSettings) ->\
-            Tuple[float, float]:
+    def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
 
         scale_adjuster = {  # _scale_adjuster[V][Omh] -> Scale for x,y
             (1.2, 47500.0): (1.5, 0.04),
@@ -241,28 +242,20 @@ class EPLab(ProductBase):
 
     def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Adjust plot borders
-        :param settings: MeasurementSettings
-        :return: voltage, current border
+        Adjust plot borders.
+        :param settings: measurement settings.
+        :return: voltage, current border.
         """
 
         volt_border = 0
-
-        volt_border_adjuster = {
-            1.2: 0.4,
-            3.3: 1.0,
-            5.0: 1.5,
-            12.0: 4.0
-        }
-
+        volt_border_adjuster = {1.2: 0.4,
+                                3.3: 1.0,
+                                5.0: 1.5,
+                                12.0: 4.0}
         curr_border = 0
-
-        curr_border_adjuster = {
-            47500.0: 0.05,
-            4750.0: 0.5,
-            475: 5.0
-        }
-
+        curr_border_adjuster = {47500.0: 0.05,
+                                4750.0: 0.5,
+                                475: 5.0}
         for volt, border in volt_border_adjuster.items():
             if np.isclose(volt, settings.max_voltage, atol=self._precision):
                 volt_border = border
@@ -270,35 +263,31 @@ class EPLab(ProductBase):
         for resist, border in curr_border_adjuster.items():
             if np.isclose(resist, settings.internal_resistance, atol=self._precision):
                 curr_border = border
-
+                break
         return volt_border, curr_border
 
     def adjust_noise_amplitude(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Get noise amplitude for specified settings
-        :param settings: Measurement settings
-        :return: v_amplitude, c_amplitude
+        Get noise amplitude for specified settings.
+        :param settings: measurement settings.
+        :return: v_amplitude, c_amplitude.
         """
 
         # max_voltage, internal_resistance -> v_amplitude, c_amplitude
-        noise_adjuster = {
-            (12.0, 475.0): (0.6, 0.008),
-            (5.0, 475.0): (0.6, 0.008),
-            (3.3, 475.0): (0.3, 0.008),
-            (1.2, 475.0): (0.3, 0.008),
-            (12.0, 4750.0): (0.6, 0.0005),
-            (5.0, 4750.0): (0.3, 0.0005),
-            (3.3, 4750.0): (0.3, 0.0005),
-            (1.2, 4750.0): (0.3, 0.0005),
-            (12.0, 47500.0): (0.6, 0.00005),
-            (5.0, 47500.0): (0.3, 0.00005),
-            (3.3, 47500.0): (0.3, 0.00005),
-            (1.2, 47500.0): (0.3, 0.00005)
-        }
-
+        noise_adjuster = {(12.0, 475.0): (0.6, 0.008),
+                          (5.0, 475.0): (0.6, 0.008),
+                          (3.3, 475.0): (0.3, 0.008),
+                          (1.2, 475.0): (0.3, 0.008),
+                          (12.0, 4750.0): (0.6, 0.0005),
+                          (5.0, 4750.0): (0.3, 0.0005),
+                          (3.3, 4750.0): (0.3, 0.0005),
+                          (1.2, 4750.0): (0.3, 0.0005),
+                          (12.0, 47500.0): (0.6, 0.00005),
+                          (5.0, 47500.0): (0.3, 0.00005),
+                          (3.3, 47500.0): (0.3, 0.00005),
+                          (1.2, 47500.0): (0.3, 0.00005)}
         for key, value in noise_adjuster.items():
             if np.isclose(settings.max_voltage, key[0], atol=self._precision) and \
                     np.isclose(settings.internal_resistance, key[1], atol=self._precision):
                 return value
-
         return super(EPLab, self).adjust_noise_amplitude(settings)
