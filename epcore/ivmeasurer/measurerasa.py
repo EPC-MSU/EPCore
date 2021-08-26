@@ -126,11 +126,11 @@ class IVMeasurerASA(IVMeasurerBase):
     def open_device(self):
         self._set_server_host()
         attempt_number = 0
-        while attempt_number < 3:
+        while attempt_number < 1:
             try:
                 self.set_settings()
                 self.get_settings()
-            except Exception:
+            except (asa.AsaFormatError, asa.AsaTypeError, asa.AsaValueError):
                 attempt_number += 1
                 continue
             break
@@ -143,7 +143,7 @@ class IVMeasurerASA(IVMeasurerBase):
         try:
             self.open_device()
             return True
-        except (RuntimeError, OSError):
+        except (RuntimeError, OSError, asa.AsaConnectionError, asa.AsaServerResponseError):
             return False
 
     @_close_on_error
@@ -427,5 +427,9 @@ class IVMeasurerASA(IVMeasurerBase):
         Method is waiting for the last operation to complete.
         """
 
-        while asa.GetLastOperationResult(self._lib, self._server) != 0:
+        status = asa.GetLastOperationResult(self._lib, self._server)
+        while status != asa.AsaResponseStatus.ASA_OK:
+            if status in asa.AsaResponseStatus.get_errors():
+                break
             time.sleep(0.2)
+            status = asa.GetLastOperationResult(self._lib, self._server)
