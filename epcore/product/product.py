@@ -140,14 +140,34 @@ class MeasurementParameterOptionEplab:
     label_en: str
     dependent_params: dict
 
-    def _find_dependent_option(self, required_option_name: str,
-                               parameter: "Parameter") -> "MeasurementParameterOptionEplab":
+    def _find_dependent_option(self, required_option_name: str, parameter: "Parameter") ->\
+            Optional["MeasurementParameterOptionEplab"]:
+        """
+        Method returns option of dependent parameter with given names.
+        :param required_option_name: name of required option;
+        :param parameter: name of dependent parameter.
+        :return: required option if it is found, first option of dependent
+        parameter if required option is not found or None if there is not
+        dependent parameter.
+        """
+
         for option in self.dependent_params[parameter]:
             if required_option_name == option.name:
                 return option
+        if self.dependent_params[parameter]:
+            return self.dependent_params[parameter][0]
+        return None
 
-    def _find_dependent_option_by_value(self, settings: MeasurementSettings,
-                                        parameter: "Parameter") -> "MeasurementParameterOptionEplab":
+    def _find_dependent_option_by_value(
+            self, settings: MeasurementSettings, parameter: "Parameter") ->\
+            Optional["MeasurementParameterOptionEplab"]:
+        """
+        Method returns option of dependent parameter with given values.
+        :param settings: measurement settings;
+        :param parameter: name of dependent parameter.
+        :return: required option if it is found, otherwise None.
+        """
+
         for option in self.dependent_params[parameter]:
             if parameter == EPLab.Parameter.frequency:
                 if option.value == [settings.probe_signal_frequency, settings.sampling_rate]:
@@ -158,6 +178,7 @@ class MeasurementParameterOptionEplab:
             elif parameter == EPLab.Parameter.sensitive:
                 if option.value == settings.internal_resistance:
                     return option
+        return None
 
     @classmethod
     def from_json(cls, json_data: Dict) -> "MeasurementParameterOptionEplab":
@@ -199,6 +220,16 @@ class MeasurementParameterOptionEplab:
             available = {**available, **new_available}
         return available
 
+    def get_only_option(self) -> MeasurementParameterOption:
+        """
+        Method returns object of MeasurementParameterOption class with the same
+        values of same attributes.
+        :return: object of MeasurementParameterOption.
+        """
+
+        return MeasurementParameterOption(name=self.name, value=self.value, label_ru=self.label_ru,
+                                          label_en=self.label_en)
+
     def set_option(self, options: Dict["Parameter", str], settings: MeasurementSettings,
                    parameter: "Parameter"):
         """
@@ -214,7 +245,7 @@ class MeasurementParameterOptionEplab:
             option.set_option(options, settings, dependent_param)
 
     def write_to_settings(self, options: Dict["Parameter", str], settings: MeasurementSettings,
-                          parameter: "Parameter", s=False):
+                          parameter: "Parameter"):
         """
         Method writes value of parameter from options dictionary to
         measurement settings.
@@ -230,8 +261,6 @@ class MeasurementParameterOptionEplab:
             settings.max_voltage = self.value
         elif parameter == EPLab.Parameter.sensitive:
             settings.internal_resistance = self.value
-        if s:
-            print(self.dependent_params)
         for dependent_param in self.dependent_params:
             option = self._find_dependent_option(options[dependent_param], dependent_param)
             option.write_to_settings(options, settings, dependent_param)
@@ -309,7 +338,7 @@ class Parameters:
         settings_to.max_voltage = settings_from.max_voltage
         settings_to.internal_resistance = settings_from.internal_resistance
 
-    def get_available(self, settings: MeasurementSettings) -> Dict["Parameter", List]:
+    def get_available_options(self, settings: MeasurementSettings) -> Dict["Parameter", List]:
         """
         Method returns available options for parameters of measuring system.
         :param settings: measurement settings.
@@ -372,6 +401,23 @@ class Parameters:
             warn(f"Unknown device internal resistance {settings.internal_resistance}")
         return options
 
+    def get_parameters(self) -> Dict["Parameter", MeasurementParameter]:
+        """
+        Method returns dictionary with measurement parameters of measuring
+        system. This method works correctly if EPLab uses default json-file
+        with options.
+        :return: dictionary with measurement parameters.
+        """
+
+        result = {}
+        parameters = self.frequencies, self.voltages, self.sensitives
+        names = EPLab.Parameter.frequency, EPLab.Parameter.voltage, EPLab.Parameter.sensitive
+        for i_parameter, parameter in enumerate(parameters):
+            options = [item.get_only_option() for item in parameter]
+            param_name = names[i_parameter]
+            result[param_name] = MeasurementParameter(param_name, options)
+        return result
+
     def initialize(self, data: Dict):
         """
         Method reads dictionary with data from json-file that contains options
@@ -389,7 +435,7 @@ class Parameters:
         if sensitives_data:
             self.sensitives = self._create_measurement_parameter(sensitives_data)
 
-    def write_to_settings(self, options: Dict["Parameter", str], settings: MeasurementSettings, s=False):
+    def write_to_settings(self, options: Dict["Parameter", str], settings: MeasurementSettings):
         """
         Method writes values from options dictionary to measurement settings.
         :param options: dictionary with string values of parameters;
@@ -400,19 +446,15 @@ class Parameters:
         new_settings = MeasurementSettings(-1, -1, -1, -1)
         for option in self.frequencies:
             if option.name == options[EPLab.Parameter.frequency]:
-                option.write_to_settings(options, new_settings, EPLab.Parameter.frequency, s)
+                option.write_to_settings(options, new_settings, EPLab.Parameter.frequency)
                 break
-        if s:
-            print("step 1 ", new_settings)
         if self._check_settings_for_recording(new_settings):
             self._set_settings(settings, new_settings)
             return
         for option in self.voltages:
             if option.name == options[EPLab.Parameter.voltage]:
-                option.write_to_settings(options, new_settings, EPLab.Parameter.voltage, s)
+                option.write_to_settings(options, new_settings, EPLab.Parameter.voltage)
                 break
-        if s:
-            print("step 2 ", new_settings)
         if self._check_settings_for_recording(new_settings):
             self._set_settings(settings, new_settings)
             return
@@ -444,30 +486,17 @@ class EPLab(ProductBase):
 
     def __init__(self, json_data: Optional[Dict] = None):
 
-        super(EPLab, self).__init__()
+        super().__init__()
         if json_data is None:
             json_data = EPLab._default_json()
         try:
             jsonschema.validate(json_data, EPLab._schema())
         except jsonschema.ValidationError as err:
-            raise InvalidJson("Validation error: " + str(err))
+            raise InvalidJson("Validation error: " + str(err)) from err
 
         json_options = json_data["options"]
         self._plot_parameters = PlotParameters.from_json(json_data["plot_parameters"])
-        self.parameters = Parameters(json_options)
-        """
-        self.mparams = {
-            EPLab.Parameter.frequency:
-                MeasurementParameter(EPLab.Parameter.frequency,
-                                     [MeasurementParameterOption.from_json(x) for x in json_options["frequency"]]),
-            EPLab.Parameter.voltage:
-                MeasurementParameter(EPLab.Parameter.voltage,
-                                     [MeasurementParameterOption.from_json(x) for x in json_options["voltage"]]),
-            EPLab.Parameter.sensitive:
-                MeasurementParameter(EPLab.Parameter.sensitive,
-                                     [MeasurementParameterOption.from_json(x) for x in json_options["sensitive"]])
-        }
-        """
+        self._parameters = Parameters(json_options)
 
     @property
     def plot_parameters(self) -> PlotParameters:
@@ -481,30 +510,10 @@ class EPLab(ProductBase):
         :return: dictionary with options.
         """
 
-        """
-        options = {}
-        for option in self.mparams[EPLab.Parameter.frequency].options:
-            if option.value == [settings.probe_signal_frequency, settings.sampling_rate]:
-                options[EPLab.Parameter.frequency] = option.name
-        if not options.get(EPLab.Parameter.frequency):
-            warn(f"Unknown device frequency and sampling rate {settings.probe_signal_frequency} "
-                 f"{settings.sampling_rate}")
-        for option in self.mparams[EPLab.Parameter.sensitive].options:
-            if np.isclose(option.value, settings.internal_resistance, atol=self._precision):
-                options[EPLab.Parameter.sensitive] = option.name
-        if not options.get(EPLab.Parameter.sensitive):
-            warn(f"Unknown device internal resistance {settings.internal_resistance}")
-        for option in self.mparams[EPLab.Parameter.voltage].options:
-            if np.isclose(option.value, settings.max_voltage, atol=self._precision):
-                options[EPLab.Parameter.voltage] = option.name
-        if not options.get(EPLab.Parameter.voltage):
-            warn(f"Unknown device max voltage {settings.max_voltage}")
-        return options
-        """
-        return self.parameters.get_options(settings)
+        return self._parameters.get_options(settings)
 
     def options_to_settings(self, options: Dict["Parameter", str],
-                            settings: MeasurementSettings, s=False) -> MeasurementSettings:
+                            settings: MeasurementSettings) -> MeasurementSettings:
         """
         Method writes values from options dictionary to measurement settings.
         :param options: dictionary with string values of parameters;
@@ -512,24 +521,7 @@ class EPLab(ProductBase):
         :return: measurement settings with recorded values.
         """
 
-        self.parameters.write_to_settings(options, settings, s)
-        """
-        if EPLab.Parameter.frequency in options:
-            for option in self.mparams[EPLab.Parameter.frequency].options:
-                if option.name == options[EPLab.Parameter.frequency]:
-                    settings.probe_signal_frequency, settings.sampling_rate = option.value
-                    break
-        if EPLab.Parameter.voltage in options:
-            for option in self.mparams[EPLab.Parameter.voltage].options:
-                if option.name == options[EPLab.Parameter.voltage]:
-                    settings.max_voltage = option.value
-                    break
-        if EPLab.Parameter.sensitive in options:
-            for option in self.mparams[EPLab.Parameter.sensitive].options:
-                if option.name == options[EPLab.Parameter.sensitive]:
-                    settings.internal_resistance = option.value
-                    break
-        """
+        self._parameters.write_to_settings(options, settings)
         return settings
 
     def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
@@ -551,7 +543,7 @@ class EPLab(ProductBase):
             if np.isclose(settings.max_voltage, key[0], atol=self._precision) and \
                     np.isclose(settings.internal_resistance, key[1], atol=self._precision):
                 return value
-        return super(EPLab, self).adjust_plot_scale(settings)
+        return super().adjust_plot_scale(settings)
 
     def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
@@ -603,4 +595,23 @@ class EPLab(ProductBase):
             if np.isclose(settings.max_voltage, key[0], atol=self._precision) and \
                     np.isclose(settings.internal_resistance, key[1], atol=self._precision):
                 return value
-        return super(EPLab, self).adjust_noise_amplitude(settings)
+        return super().adjust_noise_amplitude(settings)
+
+    def get_available_options(self, settings: MeasurementSettings) -> Dict["Parameter", List]:
+        """
+        Method returns available options for parameters of measuring system.
+        :param settings: measurement settings.
+        :return: dictionary with available options for parameters.
+        """
+
+        return self._parameters.get_available_options(settings)
+
+    def get_parameters(self) -> Dict:
+        """
+        Method returns dictionary with options of parameters of measuring
+        system. This method works correctly if EPLab uses default json-file
+        with options.
+        :return: dictionary with options of parameters.
+        """
+
+        return self._parameters.get_parameters()
