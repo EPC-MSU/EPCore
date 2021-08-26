@@ -378,6 +378,8 @@ class IVMeasurerASA(IVMeasurerBase):
         max_voltage = float(asa_settings.voltage_ampl_v)
         max_current = float(asa_settings.max_current_m_a)
         internal_resistance = int(1000 * max_voltage / max_current)
+        if 110 <= internal_resistance <= 112:
+            internal_resistance = 111
         n_points = int(asa_settings.number_points)
         n_charge_points = int(asa_settings.number_charge_points)
         flags = int(asa_settings.measure_flags)
