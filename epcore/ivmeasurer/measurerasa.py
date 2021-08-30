@@ -44,9 +44,9 @@ def _parse_address(full_address: str) -> Tuple[str, str]:
         protocol, ip_address, port = address_parts
     else:
         protocol, ip_address = address_parts
-    if protocol.lower() != "xmlrpc":
+    if protocol.lower() != "xmlrpc" or ip_address[:2] != "//":
         raise ValueError("Wrong protocol for ASA measurer")
-    return ip_address, port
+    return ip_address[2:], port
 
 
 class IVMeasurerVirtualASA(IVMeasurerVirtual):
