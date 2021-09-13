@@ -142,38 +142,34 @@ class EPLab(ProductBase):
         :return: data from json file.
         """
 
-        with open(join(dirname(__file__), json_filename), "r",
+        with open(join(dirname(abspath(__file__)), json_filename), "r",
                   encoding="utf-8") as file:
             return json.load(file)
 
     @classmethod
     def _schema(cls) -> Dict:
-        with open(join(dirname(__file__), "doc", "eplab_schema.json"), "r",
+        with open(join(dirname(abspath(__file__)), "doc", "eplab_schema.json"), "r",
                   encoding="utf-8") as file:
             return json.load(file)
 
-    def __init__(self, measurer_type: Optional[str] = None):
+    def __init__(self, json_data: Optional[Dict] = None):
         """
-        :param measurer_type: type of measurers.
+        :param json_data: dictionary with options for parameters of measurement
+        system.
         """
 
         super(EPLab, self).__init__()
-        if measurer_type is None:
-            measurer_type = "IVM10"
-        self.change_options(measurer_type)
+        self.change_options(json_data)
 
-    def change_options(self, measurer_type: str):
+    def change_options(self, json_data: Optional[Dict] = None):
         """
         Method changes options for parameters of measurement system.
-        :param measurer_type: type of measurer.
+        :param json_data: dictionary with options for parameters of measurement
+        system.
         """
 
-        if measurer_type == "IVM10":
-            json_filename = join(dirname(__file__), "eplab_default_options.json")
-        elif measurer_type == "ASA":
-            dir_name = dirname(dirname(abspath(__file__)))
-            json_filename = join(dir_name, "ivmeasurer", "asa10", "eplab_asa_options.json")
-        json_data = EPLab._open_json(json_filename)
+        if json_data is None:
+            json_data = EPLab._open_json("eplab_default_options.json")
         try:
             jsonschema.validate(json_data, EPLab._schema())
         except jsonschema.ValidationError as err:
