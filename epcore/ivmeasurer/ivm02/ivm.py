@@ -234,7 +234,7 @@ class IvmDeviceHandle:
             self,
             frame: Union[int, c_ushort],
             *,
-            dst_buffer: Optional[GetMeasurementResponse]=None
+            dst_buffer: Optional[GetMeasurementResponse] = None
     ) -> "GetMeasurementResponse": pass
 
     @overload  # noqa: F811
@@ -242,7 +242,7 @@ class IvmDeviceHandle:
             self,
             src_buffer: GetMeasurementRequest,
             *,
-            dst_buffer: Optional[GetMeasurementResponse]=None
+            dst_buffer: Optional[GetMeasurementResponse] = None
     ) -> "GetMeasurementResponse": pass
 
     def get_measurement(self, *args, **kwargs) -> "GetMeasurementResponse":  # noqa: F811
@@ -522,7 +522,7 @@ class IvmDeviceHandle:
             self,
             frame: Union[int, c_ushort],
             *,
-            dst_buffer: Optional[AnalogDataResponse]=None
+            dst_buffer: Optional[AnalogDataResponse] = None
     ) -> "AnalogDataResponse": pass
 
     @overload  # noqa: F811
@@ -530,7 +530,7 @@ class IvmDeviceHandle:
             self,
             src_buffer: AnalogDataRequest,
             *,
-            dst_buffer: Optional[AnalogDataResponse]=None
+            dst_buffer: Optional[AnalogDataResponse] = None
     ) -> "AnalogDataResponse": pass
 
     def analog_data(self, *args, **kwargs) -> "AnalogDataResponse":  # noqa: F811
