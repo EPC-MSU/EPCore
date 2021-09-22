@@ -3,7 +3,7 @@
   "$id": "https://hg.ximc.ru/eyepoint/epcore/file/P10Schema1.0.0/epcore/doc/p10_elements.schema.json",
   "$id": "hg://hg.ximc.ru/eyepoint-src/doc/elements.schema.json",
   "title": "EyePoint P10 elements.json format",
-  "description": "This describes format of savefiles of Eyepoint P10 in elements.json. There are additional data in the saves, but this only describes one main json file",
+  "description": "This describes format of savefiles of Eyepoint P10 in elements.json. There are additional data in the saves, but this only describes one main json file.",
   "additionalProperties": false,
   "type": "object",
   "properties": {
@@ -13,7 +13,7 @@
       "uniqueItems": true,
       "type": "array",
       "items": {
-        "description": "Component on the PCB. May be a interated circuit or SMD chip. Sometimes a nonexistent component is created just to place testing points inside it. One board may contain just one component, real or faked. So basically component provides convinient wrapper for pins.",
+        "description": "Component on the PCB. May be a integrated circuit or SMD chip. Sometimes a nonexistent component is created just to place testing points inside it. One board may contain just one component, real or faked. So basically component provides convenient wrapper for pins.",
         "additionalProperties": false,
         "type": "object",
         "properties": {
@@ -33,7 +33,7 @@
             ]
           },
           "manual_name": {
-            "description": "The name assigned by user. Is set when automatical systems failed to recognized one of the standard names of PCB component. Otherwise it is empty string.",
+            "description": "The name assigned by user. Is set when automated systems failed to recognize one of the standard names of PCB component. Otherwise it is empty string.",
             "type": "string"
           },
           "is_manual": {
@@ -144,11 +144,11 @@
                   ]
                 },
                 "y": {
-                  "description": "Y coordinate of the pin on the board image [pixels]",
+                  "description": "Y coordinate of the pin on the board image [pixels].",
                   "type": "number"
                 },
                 "x": {
-                  "description": "X coordinate of the pin on the board image [pixels]",
+                  "description": "X coordinate of the pin on the board image [pixels].",
                   "type": "number"
                 },
                 "is_dynamic": {
@@ -227,7 +227,7 @@
                   ]
                 },
                 "score": {
-                  "description": "Score is a comparison result of this pin ivc measurement with reference ivc from the reference board. Score have no meaning when one of the two measurements is not available.",
+                  "description": "Score is a comparison result of this pin ivc measurement with reference ivc from the reference board. Score has no meaning when one of the two measurements is not available.",
                   "minimum": 0,
                   "maximum": 1,
                   "type": "number"
@@ -252,7 +252,7 @@
                 "type": "null"
               },
               {
-                "description": "The size of array is the number of rows. It may be 2 for SOIC-like components of 4 for LQFP-like components. Each array element represent a row of pins.",
+                "description": "The size of array is the number of rows. It may be 2 for SOIC-like components or 4 for LQFP-like components. Each array element represents a row of pins.",
                 "type": "array",
                 "minItems": 2,
                 "maxItems": 4,
@@ -286,7 +286,7 @@
                 "type": "array"
               },
               {
-                "description": "bounding_zone is an array with 4 or 12 vertixes when used.",
+                "description": "bounding_zone is an array with 4 or 12 vertices when used.",
                 "minItems": 4,
                 "maxItems": 12,
                 "type": "array",
@@ -301,18 +301,18 @@
             ]
           },
           "rotation": {
-            "description": "Each automatically recognized PCB component can be placed on the board in 4 different rotations - each one by additionl 90 degrees from the original. This parameter is reqired for correct placement of component and its picture.",
+            "description": "Each automatically recognized PCB component can be placed on the board in 4 different rotations - each one by additional 90 degrees from the original. This parameter is required for correct placement of component and its picture.",
             "minimum": 0,
             "maximum": 3,
             "type": "integer"
           },
           "h_pins": {
-            "description": "How many pins are horizontally aligned (for lqfp, soic). It is -1 if cannot be determined (for manually entered components for example)..",
+            "description": "How many pins are horizontally aligned (for LQFP, SOIC). It is -1 if cannot be determined (for manually entered components for example).",
             "minimum": -1,
             "type": "integer"
           },
           "w_pins": {
-            "description": "How many pins are vertically aligned (for lqfp, soic). It is -1 if cannot be determined (for manually entered components for example).",
+            "description": "How many pins are vertically aligned (for LQFP, SOIC). It is -1 if cannot be determined (for manually entered components for example).",
             "minimum": -1,
             "type": "integer"
           },

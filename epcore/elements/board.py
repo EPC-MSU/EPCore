@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 from warnings import warn
 from PIL.Image import Image
 from .abstract import JsonConvertible
@@ -12,7 +12,7 @@ version = "1.1.1"
 @dataclass
 class Board(JsonConvertible):
     """
-    Printed circuit board class. Normally board contain a number of components,
+    Printed circuit board class. Normally board contains a number of components,
     which can be tested.
     """
 
@@ -21,8 +21,7 @@ class Board(JsonConvertible):
 
     def to_json(self) -> Dict:
         """
-        Return object as dict with structure compatible with UFIV JSON file
-        schema.
+        Return object as dict with structure compatible with UFIV JSON file schema.
         """
 
         json_data = {
@@ -34,8 +33,7 @@ class Board(JsonConvertible):
     @classmethod
     def create_from_json(cls, json: Dict) -> "Board":
         """
-        Create object from dict with structure compatible with UFIV JSON file
-        schema.
+        Create object from dict with structure compatible with UFIV JSON file schema.
         """
 
         if json["version"] != version:

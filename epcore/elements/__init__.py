@@ -31,14 +31,13 @@ from .pin import Pin
 from .element import Element
 from .board import Board, version
 
-__all__ = ["IVCurve",
-           "MeasurementSettings",
-           "Measurement",
-           "Pin",
+__all__ = ["Board",
            "Element",
            "IVCurve",
-           "Board",
+           "Measurement",
+           "MeasurementSettings",
+           "Pin",
            "version"]
 
 __author__ = "mihalin"
-__email__ = "mihalin@pysabphyslab.ru"
+__email__ = "mihalin@physlab.ru"

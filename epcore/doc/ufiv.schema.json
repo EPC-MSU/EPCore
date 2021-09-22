@@ -25,7 +25,7 @@
                     "type": "number"
                 },
                 "comment": {
-                    "description": "User comment for convinience.",
+                    "description": "User comment for convenience.",
                     "type": "string"
                 }
             },
@@ -39,7 +39,7 @@
             "uniqueItems": true,
             "type": "array",
             "items": {
-                "description": "Component on the PCB. May be a integrated circuit or SMD chip. Sometimes a nonexistent component is created just to place testing points inside it. Each board should contain at least one component, real or faked. So basically component provides convinient wrapper for pins.",
+                "description": "Component on the PCB. May be a integrated circuit or SMD chip. Sometimes a nonexistent component is created just to place testing points inside it. Each board should contain at least one component, real or faked. So basically component provides convenient wrapper for pins.",
                 "additionalProperties": false,
                 "type": "object",
                 "properties": {
@@ -65,11 +65,11 @@
                                     "type": "string"
                                 },
                                 "y": {
-                                    "description": "Y coordinate of the pin on the board image [pixels]",
+                                    "description": "Y coordinate of the pin on the board image [pixels].",
                                     "type": "number"
                                 },
                                 "x": {
-                                    "description": "X coordinate of the pin on the board image [pixels]",
+                                    "description": "X coordinate of the pin on the board image [pixels].",
                                     "type": "number"
                                 },
                                 "iv_curves": {
@@ -98,7 +98,7 @@
                                                         "type": "number"
                                                     },
                                                     "precharge_delay": {
-                                                        "description": "This parameter determines delay added for testing component precharge before measurement. During this delay appropriate probe signal is applied. If not presented assumed 0. Units: seconds",
+                                                        "description": "This parameter determines delay added for testing component precharge before measurement. During this delay appropriate probe signal is applied. If not presented assumed 0. Units: seconds.",
                                                         "type": "number"
                                                     },
                                                     "sampling_rate": {
@@ -134,7 +134,7 @@
                                                 }
                                             },
                                             "currents": {
-                                                "description": "Curcuit currents measured with sampling rate. Together with voltages they form an iv_curve of circuit under investigation, its analog signature. Units: Amperes.",
+                                                "description": "Circuit currents measured with sampling rate. Together with voltages they form an iv_curve of circuit under investigation, its analog signature. Units: Amperes.",
                                                 "minItems": 4,
                                                 "type": "array",
                                                 "items": {
@@ -171,7 +171,7 @@
                         }
                     },
                     "bounding_zone": {
-                        "description": "bounding_zone, if present, sets a polygon on the board which is occupied by the element. There must be no overlapping polygons. It is an array with 4 or 12 vertixes when used. 4 vertixes for simple rectangular component. 12 vertixes for intergated circuits that are found by 4 corners (16 corners minus 4 inner corners).",
+                        "description": "bounding_zone, if present, sets a polygon on the board which is occupied by the element. There must be no overlapping polygons. It is an array with 4 or 12 vertices when used. 4 vertices for simple rectangular component. 12 vertices for integrated circuits that are found by 4 corners (16 corners minus 4 inner corners).",
                         "minItems": 4,
                         "maxItems": 12,
                         "type": "array",
@@ -184,7 +184,7 @@
                         }
                     },
                     "rotation": {
-                        "description": "Each automatically recognized PCB component can be placed on the board in 4 different rotations - each one by additionl 90 degrees from the original. This parameter is reqired for correct placement of component and its picture.",
+                        "description": "Each automatically recognized PCB component can be placed on the board in 4 different rotations - each one by additional 90 degrees from the original. This parameter is required for correct placement of component and its picture.",
                         "minimum": 0,
                         "maximum": 3,
                         "type": "integer"

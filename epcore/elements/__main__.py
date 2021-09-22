@@ -1,12 +1,11 @@
-from .measurement import Measurement, IVCurve, MeasurementSettings
-from .pin import Pin
-from .element import Element
 from .board import Board
+from .element import Element
+from .measurement import IVCurve, Measurement, MeasurementSettings
+from .pin import Pin
 
 
 if __name__ == "__main__":
     # Create board with elements with pins
-
     # Element 1
     e1 = Element(
         pins=[
