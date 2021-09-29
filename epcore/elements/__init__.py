@@ -29,13 +29,14 @@ python -m unittest discover epcore/elements
 from .measurement import Measurement, MeasurementSettings, IVCurve
 from .pin import Pin
 from .element import Element
-from .board import Board, version
+from .board import Board, PCBInfo, version
 
 __all__ = ["Board",
            "Element",
            "IVCurve",
            "Measurement",
            "MeasurementSettings",
+           "PCBInfo",
            "Pin",
            "version"]
 
