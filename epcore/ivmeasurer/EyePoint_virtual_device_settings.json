@@ -12,13 +12,13 @@
             "values":
             [
                 {
-                    "label_ru": "Конденсатор",
-                    "label_en": "Capacitor",
+                    "label_ru": "Конденсатор, [C] = Ф",
+                    "label_en": "Capacitor, [C] = F",
                     "value": "capacitor"
                 },
                 {
-                    "label_ru": "Резистор",
-                    "label_en": "Resistor",
+                    "label_ru": "Резистор, [R] = Ом",
+                    "label_en": "Resistor, [R] = Ohm",
                     "value": "resistor"
                 }
             ]
@@ -26,8 +26,8 @@
         {
             "description": "Номинал резистора/конденсатора",
             "parameter": "nominal",
-            "parameter_name_ru": "Номинал. [R] = Ом, [C] = Ф",
-            "parameter_name_en": "Nominal. [R] = Ohm, [C] = F",
+            "parameter_name_ru": "Номинал",
+            "parameter_name_en": "Nominal",
             "type": "line_edit",
             "value_type": "float",
             "min": 1.0e-20,
