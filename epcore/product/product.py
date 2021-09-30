@@ -2,7 +2,7 @@ import json
 from abc import abstractmethod
 from dataclasses import dataclass
 from enum import auto, Enum
-from os.path import join, dirname
+from os.path import abspath, dirname, join
 from typing import Any, Dict, List, Optional, Tuple
 from warnings import warn
 import jsonschema
@@ -135,30 +135,47 @@ class EPLab(ProductBase):
         sensitive = auto()
 
     @classmethod
-    def _default_json(cls) -> Dict:
-        with open(join(dirname(__file__), "eplab_default_options.json"), "r",
+    def _open_json(cls, json_filename: str) -> Dict:
+        """
+        Method opens json file with options.
+        :param json_filename: name of json file.
+        :return: data from json file.
+        """
+
+        with open(join(dirname(abspath(__file__)), json_filename), "r",
                   encoding="utf-8") as file:
             return json.load(file)
 
     @classmethod
     def _schema(cls) -> Dict:
-        with open(join(dirname(__file__), "doc", "eplab_schema.json"), "r",
+        with open(join(dirname(abspath(__file__)), "doc", "eplab_schema.json"), "r",
                   encoding="utf-8") as file:
             return json.load(file)
 
     def __init__(self, json_data: Optional[Dict] = None):
+        """
+        :param json_data: dictionary with options for parameters of measurement
+        system.
+        """
 
         super(EPLab, self).__init__()
+        self.change_options(json_data)
+
+    def change_options(self, json_data: Optional[Dict] = None):
+        """
+        Method changes options for parameters of measurement system.
+        :param json_data: dictionary with options for parameters of measurement
+        system.
+        """
+
         if json_data is None:
-            json_data = EPLab._default_json()
+            json_data = EPLab._open_json("eplab_default_options.json")
         try:
             jsonschema.validate(json_data, EPLab._schema())
         except jsonschema.ValidationError as err:
             raise InvalidJson("Validation error: " + str(err)) from err
-
         json_options = json_data["options"]
         self._plot_parameters = PlotParameters.from_json(json_data["plot_parameters"])
-
         self.mparams = {
             EPLab.Parameter.frequency:
                 MeasurementParameter(EPLab.Parameter.frequency,

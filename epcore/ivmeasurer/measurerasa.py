@@ -57,9 +57,7 @@ class IVMeasurerVirtualASA(IVMeasurerVirtual):
     def __init__(self, url: str = "", name: str = "",
                  defer_open: bool = False):
         """
-        :param url: url for device identification in computer system. For
-        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
-        "com:///dev/tty/ttyACMx" (for Linux);
+        :param url: url for device identification in computer system;
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization.
         """
@@ -80,7 +78,7 @@ class IVMeasurerASA(IVMeasurerBase):
     """
     Class for controlling EyePoint ASA devices (EP H10) with API version 1.0.1.
     All instances should be initialized with device URL. Format:
-    xmlrpc:ip_address:port.
+    xmlrpc://ip_address:port.
     """
 
     _calibration_types = {"Быстрая калибровка. Замкнутые щупы": 0,
@@ -100,7 +98,7 @@ class IVMeasurerASA(IVMeasurerBase):
                  defer_open: bool = False):
         """
         :param url: url for device identification in computer system. For
-        devices url will be "xmlrpc:xxx.xxx.xxx.x";
+        devices url will be "xmlrpc://xxx.xxx.xxx.xxx";
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization.
         """
