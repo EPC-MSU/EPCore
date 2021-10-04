@@ -18,10 +18,10 @@ class MeasurementSystem:
 
     def __init__(self, measurers: Optional[List[IVMeasurerBase]] = None):
         self.measurers = measurers or []
-
         # Two containers for the same thing is not a good feature.
         # Consider removing and try not to use this.
-        self.measurers_map = {measurer.name: measurer for measurer in measurers if measurer.name}
+        self.measurers_map = {measurer.name: measurer for measurer in self.measurers
+                              if measurer.name}
 
     def trigger_measurements(self):
         """

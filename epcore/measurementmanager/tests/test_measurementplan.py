@@ -1,11 +1,11 @@
 import unittest
-
-from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.elements import Board, Element, Pin
+from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.measurementmanager import MeasurementPlan
 
 
 class TestPlan(unittest.TestCase):
+
     def test_plan(self):
         pins = [Pin(0, 0, []), Pin(1, 1, [])]
         board = Board(elements=[Element(pins=pins)])

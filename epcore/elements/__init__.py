@@ -26,10 +26,10 @@ To run tests:
 python -m unittest discover epcore/elements
 """
 
-from .measurement import Measurement, MeasurementSettings, IVCurve
-from .pin import Pin
-from .element import Element
 from .board import Board, PCBInfo, version
+from .element import Element
+from .measurement import IVCurve, Measurement, MeasurementSettings
+from .pin import Pin
 
 __all__ = ["Board",
            "Element",

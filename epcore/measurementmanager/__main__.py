@@ -1,7 +1,7 @@
 import logging
 import numpy as np
-# from .measurementplan import MeasurementPlan  # See comments below
 from .ivc_comparator import IVCComparator
+# from .measurementplan import MeasurementPlan  # See comments below
 from .measurementsystem import MeasurementSystem
 from ..elements import IVCurve
 from ..ivmeasurer import IVMeasurerVirtual
@@ -43,6 +43,6 @@ if __name__ == "__main__":
     comp = IVCComparator()
     comp.set_min_ivc(0., 0.)
     score1 = comp.compare_ivc(ivc1, ivc0)
-    logging.debug("     Close curves: %s", score1)
+    logging.debug("Close curves: %s", score1)
     score2 = comp.compare_ivc(ivc2, ivc0)
-    logging.debug(" Different curves: %s", score2)
+    logging.debug("Different curves: %s", score2)

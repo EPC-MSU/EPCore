@@ -1,98 +1,164 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "EPLab product options schema format",
-  "description": "This describes format of EPLab options list config",
-  "additionalProperties": false,
-  "minProperties": 2,
-  "type": "object",
-  "properties": {
-    "options": {
-      "description": "Configurable system options (frequency, voltage, sensitive)",
-      "type": "object",
-      "additionalProperties": false,
-      "minProperties": 3,
-      "properties": {
-        "frequency": {
-          "description": "Frequency options",
-          "type": "array",
-          "minItems": 1,
-          "items": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "EPLab product options schema format",
+    "description": "This describes format of EPLab options list config",
+    "additionalProperties": false,
+    "minProperties": 2,
+    "type": "object",
+    "properties": {
+        "options": {
+            "description": "Configurable system options (frequency, voltage, sensitive)",
             "type": "object",
             "additionalProperties": false,
-            "minProperties": 4,
+            "minProperties": 1,
             "properties": {
-              "name": {
-                "type": "string"
-              },
-              "value": {},
-              "label_ru": {
-                "type": "string"
-              },
-              "label_en": {
-                "type": "string"
-              }
+                "frequency": {
+                    "description": "Frequency options",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object",
+                        "minProperties": 4,
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {},
+                            "label_ru": {
+                                "type": "string"
+                            },
+                            "label_en": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": {
+                            "voltage": {
+                                "description": "Voltage options",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "minProperties": 4,
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "value": {},
+                                        "label_ru": {
+                                            "type": "string"
+                                        },
+                                        "label_en": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "additionalProperties": {
+                                        "sensitive": {
+                                            "description": "Sensitive options",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "additionalProperties": false,
+                                                "minProperties": 4,
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "value": {},
+                                                    "label_ru": {
+                                                        "type": "string"
+                                                    },
+                                                    "label_en": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "voltage": {
+                    "description": "Voltage options",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "minProperties": 4,
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {},
+                            "label_ru": {
+                                "type": "string"
+                            },
+                            "label_en": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": {
+                            "sensitive": {
+                                "description": "Sensitive options",
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "minProperties": 4,
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "value": {},
+                                        "label_ru": {
+                                            "type": "string"
+                                        },
+                                        "label_en": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "sensitive": {
+                    "description": "Sensitive options",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "minProperties": 4,
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "value": {},
+                            "label_ru": {
+                                "type": "string"
+                            },
+                            "label_en": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
-          }
         },
-        "voltage": {
-          "description": "Voltage options",
-          "type": "array",
-          "items": {
+        "plot_parameters": {
+            "description": "Plot parameters",
             "type": "object",
             "additionalProperties": false,
-            "minProperties": 4,
+            "minProperties": 2,
             "properties": {
-              "name": {
-                "type": "string"
-              },
-              "value": {},
-              "label_ru": {
-                "type": "string"
-              },
-              "label_en": {
-                "type": "string"
-              }
+                "test_color": {
+                    "description": "Test curve color (example: #FF0000)",
+                    "type": "string"
+                },
+                "ref_color": {
+                    "description": "Reference curve color (example: #FFFF00)",
+                    "type": "string"
+                }
             }
-          }
-        },
-        "sensitive": {
-          "description": "Sensitive options",
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "minProperties": 4,
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "value": {},
-              "label_ru": {
-                "type": "string"
-              },
-              "label_en": {
-                "type": "string"
-              }
-            }
-          }
         }
-      }
-    },
-    "plot_parameters": {
-      "description": "Plot parameters",
-      "type": "object",
-      "additionalProperties": false,
-      "minProperties": 2,
-      "properties": {
-        "test_color": {
-          "description": "Test curve color (example: #FF0000)",
-          "type": "string"
-        },
-        "ref_color": {
-          "description": "Reference curve color (example: #FFFF00)",
-          "type": "string"
-        }
-      }
     }
-  }
 }
