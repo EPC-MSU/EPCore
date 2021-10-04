@@ -6,7 +6,6 @@ from .pin import Pin
 
 if __name__ == "__main__":
     # Create board with elements with pins
-
     # Element 1
     e1 = Element(
         pins=[Pin(0.0, 0.0, [Measurement(MeasurementSettings(0, 0, 0, 0),

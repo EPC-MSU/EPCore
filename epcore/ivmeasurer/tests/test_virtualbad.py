@@ -3,6 +3,7 @@ from epcore.ivmeasurer import IVMeasurerVirtualBad
 
 
 class VirtualBadText(unittest.TestCase):
+
     def test_raises(self):
         bad = IVMeasurerVirtualBad(fail_chance=0.3, defer_open=True)
         success = False

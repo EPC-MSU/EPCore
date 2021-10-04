@@ -241,7 +241,7 @@ class IvmDeviceHandle:
             self,
             frame_number: Union[int, c_ushort],
             *,
-            dst_buffer: Optional[GetMeasurementResponse]=None
+            dst_buffer: Optional[GetMeasurementResponse] = None
     ) -> "GetMeasurementResponse": pass
 
     @overload  # noqa: F811
@@ -249,7 +249,7 @@ class IvmDeviceHandle:
             self,
             src_buffer: GetMeasurementRequest,
             *,
-            dst_buffer: Optional[GetMeasurementResponse]=None
+            dst_buffer: Optional[GetMeasurementResponse] = None
     ) -> "GetMeasurementResponse": pass
 
     def get_measurement(self, *args, **kwargs) -> "GetMeasurementResponse":  # noqa: F811
@@ -549,7 +549,7 @@ class IvmDeviceHandle:
             self,
             frame: Union[int, c_ushort],
             *,
-            dst_buffer: Optional[GetMeasurementRawResponse]=None
+            dst_buffer: Optional[GetMeasurementRawResponse] = None
     ) -> "GetMeasurementRawResponse": pass
 
     @overload  # noqa: F811
@@ -557,7 +557,7 @@ class IvmDeviceHandle:
             self,
             src_buffer: GetMeasurementRawRequest,
             *,
-            dst_buffer: Optional[GetMeasurementRawResponse]=None
+            dst_buffer: Optional[GetMeasurementRawResponse] = None
     ) -> "GetMeasurementRawResponse": pass
 
     def get_measurement_raw(self, *args, **kwargs) -> "GetMeasurementRawResponse":  # noqa: F811

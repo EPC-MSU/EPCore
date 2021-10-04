@@ -21,6 +21,7 @@ oldstyle_board_without_img_path = os.path.join(os.path.dirname(__file__), "testb
 
 
 class LoadSaveTests(unittest.TestCase):
+
     def test_path_not_exists(self):
         with self.assertRaises(FileNotFoundError):
             load_board_from_ufiv(dummy_path)

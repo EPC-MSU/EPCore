@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 from .abstract import JsonConvertible
 
 
@@ -22,8 +22,7 @@ class MeasurementSettings(JsonConvertible):
 
     def to_json(self) -> Dict:
         """
-        Return object as dict with structure
-        compatible with UFIV JSON file schema
+        Return object as dict with structure compatible with UFIV JSON file schema.
         """
 
         json_data = {
@@ -33,15 +32,14 @@ class MeasurementSettings(JsonConvertible):
             "probe_signal_frequency": self.probe_signal_frequency,
             "precharge_delay": self.precharge_delay
         }
-
         return self.remove_unused(json_data)
 
     @classmethod
     def create_from_json(cls, json_data: Dict) -> "MeasurementSettings":
         """
-        Create object from dict with structure
-        compatible with UFIV JSON file schema
+        Create object from dict with structure compatible with UFIV JSON file schema.
         """
+
         return MeasurementSettings(
             sampling_rate=json_data["sampling_rate"],
             internal_resistance=json_data["internal_resistance"],
@@ -54,24 +52,22 @@ class MeasurementSettings(JsonConvertible):
 @dataclass
 class IVCurve(JsonConvertible):
     """
-    IVCurve data.
-    Measurement results only.
+    IVCurve data. Measurement results only.
     """
+
     currents: List[float] = field(default_factory=lambda: [0., 0.])
     voltages: List[float] = field(default_factory=lambda: [0., 0.])
 
     def __post_init__(self):
-        if len(self.currents) != len(self.voltages):
-            raise ValueError("""Currents and voltages array lengths should be equal.
-                                Got len(currents) = {}. len(voltages) = {}""".format(
-                                    len(self.currents), len(self.voltages)
-                                ))
-
-        if len(self.currents) < 2:
-            raise ValueError("""IV curve should contain at lease 2 points
-                                for correct operation, got {}""".format(
-                                    len(self.currents)
-                                ))
+        n_currents = len(self.currents)
+        n_voltages = len(self.voltages)
+        if n_currents != n_voltages:
+            raise ValueError("Currents and voltages array lengths should be equal. "
+                             "Got len(currents) = {}, len(voltages) = {}".format(n_currents,
+                                                                                 n_voltages))
+        if n_currents < 2:
+            raise ValueError("IV curve should contain at least 2 points for correct operation,"
+                             " got {}".format(n_currents))
 
     def to_json(self) -> Dict:
         return {
@@ -98,8 +94,7 @@ class Measurement(JsonConvertible):
 
     def to_json(self) -> Dict:
         """
-        Return object as dict with structure
-        compatible with UFIV JSON file schema
+        Return object as dict with structure compatible with UFIV JSON file schema.
         """
 
         json_data = {
@@ -115,9 +110,9 @@ class Measurement(JsonConvertible):
     @classmethod
     def create_from_json(cls, json_data: Dict) -> "Measurement":
         """
-        Create object from dict with structure
-        compatible with UFIV JSON file schema
+        Create object from dict with structure compatible with UFIV JSON file schema.
         """
+
         return Measurement(
             settings=MeasurementSettings.create_from_json(json_data["measurement_settings"]),
             ivc=IVCurve(currents=json_data["currents"], voltages=json_data["voltages"]),

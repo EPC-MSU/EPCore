@@ -1,6 +1,6 @@
 import unittest
 from json import load
-from os.path import join as join_path, dirname
+from os.path import dirname, join as join_path
 from jsonschema import validate
 from epcore.doc import path_to_ufiv_schema
 from epcore.utils.converter_p10 import convert_p10

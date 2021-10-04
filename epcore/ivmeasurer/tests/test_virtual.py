@@ -4,6 +4,7 @@ from epcore.ivmeasurer import IVMeasurerVirtual
 
 
 class TestVirtualIVC(unittest.TestCase):
+
     def test_measurement(self):
         measurer = IVMeasurerVirtual()
         # just a few measurements

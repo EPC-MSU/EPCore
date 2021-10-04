@@ -44,9 +44,9 @@ def _parse_address(full_address: str) -> Tuple[str, str]:
         protocol, ip_address, port = address_parts
     else:
         protocol, ip_address = address_parts
-    if protocol.lower() != "xmlrpc":
+    if protocol.lower() != "xmlrpc" or ip_address[:2] != "//":
         raise ValueError("Wrong protocol for ASA measurer")
-    return ip_address, port
+    return ip_address[2:], port
 
 
 class IVMeasurerVirtualASA(IVMeasurerVirtual):
@@ -57,9 +57,7 @@ class IVMeasurerVirtualASA(IVMeasurerVirtual):
     def __init__(self, url: str = "", name: str = "",
                  defer_open: bool = False):
         """
-        :param url: url for device identification in computer system. For
-        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
-        "com:///dev/tty/ttyACMx" (for Linux);
+        :param url: url for device identification in computer system;
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization.
         """
@@ -80,7 +78,7 @@ class IVMeasurerASA(IVMeasurerBase):
     """
     Class for controlling EyePoint ASA devices (EP H10) with API version 1.0.1.
     All instances should be initialized with device URL. Format:
-    xmlrpc:ip_address:port.
+    xmlrpc://ip_address:port.
     """
 
     _calibration_types = {"Быстрая калибровка. Замкнутые щупы": 0,
@@ -100,7 +98,7 @@ class IVMeasurerASA(IVMeasurerBase):
                  defer_open: bool = False):
         """
         :param url: url for device identification in computer system. For
-        devices url will be "xmlrpc:xxx.xxx.xxx.x";
+        devices url will be "xmlrpc://xxx.xxx.xxx.xxx";
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization.
         """
@@ -126,11 +124,11 @@ class IVMeasurerASA(IVMeasurerBase):
     def open_device(self):
         self._set_server_host()
         attempt_number = 0
-        while attempt_number < 3:
+        while attempt_number < 1:
             try:
                 self.set_settings()
                 self.get_settings()
-            except Exception:
+            except (asa.AsaFormatError, asa.AsaTypeError, asa.AsaValueError):
                 attempt_number += 1
                 continue
             break
@@ -143,7 +141,7 @@ class IVMeasurerASA(IVMeasurerBase):
         try:
             self.open_device()
             return True
-        except (RuntimeError, OSError):
+        except (RuntimeError, OSError, asa.AsaConnectionError, asa.AsaServerResponseError):
             return False
 
     @_close_on_error
@@ -429,5 +427,9 @@ class IVMeasurerASA(IVMeasurerBase):
         Method is waiting for the last operation to complete.
         """
 
-        while asa.GetLastOperationResult(self._lib, self._server) != 0:
+        status = asa.GetLastOperationResult(self._lib, self._server)
+        while status != asa.AsaResponseStatus.ASA_OK:
+            if status in asa.AsaResponseStatus.get_errors():
+                break
             time.sleep(0.2)
+            status = asa.GetLastOperationResult(self._lib, self._server)

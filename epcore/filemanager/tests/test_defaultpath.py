@@ -5,6 +5,7 @@ from epcore.filemanager import DefaultPathError, DefaultPathManager
 
 
 class DefaultPathTest(unittest.TestCase):
+
     def test_nonexistent_path(self):
         manager = DefaultPathManager("/DUMMY_PATH_NOT_EXISTS")
         with self.assertRaises(DefaultPathError):

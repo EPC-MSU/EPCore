@@ -1,9 +1,9 @@
 import argparse
 import logging
 import sys
-from .safe_opener import BadFirmwareVersion, BadConfig
 from .measurerasa import IVMeasurerASA
 from .measurerivm import IVMeasurerIVM02, IVMeasurerIVM10
+from .safe_opener import BadFirmwareVersion, BadConfig
 from .utils import plot_curve
 from .virtual import IVMeasurerVirtual
 

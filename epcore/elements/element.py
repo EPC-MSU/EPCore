@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Tuple
+from typing import Dict, List, Optional, Tuple
 import numpy as np
 from .abstract import JsonConvertible
 from .pin import Pin
@@ -23,20 +23,18 @@ class Element(JsonConvertible):
     set_automatically: Optional[bool] = None
 
     @property
-    def center(self):
+    def center(self) -> Optional[np.array]:
         if self.bounding_zone is not None:
             if len(self.bounding_zone) > 0:
                 return np.mean(np.array(self.bounding_zone), axis=0).tolist()
         if len(self.pins) > 0:
             arr_xy = [(p.x, p.y) for p in self.pins]
             return np.mean(np.array(arr_xy), axis=0).tolist()
-        else:
-            return None
+        return None
 
     def to_json(self) -> Dict:
         """
-        Return object as dict with structure compatible with UFIV JSON file
-        schema.
+        Return object as dict with structure compatible with UFIV JSON file schema.
         """
 
         json_data = {
@@ -56,9 +54,9 @@ class Element(JsonConvertible):
     @classmethod
     def create_from_json(cls, json_data: Dict) -> "Element":
         """
-        Create object from dict with structure compatible with UFIV JSON file
-        schema.
+        Create object from dict with structure compatible with UFIV JSON file schema.
         """
+
         return Element(
             pins=[Pin.create_from_json(pin) for pin in json_data["pins"]],
             set_automatically=json_data.get("set_automatically"),
