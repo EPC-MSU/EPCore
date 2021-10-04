@@ -88,5 +88,153 @@
     "plot_parameters": {
         "test_color": "#0000FF",
         "ref_color": "#FF0000"
-    }
+    },
+    "scale_adjuster": [
+        {
+            "voltage": 1.2,
+            "sensitive": 475.0,
+            "horizontal": 1.5,
+            "vertical": 4.0
+        },
+        {
+            "voltage": 1.2,
+            "sensitive": 4750.0,
+            "horizontal": 1.5,
+            "vertical": 0.4
+        },
+        {
+            "voltage": 1.2,
+            "sensitive": 47500.0,
+            "horizontal": 1.5,
+            "vertical": 0.04
+        },
+        {
+            "voltage": 3.3,
+            "sensitive": 475.0,
+            "horizontal": 4.0,
+            "vertical": 10.0
+        },
+        {
+            "voltage": 3.3,
+            "sensitive": 4750.0,
+            "horizontal": 4.0,
+            "vertical": 1.0
+        },
+        {
+            "voltage": 3.3,
+            "sensitive": 47500.0,
+            "horizontal": 4.0,
+            "vertical": 0.15
+        },
+        {
+            "voltage": 5.0,
+            "sensitive": 475.0,
+            "horizontal": 6.0,
+            "vertical": 15.0
+        },
+        {
+            "voltage": 5.0,
+            "sensitive": 4750.0,
+            "horizontal": 6.0,
+            "vertical": 1.5
+        },
+        {
+            "voltage": 5.0,
+            "sensitive": 47500.0,
+            "horizontal": 6.0,
+            "vertical": 0.18
+        },
+        {
+            "voltage": 12.0,
+            "sensitive": 475.0,
+            "horizontal": 14.0,
+            "vertical": 28.0
+        },
+        {
+            "voltage": 12.0,
+            "sensitive": 4750.0,
+            "horizontal": 14.0,
+            "vertical": 2.8
+        },
+        {
+            "voltage": 12.0,
+            "sensitive": 47500.0,
+            "horizontal": 14.0,
+            "vertical": 0.35
+        }
+    ],
+    "noise_amplitude": [
+        {
+            "voltage": 1.2,
+            "sensitive": 475.0,
+            "horizontal": 0.3,
+            "vertical": 0.008
+        },
+        {
+            "voltage": 1.2,
+            "sensitive": 4750.0,
+            "horizontal": 0.3,
+            "vertical": 0.0005
+        },
+        {
+            "voltage": 1.2,
+            "sensitive": 47500.0,
+            "horizontal": 0.3,
+            "vertical": 0.00005
+        },
+        {
+            "voltage": 3.3,
+            "sensitive": 475.0,
+            "horizontal": 0.3,
+            "vertical": 0.008
+        },
+        {
+            "voltage": 3.3,
+            "sensitive": 4750.0,
+            "horizontal": 0.3,
+            "vertical": 0.0005
+        },
+        {
+            "voltage": 3.3,
+            "sensitive": 47500.0,
+            "horizontal": 0.3,
+            "vertical": 0.00005
+        },
+        {
+            "voltage": 5.0,
+            "sensitive": 475.0,
+            "horizontal": 0.6,
+            "vertical": 0.008
+        },
+        {
+            "voltage": 5.0,
+            "sensitive": 4750.0,
+            "horizontal": 0.3,
+            "vertical": 0.0005
+        },
+        {
+            "voltage": 5.0,
+            "sensitive": 47500.0,
+            "horizontal": 0.3,
+            "vertical": 0.00005
+        },
+        {
+            "voltage": 12.0,
+            "sensitive": 475.0,
+            "horizontal": 0.6,
+            "vertical": 0.008
+        },
+        {
+            "voltage": 12.0,
+            "sensitive": 4750.0,
+            "horizontal": 0.6,
+            "vertical": 0.0005
+        },
+        {
+            "voltage": 12.0,
+            "sensitive": 47500.0,
+            "horizontal": 0.6,
+            "vertical": 0.00005
+        }
+    ]
 }
