@@ -1,7 +1,6 @@
 import unittest
-
-from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.elements import Board, Element, Pin
+from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.measurementmanager import MeasurementPlan
 
 

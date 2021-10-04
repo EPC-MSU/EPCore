@@ -1,6 +1,6 @@
 import unittest
-from os.path import dirname, join as join_path
 from json import load
+from os.path import dirname, join as join_path
 from epcore.elements.board import Board
 
 
@@ -13,8 +13,6 @@ class JsonConversionTest(unittest.TestCase):
         with open(testfile, "r") as json_source:
             json_dict = load(json_source)
             board = Board.create_from_json(json_dict)
-
         # save to dict
         new_json_dict = board.to_json()
-
         self.assertTrue(new_json_dict == json_dict)

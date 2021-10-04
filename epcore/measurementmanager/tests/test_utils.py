@@ -1,7 +1,6 @@
 import unittest
-
-from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.elements import MeasurementSettings
+from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.measurementmanager import Searcher
 from epcore.product import EPLab
 
@@ -17,10 +16,9 @@ class TestPlan(unittest.TestCase):
             max_voltage=5.0
         )
         measurer.set_settings(test_settings)
-        searcher = Searcher(measurer, EPLab().mparams)
+        searcher = Searcher(measurer, EPLab().get_parameters())
         searcher.search_optimal_settings()
         settings_after_search = measurer.get_settings()
-
         # The measurer should have initial settings after search
         self.assertTrue(settings_after_search is test_settings)
 
@@ -33,11 +31,10 @@ class TestPlan(unittest.TestCase):
             max_voltage=12.0
         )
         measurer.set_settings(test_settings)
-        searcher = Searcher(measurer, EPLab().mparams)
+        searcher = Searcher(measurer, EPLab().get_parameters())
         optimal_settings = searcher.search_optimal_settings()
         measurer.set_settings(optimal_settings)
         settings_after_search = measurer.get_settings()
-
         # The measurer should have new settings set
         self.assertTrue(settings_after_search is optimal_settings)
 
@@ -46,7 +43,7 @@ class TestPlan(unittest.TestCase):
         measurer.model = "resistor"
         measurer.nominal = 1000
         measurer.noise_factor = 0
-        searcher = Searcher(measurer, EPLab().mparams)
+        searcher = Searcher(measurer, EPLab().get_parameters())
         optimal_settings = searcher.search_optimal_settings()
         good_settings = MeasurementSettings(
             sampling_rate=100000,
@@ -54,19 +51,19 @@ class TestPlan(unittest.TestCase):
             max_voltage=3.3,
             probe_signal_frequency=1000
         )
-
         # The measurer should have chosen good settings
         self.assertTrue(optimal_settings.sampling_rate == good_settings.sampling_rate)
         self.assertTrue(optimal_settings.internal_resistance == good_settings.internal_resistance)
         self.assertTrue(optimal_settings.max_voltage == good_settings.max_voltage)
-        self.assertTrue(optimal_settings.probe_signal_frequency == good_settings.probe_signal_frequency)
+        self.assertTrue(optimal_settings.probe_signal_frequency ==
+                        good_settings.probe_signal_frequency)
 
     def test_optimal_settings_capacitor(self):
         measurer = IVMeasurerVirtual()
         measurer.model = "capacitor"
         measurer.nominal = 0.00001
         measurer.noise_factor = 0
-        searcher = Searcher(measurer, EPLab().mparams)
+        searcher = Searcher(measurer, EPLab().get_parameters())
         optimal_settings = searcher.search_optimal_settings()
         good_settings = MeasurementSettings(
             sampling_rate=1000,
@@ -74,9 +71,9 @@ class TestPlan(unittest.TestCase):
             max_voltage=1.2,
             probe_signal_frequency=10
         )
-
         # The measurer should have good settings
         self.assertTrue(optimal_settings.sampling_rate == good_settings.sampling_rate)
         self.assertTrue(optimal_settings.internal_resistance == good_settings.internal_resistance)
         self.assertTrue(optimal_settings.max_voltage == good_settings.max_voltage)
-        self.assertTrue(optimal_settings.probe_signal_frequency == good_settings.probe_signal_frequency)
+        self.assertTrue(optimal_settings.probe_signal_frequency ==
+                        good_settings.probe_signal_frequency)

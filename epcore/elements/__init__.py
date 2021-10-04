@@ -26,18 +26,17 @@ To run tests:
 python -m unittest discover epcore/elements
 """
 
-from .measurement import Measurement, MeasurementSettings, IVCurve
-from .pin import Pin
-from .element import Element
 from .board import Board, version
+from .element import Element
+from .measurement import IVCurve, Measurement, MeasurementSettings
+from .pin import Pin
 
-__all__ = ["IVCurve",
-           "MeasurementSettings",
-           "Measurement",
-           "Pin",
+__all__ = ["Board",
            "Element",
            "IVCurve",
-           "Board",
+           "Measurement",
+           "MeasurementSettings",
+           "Pin",
            "version"]
 
 __author__ = "mihalin"

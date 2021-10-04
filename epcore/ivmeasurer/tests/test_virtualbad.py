@@ -1,23 +1,21 @@
 import unittest
-
 from epcore.ivmeasurer import IVMeasurerVirtualBad
 
 
 class VirtualBadText(unittest.TestCase):
     def test_raises(self):
         bad = IVMeasurerVirtualBad(fail_chance=0.3, defer_open=True)
-
-        succ = False
-        while not succ:  # Open device
+        success = False
+        while not success:  # Open device
             try:
                 bad.open_device()
-                succ = True
+                success = True
             except RuntimeError:
                 bad.reconnect()
                 continue
 
         successes = 0
-        for c in range(20):
+        for _ in range(20):
             try:
                 bad.get_settings()
                 successes += 1
@@ -26,7 +24,6 @@ class VirtualBadText(unittest.TestCase):
                     while not bad.reconnect():
                         pass
                     continue
-                else:
-                    break  # Ok we already understand that sometimes it fails
+                break  # Ok we already understand that sometimes it fails
         # Check that sometimes it fails
         self.assertTrue(0 < successes < 20)
