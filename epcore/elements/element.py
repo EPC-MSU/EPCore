@@ -44,7 +44,7 @@ class Element(JsonConvertible):
             "package": self.package,
             # "center": self.center,
             "bounding_zone": tuple(tuple(map(float, p)) for p in self.bounding_zone)
-            if self.bounding_zone else None,
+            if self.bounding_zone is not None else None,  # "is not None", yep, it's necessary
             "rotation": self.rotation,
             "width": self.width,
             "height": self.height
