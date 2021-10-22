@@ -39,6 +39,22 @@ formats_to_file = {
 }
 
 
+def _check_json_data_for_ufiv_format(json_data: Dict) -> Dict:
+    """
+    Function checks json data to be saved in ufiv format file. If data
+    does not match ufiv format, function will fit the data to format.
+    :param json_data: data.
+    :return: modified data.
+    """
+
+    elements = json_data.get("elements", [])
+    for element in elements:
+        bounding_zone = element.get("bounding_zone")
+        if not bounding_zone:
+            element.pop("bounding_zone")
+    return json_data
+
+
 def _validate_json_with_schema(input_json: Dict, schema: Dict) -> Tuple[bool, Optional[Exception]]:
     """
     Function validates json. Raise ValidationError in case of invalid json.
@@ -53,6 +69,20 @@ def _validate_json_with_schema(input_json: Dict, schema: Dict) -> Tuple[bool, Op
     except ValidationError as err:
         err.message = ("The input file has invalid format: " + err.message[:MAX_ERR_MSG_LEN])
         return False, err
+
+
+def add_image_to_ufiv(path: str, board: Board) -> Board:
+    """
+    Function adds board image to existing board.
+    :param path: path to image;
+    :param board: board to which the image should be added.
+    :return: board.
+    """
+
+    global _image_path
+    _image_path = path
+    board.image = Image.open(path)
+    return board
 
 
 def detect_format(path: str) -> Formats:
@@ -115,20 +145,6 @@ def load_board_from_ufiv(path: str, validate_input: bool = True,
     return board
 
 
-def add_image_to_ufiv(path: str, board: Board) -> Board:
-    """
-    Function adds board image to existing board.
-    :param path: path to image;
-    :param board: board to which the image should be added.
-    :return: board.
-    """
-
-    global _image_path
-    _image_path = path
-    board.image = Image.open(path)
-    return board
-
-
 def save_board_to_ufiv(path: str, board: Board) -> str:
     """
     Function saves board (png, json) files.
@@ -144,7 +160,7 @@ def save_board_to_ufiv(path: str, board: Board) -> str:
     # Save json file in archive
     json_name = os.path.basename(path.replace(".uzf", ".json"))
     json_path = os.path.join(temp_dir.name, json_name)
-    json_file = board.to_json()
+    json_file = _check_json_data_for_ufiv_format(board.to_json())
     with open(json_path, "w") as file:
         dump(json_file, file, indent=1)
     archive.write(json_path, arcname=json_name)
