@@ -40,10 +40,10 @@ def _convert_pin(pin: Dict, force_reference: bool = False) -> Dict:
     if has_reference:  # reference curve should be first
         pin["iv_curves"].append(_convert_ivc(pin["reference_ivc"], is_reference=True,
                                              is_dynamic=is_dynamic))
-
     # Set curve as REFERENCE if here are no other reference curve and flag FORCE_REFERENCE passed
-    pin["iv_curves"].append(_convert_ivc(pin["ivc"], is_dynamic=is_dynamic,
-                                         is_reference=force_reference and not has_reference))
+    if pin.get("ivc"):
+        pin["iv_curves"].append(_convert_ivc(pin["ivc"], is_dynamic=is_dynamic,
+                                             is_reference=force_reference and not has_reference))
     for key in remove_pin_keys:
         pin.pop(key, None)
     return pin
