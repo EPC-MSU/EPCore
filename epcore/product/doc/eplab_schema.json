@@ -159,6 +159,79 @@
                     "type": "string"
                 }
             }
+        },
+        "scale_adjuster": {
+            "description": "Values ​​adjust scale vertically and horizontally for the given voltage and sensitive options of measurement system",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                    "voltage": {
+                        "description": "Value of voltage"
+                    },
+                    "sensitive": {
+                        "description": "Value of sensitive"
+                    },
+                    "horizontal": {
+                        "description": "Value adjusts scale horizontally"
+                    },
+                    "vertical": {
+                        "description": "Value adjusts scale vertically"
+                    }
+                }
+            }
+        },
+        "border_adjuster": {
+            "description": "Values ​​adjust plot border vertically and horizontally for the given voltage and sensitive options of measurement system",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                    "voltage": {
+                        "description": "Value of voltage"
+                    },
+                    "sensitive": {
+                        "description": "Value of sensitive"
+                    },
+                    "horizontal": {
+                        "description": "Value adjusts plot border horizontally"
+                    },
+                    "vertical": {
+                        "description": "Value adjusts plot border vertically"
+                    }
+                }
+            }
+        },
+        "noise_amplitude": {
+            "description": "Values ​​specify noise amplitude for the virtual measurers for the given values of voltage and sensitive",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 1,
+                "properties": {
+                    "voltage": {
+                        "description": "Value of voltage"
+                    },
+                    "sensitive": {
+                        "description": "Value of sensitive"
+                    },
+                    "horizontal": {
+                        "description": "Noise amplitude in horizontal direction"
+                    },
+                    "vertical": {
+                        "description": "Noise amplitude in vertical direction"
+                    }
+                }
+            }
         }
-    }
+    },
+    "required": [
+        "options",
+        "plot_parameters"
+    ]
 }

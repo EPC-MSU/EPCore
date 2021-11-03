@@ -465,6 +465,49 @@ class Parameters:
         self._set_settings(settings, new_settings)
 
 
+class Adjuster:
+    """
+    Class for objects that adjust scale or border of plot horizontally and vertically.
+    """
+
+    _voltages: List[float] = []
+    _sensitives: List[float] = []
+    _horizontals: List[float] = []
+    _verticals: List[float] = []
+    _precision: float = 0.01
+
+    def __init__(self, json_data: Optional[List] = None, precision: Optional[float] = None):
+        """
+        :param json_data: list with data for border or scale adjusters;
+        :param precision: precision for equality comparison.
+        """
+
+        if json_data is not None:
+            for item in json_data:
+                self._voltages.append(item["voltage"])
+                self._sensitives.append(item["sensitive"])
+                self._horizontals.append(item["horizontal"])
+                self._verticals.append(item["vertical"])
+        if precision is not None:
+            self._precision = precision
+
+    def get_values(self, voltage: float, sensitive: float) ->\
+            Tuple[Optional[float], Optional[float]]:
+        """
+        Method returns horizontal and vertical values for borders or scales of plot
+        when measuring system has given values of max voltage and internal resistance.
+        :param voltage: max voltage;
+        :param sensitive: internal resistance.
+        :return: horizontal and vertical values of plot borders or scales.
+        """
+
+        for index, _voltage in enumerate(self._voltages):
+            if np.isclose(_voltage, voltage, atol=self._precision) and \
+                    np.isclose(self._sensitives[index], sensitive, atol=self._precision):
+                return self._horizontals[index], self._verticals[index]
+        return None, None
+
+
 class EPLab(ProductBase):
 
     class Parameter(Enum):
@@ -515,6 +558,8 @@ class EPLab(ProductBase):
         json_options = json_data["options"]
         self._plot_parameters = PlotParameters.from_json(json_data["plot_parameters"])
         self._parameters = Parameters(json_options)
+        self._scale_adjuster = Adjuster(json_data.get("scale_adjuster"))
+        self._noise_adjuster = Adjuster(json_data.get("noise_adjuster"))
 
     @property
     def plot_parameters(self) -> PlotParameters:
@@ -543,24 +588,16 @@ class EPLab(ProductBase):
         return settings
 
     def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
+        """
+        Adjust plot scales.
+        :param settings: measurement settings.
+        :return: voltage and current scales.
+        """
 
-        scale_adjuster = {  # _scale_adjuster[V][Omh] -> Scale for x,y
-            (1.2, 47500.0): (1.5, 0.04),
-            (1.2, 4750.0): (1.5, 0.4),
-            (1.2, 475.0): (1.5, 4.0),
-            (3.3, 47500.0): (4.0, 0.15),
-            (3.3, 4750.0): (4.0, 1.0),
-            (3.3, 475.0): (4.0, 10.0),
-            (5.0, 47500.0): (6.0, 0.18),
-            (5.0, 4750.0): (6.0, 1.5),
-            (5.0, 475.0): (6.0, 15.0),
-            (12.0, 47500.0): (14.0, 0.35),
-            (12.0, 4750.0): (14.0, 2.8),
-            (12.0, 475.0): (14.0, 28.0)}
-        for key, value in scale_adjuster.items():
-            if np.isclose(settings.max_voltage, key[0], atol=self._precision) and \
-                    np.isclose(settings.internal_resistance, key[1], atol=self._precision):
-                return value
+        horizontal, vertical = self._scale_adjuster.get_values(settings.max_voltage,
+                                                               settings.internal_resistance)
+        if horizontal is not None and vertical is not None:
+            return horizontal, vertical
         return super().adjust_plot_scale(settings)
 
     def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
@@ -596,23 +633,10 @@ class EPLab(ProductBase):
         :return: v_amplitude, c_amplitude.
         """
 
-        # max_voltage, internal_resistance -> v_amplitude, c_amplitude
-        noise_adjuster = {(12.0, 475.0): (0.6, 0.008),
-                          (5.0, 475.0): (0.6, 0.008),
-                          (3.3, 475.0): (0.3, 0.008),
-                          (1.2, 475.0): (0.3, 0.008),
-                          (12.0, 4750.0): (0.6, 0.0005),
-                          (5.0, 4750.0): (0.3, 0.0005),
-                          (3.3, 4750.0): (0.3, 0.0005),
-                          (1.2, 4750.0): (0.3, 0.0005),
-                          (12.0, 47500.0): (0.6, 0.00005),
-                          (5.0, 47500.0): (0.3, 0.00005),
-                          (3.3, 47500.0): (0.3, 0.00005),
-                          (1.2, 47500.0): (0.3, 0.00005)}
-        for key, value in noise_adjuster.items():
-            if np.isclose(settings.max_voltage, key[0], atol=self._precision) and \
-                    np.isclose(settings.internal_resistance, key[1], atol=self._precision):
-                return value
+        horizontal, vertical = self._noise_adjuster.get_values(settings.max_voltage,
+                                                               settings.internal_resistance)
+        if horizontal is not None and vertical is not None:
+            return horizontal, vertical
         return super().adjust_noise_amplitude(settings)
 
     def get_available_options(self, settings: MeasurementSettings) -> Dict["Parameter", List]:
