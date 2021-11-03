@@ -411,7 +411,8 @@ class Parameters:
 
         result = {}
         parameters = self.frequencies, self.voltages, self.sensitives
-        names = EyePointProduct.Parameter.frequency, EyePointProduct.Parameter.voltage, EyePointProduct.Parameter.sensitive
+        names = (EyePointProduct.Parameter.frequency, EyePointProduct.Parameter.voltage,
+                 EyePointProduct.Parameter.sensitive)
         for i_parameter, parameter in enumerate(parameters):
             options = [item.get_only_option() for item in parameter]
             param_name = names[i_parameter]
