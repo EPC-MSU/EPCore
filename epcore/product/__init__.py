@@ -5,10 +5,10 @@ EyePoint module, which defines product functionality:
 * labels in GUI.
 """
 
-from .product import (EPLab, InvalidJson, MeasurementParameter, MeasurementParameterOption,
+from .product import (EyePointProduct, InvalidJson, MeasurementParameter, MeasurementParameterOption,
                       ProductBase)
 
-__all__ = ["EPLab",
+__all__ = ["EyePointProduct",
            "InvalidJson",
            "MeasurementParameter",
            "MeasurementParameterOption",

@@ -2,7 +2,7 @@ import unittest
 from epcore.elements import MeasurementSettings
 from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.measurementmanager import Searcher
-from epcore.product import EPLab
+from epcore.product import EyePointProduct
 
 
 class TestPlan(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestPlan(unittest.TestCase):
             max_voltage=5.0
         )
         measurer.set_settings(test_settings)
-        searcher = Searcher(measurer, EPLab().get_parameters())
+        searcher = Searcher(measurer, EyePointProduct().get_parameters())
         searcher.search_optimal_settings()
         settings_after_search = measurer.get_settings()
         # The measurer should have initial settings after search
@@ -31,7 +31,7 @@ class TestPlan(unittest.TestCase):
             max_voltage=12.0
         )
         measurer.set_settings(test_settings)
-        searcher = Searcher(measurer, EPLab().get_parameters())
+        searcher = Searcher(measurer, EyePointProduct().get_parameters())
         optimal_settings = searcher.search_optimal_settings()
         measurer.set_settings(optimal_settings)
         settings_after_search = measurer.get_settings()
@@ -43,7 +43,7 @@ class TestPlan(unittest.TestCase):
         measurer.model = "resistor"
         measurer.nominal = 1000
         measurer.noise_factor = 0
-        searcher = Searcher(measurer, EPLab().get_parameters())
+        searcher = Searcher(measurer, EyePointProduct().get_parameters())
         optimal_settings = searcher.search_optimal_settings()
         good_settings = MeasurementSettings(
             sampling_rate=100000,
@@ -63,7 +63,7 @@ class TestPlan(unittest.TestCase):
         measurer.model = "capacitor"
         measurer.nominal = 0.00001
         measurer.noise_factor = 0
-        searcher = Searcher(measurer, EPLab().get_parameters())
+        searcher = Searcher(measurer, EyePointProduct().get_parameters())
         optimal_settings = searcher.search_optimal_settings()
         good_settings = MeasurementSettings(
             sampling_rate=1000,

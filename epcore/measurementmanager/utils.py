@@ -7,7 +7,7 @@ import numpy as np
 from scipy import interpolate
 from ..elements import MeasurementSettings
 from ..ivmeasurer import IVMeasurerBase
-from ..product import EPLab
+from ..product import EyePointProduct
 
 
 class Searcher:
@@ -102,13 +102,13 @@ class Searcher:
         # Define available probe signal frequencies and sampling rates
         self._frequencies = []
         self._rates = []
-        for obj in params[EPLab.Parameter.frequency].options:
+        for obj in params[EyePointProduct.Parameter.frequency].options:
             self._frequencies.append(obj.value[0])
             self._rates.append(obj.value[1])
         # Define available internal resistances
-        self._resistances = [obj.value for obj in params[EPLab.Parameter.sensitive].options]
+        self._resistances = [obj.value for obj in params[EyePointProduct.Parameter.sensitive].options]
         # Define available voltages
-        self._voltages = [obj.value for obj in params[EPLab.Parameter.voltage].options]
+        self._voltages = [obj.value for obj in params[EyePointProduct.Parameter.voltage].options]
 
     def _set_settings(self, i_frequency: int, i_resistance: int,
                       i_voltage: int) -> MeasurementSettings:

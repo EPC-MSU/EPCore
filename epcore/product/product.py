@@ -169,13 +169,13 @@ class MeasurementParameterOptionEplab:
         """
 
         for option in self.dependent_params[parameter]:
-            if parameter == EPLab.Parameter.frequency:
+            if parameter == EyePointProduct.Parameter.frequency:
                 if option.value == [settings.probe_signal_frequency, settings.sampling_rate]:
                     return option
-            elif parameter == EPLab.Parameter.voltage:
+            elif parameter == EyePointProduct.Parameter.voltage:
                 if option.value == settings.max_voltage:
                     return option
-            elif parameter == EPLab.Parameter.sensitive:
+            elif parameter == EyePointProduct.Parameter.sensitive:
                 if option.value == settings.internal_resistance:
                     return option
         return None
@@ -189,9 +189,9 @@ class MeasurementParameterOptionEplab:
         parameter.
         """
 
-        parameters = {EPLab.Parameter.frequency: "frequency",
-                      EPLab.Parameter.voltage: "voltage",
-                      EPLab.Parameter.sensitive: "sensitive"}
+        parameters = {EyePointProduct.Parameter.frequency: "frequency",
+                      EyePointProduct.Parameter.voltage: "voltage",
+                      EyePointProduct.Parameter.sensitive: "sensitive"}
         dependent_params = {}
         for parameter, parameter_name in parameters.items():
             if parameter_name in json_data.keys():
@@ -255,11 +255,11 @@ class MeasurementParameterOptionEplab:
         to settings.
         """
 
-        if parameter == EPLab.Parameter.frequency:
+        if parameter == EyePointProduct.Parameter.frequency:
             settings.probe_signal_frequency, settings.sampling_rate = self.value
-        elif parameter == EPLab.Parameter.voltage:
+        elif parameter == EyePointProduct.Parameter.voltage:
             settings.max_voltage = self.value
-        elif parameter == EPLab.Parameter.sensitive:
+        elif parameter == EyePointProduct.Parameter.sensitive:
             settings.internal_resistance = self.value
         for dependent_param in self.dependent_params:
             option = self._find_dependent_option(options[dependent_param], dependent_param)
@@ -297,8 +297,8 @@ class Parameters:
         :return: True if options dictionary has all required fields.
         """
 
-        if None in (options.get(EPLab.Parameter.frequency), options.get(EPLab.Parameter.voltage),
-                    options.get(EPLab.Parameter.sensitive)):
+        if None in (options.get(EyePointProduct.Parameter.frequency), options.get(EyePointProduct.Parameter.voltage),
+                    options.get(EyePointProduct.Parameter.sensitive)):
             return False
         return True
 
@@ -345,7 +345,7 @@ class Parameters:
         :return: dictionary with available options for parameters.
         """
 
-        available = {EPLab.Parameter.frequency: self.frequencies}
+        available = {EyePointProduct.Parameter.frequency: self.frequencies}
         for option in self.frequencies:
             if option.value == [settings.probe_signal_frequency, settings.sampling_rate]:
                 new_available = option.get_available(settings)
@@ -353,14 +353,14 @@ class Parameters:
                 break
         if self._check_dict_for_recording(available):
             return available
-        available[EPLab.Parameter.voltage] = self.voltages
+        available[EyePointProduct.Parameter.voltage] = self.voltages
         for option in self.voltages:
             if option.value == settings.max_voltage:
                 new_available = option.get_available(settings)
                 available = {**available, **new_available}
         if self._check_dict_for_recording(available):
             return available
-        available[EPLab.Parameter.sensitive] = self.sensitives
+        available[EyePointProduct.Parameter.sensitive] = self.sensitives
         for option in self.sensitives:
             if option.value == settings.internal_resistance:
                 new_available = option.get_available(settings)
@@ -378,26 +378,26 @@ class Parameters:
         options = {}
         for option in self.frequencies:
             if option.value == [settings.probe_signal_frequency, settings.sampling_rate]:
-                option.set_option(options, settings, EPLab.Parameter.frequency)
+                option.set_option(options, settings, EyePointProduct.Parameter.frequency)
                 break
         if self._check_dict_for_recording(options):
             return options
-        if not options.get(EPLab.Parameter.frequency):
+        if not options.get(EyePointProduct.Parameter.frequency):
             warn(f"Unknown device frequency and sampling rate {settings.probe_signal_frequency} "
                  f"{settings.sampling_rate}")
         for option in self.voltages:
             if np.isclose(option.value, settings.max_voltage, atol=self._precision):
-                option.set_option(options, settings, EPLab.Parameter.voltage)
+                option.set_option(options, settings, EyePointProduct.Parameter.voltage)
                 break
         if self._check_dict_for_recording(options):
             return options
-        if not options.get(EPLab.Parameter.voltage):
+        if not options.get(EyePointProduct.Parameter.voltage):
             warn(f"Unknown device max voltage {settings.max_voltage}")
         for option in self.sensitives:
             if np.isclose(option.value, settings.internal_resistance, atol=self._precision):
-                option.set_option(options, settings, EPLab.Parameter.sensitive)
+                option.set_option(options, settings, EyePointProduct.Parameter.sensitive)
                 break
-        if not options.get(EPLab.Parameter.sensitive):
+        if not options.get(EyePointProduct.Parameter.sensitive):
             warn(f"Unknown device internal resistance {settings.internal_resistance}")
         return options
 
@@ -411,7 +411,7 @@ class Parameters:
 
         result = {}
         parameters = self.frequencies, self.voltages, self.sensitives
-        names = EPLab.Parameter.frequency, EPLab.Parameter.voltage, EPLab.Parameter.sensitive
+        names = EyePointProduct.Parameter.frequency, EyePointProduct.Parameter.voltage, EyePointProduct.Parameter.sensitive
         for i_parameter, parameter in enumerate(parameters):
             options = [item.get_only_option() for item in parameter]
             param_name = names[i_parameter]
@@ -445,22 +445,22 @@ class Parameters:
 
         new_settings = MeasurementSettings(-1, -1, -1, -1)
         for option in self.frequencies:
-            if option.name == options[EPLab.Parameter.frequency]:
-                option.write_to_settings(options, new_settings, EPLab.Parameter.frequency)
+            if option.name == options[EyePointProduct.Parameter.frequency]:
+                option.write_to_settings(options, new_settings, EyePointProduct.Parameter.frequency)
                 break
         if self._check_settings_for_recording(new_settings):
             self._set_settings(settings, new_settings)
             return
         for option in self.voltages:
-            if option.name == options[EPLab.Parameter.voltage]:
-                option.write_to_settings(options, new_settings, EPLab.Parameter.voltage)
+            if option.name == options[EyePointProduct.Parameter.voltage]:
+                option.write_to_settings(options, new_settings, EyePointProduct.Parameter.voltage)
                 break
         if self._check_settings_for_recording(new_settings):
             self._set_settings(settings, new_settings)
             return
         for option in self.sensitives:
-            if option.name == options[EPLab.Parameter.sensitive]:
-                option.write_to_settings(options, new_settings, EPLab.Parameter.sensitive)
+            if option.name == options[EyePointProduct.Parameter.sensitive]:
+                option.write_to_settings(options, new_settings, EyePointProduct.Parameter.sensitive)
                 break
         self._set_settings(settings, new_settings)
 
@@ -508,7 +508,10 @@ class Adjuster:
         return None, None
 
 
-class EPLab(ProductBase):
+class EyePointProduct(ProductBase):
+    """
+    Class for working with projects of EyePoint line.
+    """
 
     class Parameter(Enum):
         frequency = auto()
@@ -550,9 +553,9 @@ class EPLab(ProductBase):
         """
 
         if json_data is None:
-            json_data = EPLab._open_json("eplab_default_options.json")
+            json_data = EyePointProduct._open_json("eplab_default_options.json")
         try:
-            jsonschema.validate(json_data, EPLab._schema())
+            jsonschema.validate(json_data, EyePointProduct._schema())
         except jsonschema.ValidationError as err:
             raise InvalidJson("Validation error: " + str(err)) from err
         json_options = json_data["options"]

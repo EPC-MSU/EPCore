@@ -1,8 +1,8 @@
-from .product import EPLab
+from .product import EyePointProduct
 
 
 if __name__ == "__main__":
 
-    eplab = EPLab()
-    for name, parameter in eplab.get_parameters().items():
+    eyepoint = EyePointProduct()
+    for name, parameter in eyepoint.get_parameters().items():
         print("ParameterName: " + str(name) + ", Parameter: " + str(parameter))

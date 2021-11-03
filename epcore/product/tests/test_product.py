@@ -1,16 +1,16 @@
 import unittest
 from epcore.ivmeasurer import IVMeasurerVirtual
-from epcore.product import EPLab, InvalidJson
+from epcore.product import EyePointProduct, InvalidJson
 
 
 class TestEPLabProduct(unittest.TestCase):
 
     def test_rw_settings(self):
         measurer = IVMeasurerVirtual()
-        eplab = EPLab()
-        options = {EPLab.Parameter.frequency: "100hz",
-                   EPLab.Parameter.sensitive: "middle",
-                   EPLab.Parameter.voltage: "3.3v"}
+        eplab = EyePointProduct()
+        options = {EyePointProduct.Parameter.frequency: "100hz",
+                   EyePointProduct.Parameter.sensitive: "middle",
+                   EyePointProduct.Parameter.voltage: "3.3v"}
         settings = measurer.get_settings()
         settings = eplab.options_to_settings(options, settings)
         measurer.set_settings(settings)
@@ -19,14 +19,14 @@ class TestEPLabProduct(unittest.TestCase):
 
     def test_invalid_json(self):
         with self.assertRaises(InvalidJson):
-            EPLab(dict())
+            EyePointProduct(dict())
 
         with self.assertRaises(InvalidJson):
-            EPLab({"options": {"frequency": [],
-                               "voltage": [],
-                               "sensitive": [],
-                               "eggs": []},
-                   "plot_parameters": {"test_color": "#0000FF"}})
+            EyePointProduct({"options": {"frequency": [],
+                                         "voltage": [],
+                                         "sensitive": [],
+                                         "eggs": []},
+                             "plot_parameters": {"test_color": "#0000FF"}})
 
     def test_some_json(self):
         data = {
@@ -67,21 +67,21 @@ class TestEPLabProduct(unittest.TestCase):
                     "ref_color": "#FF0000"
                 }
             }
-        eplab = EPLab(data)
+        eplab = EyePointProduct(data)
         options = eplab.get_parameters()
-        self.assertTrue(len(options[EPLab.Parameter.voltage].options) ==
+        self.assertTrue(len(options[EyePointProduct.Parameter.voltage].options) ==
                         len(data["options"]["voltage"]))
-        self.assertTrue(options[EPLab.Parameter.voltage].options[0].value ==
+        self.assertTrue(options[EyePointProduct.Parameter.voltage].options[0].value ==
                         data["options"]["voltage"][0]["value"])
-        self.assertTrue(len(options[EPLab.Parameter.frequency].options) ==
+        self.assertTrue(len(options[EyePointProduct.Parameter.frequency].options) ==
                         len(data["options"]["frequency"]))
-        self.assertTrue(options[EPLab.Parameter.frequency].options[1].name ==
+        self.assertTrue(options[EyePointProduct.Parameter.frequency].options[1].name ==
                         data["options"]["frequency"][1]["name"])
-        self.assertTrue(options[EPLab.Parameter.frequency].options[1].label_ru ==
+        self.assertTrue(options[EyePointProduct.Parameter.frequency].options[1].label_ru ==
                         data["options"]["frequency"][1]["label_ru"])
-        self.assertTrue(options[EPLab.Parameter.frequency].options[1].label_en ==
+        self.assertTrue(options[EyePointProduct.Parameter.frequency].options[1].label_en ==
                         data["options"]["frequency"][1]["label_en"])
-        self.assertTrue(options[EPLab.Parameter.frequency].options[1].value ==
+        self.assertTrue(options[EyePointProduct.Parameter.frequency].options[1].value ==
                         data["options"]["frequency"][1]["value"])
         self.assertTrue(eplab.plot_parameters.ref_color == data["plot_parameters"]["ref_color"])
         self.assertTrue(eplab.plot_parameters.test_color == data["plot_parameters"]["test_color"])
