@@ -16,6 +16,10 @@ from .virtual import IVMeasurerVirtual
 from ..elements import IVCurve, MeasurementSettings
 
 
+_FLAGS = 1
+_N_POINTS = 512
+
+
 def _close_on_error(func: Callable):
     """
     Function handles an error when working with IVMeasurerASA.
@@ -54,8 +58,7 @@ class IVMeasurerVirtualASA(IVMeasurerVirtual):
     Class for virtual EyePoint ASA device.
     """
 
-    def __init__(self, url: str = "", name: str = "",
-                 defer_open: bool = False):
+    def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
         :param url: url for device identification in computer system;
         :param name: friendly name (for measurement system);
@@ -87,12 +90,12 @@ class IVMeasurerASA(IVMeasurerBase):
                           "Полная калибровка. Разомкнутые щупы": 3}
 
     # ASA device additional parameters
-    flags: int = 3
+    flags: int = _FLAGS
     mode: str = "manual"
     model_nominal: float = 1.0e-7
     model_type: str = "capacitor"
-    n_charge_points: int = 512
-    n_points: int = 512
+    n_charge_points: int = _N_POINTS
+    n_points: int = _N_POINTS
 
     def __init__(self, url: str = "", name: str = "",
                  defer_open: bool = False):
@@ -119,183 +122,6 @@ class IVMeasurerASA(IVMeasurerBase):
         if not defer_open:
             self.open_device()
         super().__init__(url, name)
-
-    @_close_on_error
-    def open_device(self):
-        self._set_server_host()
-        attempt_number = 0
-        while attempt_number < 1:
-            try:
-                self.set_settings()
-                self.get_settings()
-            except (asa.AsaFormatError, asa.AsaTypeError, asa.AsaValueError):
-                attempt_number += 1
-                continue
-            break
-        self._wait_for_completion()
-
-    def close_device(self):
-        pass
-
-    def reconnect(self) -> bool:
-        try:
-            self.open_device()
-            return True
-        except (RuntimeError, OSError, asa.AsaConnectionError, asa.AsaServerResponseError):
-            return False
-
-    @_close_on_error
-    def get_settings(self) -> MeasurementSettings:
-        asa.GetSettings(self._lib, self._server, self._asa_settings)
-        settings, additional_settings = self._get_from_asa_settings(self._asa_settings)
-        if self._check_settings(settings):
-            self.flags = additional_settings["flags"]
-            self.mode = additional_settings["mode"]
-            self.model_nominal = additional_settings["model_nominal"]
-            self.model_type = additional_settings["model_type"]
-            self.n_charge_points = additional_settings["n_charge_points"]
-            # self.n_points = additional_settings["n_points"]
-        return settings
-
-    @_close_on_error
-    def set_settings(self, settings: MeasurementSettings = None):
-        if settings is None:
-            settings = self._settings
-        self._check_settings(settings)
-        self._convert_to_asa_settings(settings)
-        status = asa.SetSettings(self._lib, self._server, self._asa_settings)
-        if status != 0:
-            logging.error("SetSettings failed: %s", str(status))
-            raise Exception("SetSettings failed")
-        self._wait_for_completion()
-        self._settings = settings
-
-    @_close_on_error
-    def get_identity_information(self) -> IVMeasurerIdentityInformation:
-        return IVMeasurerIdentityInformation(
-            manufacturer="Meridian",
-            device_name="ASA device",
-            device_class="ASA device",
-            hardware_version=tuple(),
-            firmware_version=(1, 0, 1),
-            name="ASA device",
-            rank=1)
-
-    @_close_on_error
-    def trigger_measurement(self):
-        if not self.is_freezed():
-            self._measurement_is_ready = False
-            asa.TriggerMeasurement(self._lib, self._server)
-            self._wait_for_completion()
-            self._measurement_is_ready = True
-
-    @_close_on_error
-    def measurement_is_ready(self) -> bool:
-        if self.is_freezed():
-            return False
-        return self._measurement_is_ready
-
-    @_close_on_error
-    def calibrate(self, value: int):
-        """
-        Calibrate ASA device.
-        :param value: parameter that determines type of calibration.
-        """
-
-        try:
-            result = asa.Calibrate(self._lib, self._server, value)
-            assert result >= 0
-        except AssertionError:
-            logging.error("Calibration has not been performed")
-
-    def calibrate_fast_and_closed(self):
-        """
-        Method performes calibration of type "Быстрая калибровка. Замкнутые
-        щупы".
-        """
-
-        self.calibrate(self._calibration_types["Быстрая калибровка. Замкнутые щупы"])
-
-    def calibrate_fast_and_open(self):
-        """
-        Method performes calibration of type "Быстрая калибровка. Разомкнутые
-        щупы".
-        """
-
-        self.calibrate(self._calibration_types["Быстрая калибровка. Разомкнутые щупы"])
-
-    def calibrate_full_and_closed(self):
-        """
-        Method performes calibration of type "Полная калибровка. Замкнутые
-        щупы".
-        """
-
-        self.calibrate(self._calibration_types["Полная калибровка. Замкнутые щупы"])
-
-    def calibrate_full_and_open(self):
-        """
-        Method performes calibration of type "Полная калибровка. Разомкнутые
-        щупы".
-        """
-
-        self.calibrate(self._calibration_types["Полная калибровка. Разомкнутые щупы"])
-
-    @cache_curve
-    @_close_on_error
-    def get_last_iv_curve(self, raw: bool = False) -> IVCurve:
-        """
-        Return measured data from device.
-        :param raw: if raw is True postprocessing (averaging) is not applied.
-        """
-
-        curve = asa.IvCurve()
-        asa.GetIVCurve(self._lib, self._server, curve, self._asa_settings.number_points)
-        try:
-            asa.GetSettings(self._lib, self._server, self._asa_settings)
-            assert asa.GetIVCurve(self._lib, self._server, curve,
-                                  self._asa_settings.number_points) == 0
-            n_points = asa.GetNumberPointsForSinglePeriod(self._lib, self._asa_settings)
-        except AssertionError:
-            logging.error("Curve was not received. Something went wrong")
-            if self._cashed_curve:
-                return self._cashed_curve
-            return IVCurve()
-        except OSError:
-            logging.error("Curve was not received")
-            if self._cashed_curve:
-                return self._cashed_curve
-            return IVCurve()
-        # Device return currents in mA
-        currents = list(np.array(curve.currents[:n_points]) / 1000)
-        voltages = curve.voltages[:n_points]
-        curve = IVCurve(currents=currents, voltages=voltages)
-        if raw is True:
-            return curve
-        # Postprocessing
-        if self._asa_settings.probe_signal_frequency_hz > 20000:
-            curve = interpolate_curve(curve=curve,
-                                      final_num_points=self._NORMAL_NUM_POINTS)
-        curve = smooth_curve(curve=curve,
-                             kernel_size=self._SMOOTHING_KERNEL_SIZE)
-        return curve
-
-    def get_current_value_of_parameter(self, attribute_name: str) -> Any:
-        """
-        Method returns current value of measurer parameter with given name.
-        :return: current value of parameter.
-        """
-
-        return getattr(self, attribute_name, None)
-
-    def set_value_to_parameter(self, attribute_name: str, value: Any):
-        """
-        Method sets value to attribute of measurer with given name.
-        :param attribute_name: name of attribute;
-        :param value: value for attribute.
-        """
-
-        if attribute_name in self.__dict__:
-            setattr(self, attribute_name, value)
 
     @staticmethod
     def _check_settings(settings: MeasurementSettings) -> bool:
@@ -349,9 +175,9 @@ class IVMeasurerASA(IVMeasurerBase):
         """
 
         self._asa_settings.sampling_rate_hz = c_double(int(settings.sampling_rate))
-        self._asa_settings.number_points = c_uint32(self.n_points)
+        self._asa_settings.number_points = c_uint32(_N_POINTS)
         self._asa_settings.number_charge_points = c_uint32(self.n_charge_points)
-        self._asa_settings.measure_flags = c_uint32(self.flags)
+        self._asa_settings.measure_flags = c_uint32(_FLAGS)
         self._asa_settings.probe_signal_frequency_hz = \
             c_double(int(settings.probe_signal_frequency))
         self._asa_settings.voltage_ampl_v = c_double(settings.max_voltage)
@@ -364,7 +190,7 @@ class IVMeasurerASA(IVMeasurerBase):
         self._asa_settings.debug_model_nominal = c_double(self.model_nominal)
 
     @staticmethod
-    def _get_from_asa_settings(asa_settings: asa.AsaSettings) ->\
+    def _get_from_asa_settings(asa_settings: asa.AsaSettings) -> \
             Tuple[MeasurementSettings, Dict]:
         """
         Method gets values of settings from ASA format.
@@ -433,3 +259,173 @@ class IVMeasurerASA(IVMeasurerBase):
                 break
             time.sleep(0.2)
             status = asa.GetLastOperationResult(self._lib, self._server)
+
+    @_close_on_error
+    def calibrate(self, value: int):
+        """
+        Calibrate ASA device.
+        :param value: parameter that determines type of calibration.
+        """
+
+        try:
+            result = asa.Calibrate(self._lib, self._server, value)
+            assert result >= 0
+        except AssertionError:
+            logging.error("Calibration has not been performed")
+
+    def calibrate_fast_and_closed(self):
+        """
+        Method performs calibration of type "Быстрая калибровка. Замкнутые щупы".
+        """
+
+        self.calibrate(self._calibration_types["Быстрая калибровка. Замкнутые щупы"])
+
+    def calibrate_fast_and_open(self):
+        """
+        Method performs calibration of type "Быстрая калибровка. Разомкнутые щупы".
+        """
+
+        self.calibrate(self._calibration_types["Быстрая калибровка. Разомкнутые щупы"])
+
+    def calibrate_full_and_closed(self):
+        """
+        Method performs calibration of type "Полная калибровка. Замкнутые щупы".
+        """
+
+        self.calibrate(self._calibration_types["Полная калибровка. Замкнутые щупы"])
+
+    def calibrate_full_and_open(self):
+        """
+        Method performs calibration of type "Полная калибровка. Разомкнутые щупы".
+        """
+
+        self.calibrate(self._calibration_types["Полная калибровка. Разомкнутые щупы"])
+
+    def close_device(self):
+        pass
+
+    def get_current_value_of_parameter(self, attribute_name: str) -> Any:
+        """
+        Method returns current value of measurer parameter with given name.
+        :return: current value of parameter.
+        """
+
+        return getattr(self, attribute_name, None)
+
+    @_close_on_error
+    def get_identity_information(self) -> IVMeasurerIdentityInformation:
+        return IVMeasurerIdentityInformation(
+            manufacturer="Meridian",
+            device_name="ASA device",
+            device_class="ASA device",
+            hardware_version=tuple(),
+            firmware_version=(1, 0, 1),
+            name="ASA device",
+            rank=1)
+
+    @cache_curve
+    @_close_on_error
+    def get_last_iv_curve(self, raw: bool = False) -> IVCurve:
+        """
+        Method returns measured data from device.
+        :param raw: if raw is True postprocessing (averaging) is not applied.
+        """
+
+        try:
+            curve = asa.IvCurve()
+            asa.GetSettings(self._lib, self._server, self._asa_settings)
+            assert asa.GetIVCurve(self._lib, self._server, curve,
+                                  self._asa_settings.number_points) == 0
+            n_points = asa.GetNumberPointsForSinglePeriod(self._lib, self._asa_settings)
+        except AssertionError:
+            logging.error("Curve was not received. Something went wrong")
+            if self._cashed_curve:
+                return self._cashed_curve
+            return IVCurve()
+        except OSError:
+            logging.error("Curve was not received")
+            if self._cashed_curve:
+                return self._cashed_curve
+            return IVCurve()
+        # Device return currents in mA
+        currents = list(np.array(curve.currents[:n_points]) / 1000)
+        voltages = curve.voltages[:n_points]
+        curve = IVCurve(currents=currents, voltages=voltages)
+        if raw is True:
+            return curve
+        # Postprocessing
+        if self._asa_settings.probe_signal_frequency_hz > 20000:
+            curve = interpolate_curve(curve=curve, final_num_points=self._NORMAL_NUM_POINTS)
+        curve = smooth_curve(curve=curve, kernel_size=self._SMOOTHING_KERNEL_SIZE)
+        return curve
+
+    @_close_on_error
+    def get_settings(self) -> MeasurementSettings:
+        asa.GetSettings(self._lib, self._server, self._asa_settings)
+        settings, additional_settings = self._get_from_asa_settings(self._asa_settings)
+        if self._check_settings(settings):
+            self.flags = additional_settings["flags"]
+            self.mode = additional_settings["mode"]
+            self.model_nominal = additional_settings["model_nominal"]
+            self.model_type = additional_settings["model_type"]
+            self.n_charge_points = additional_settings["n_charge_points"]
+            self.n_points = additional_settings["n_points"]
+        return settings
+
+    @_close_on_error
+    def measurement_is_ready(self) -> bool:
+        if self.is_freezed():
+            return False
+        return self._measurement_is_ready
+
+    @_close_on_error
+    def open_device(self):
+        self._set_server_host()
+        attempt_number = 0
+        while attempt_number < 1:
+            try:
+                self.set_settings()
+                self.get_settings()
+            except (asa.AsaFormatError, asa.AsaTypeError, asa.AsaValueError):
+                attempt_number += 1
+                continue
+            break
+        self._wait_for_completion()
+
+    def reconnect(self) -> bool:
+        try:
+            self.open_device()
+            return True
+        except (RuntimeError, OSError, asa.AsaConnectionError, asa.AsaServerResponseError):
+            return False
+
+    @_close_on_error
+    def set_settings(self, settings: MeasurementSettings = None):
+        if settings is None:
+            settings = self._settings
+        self._check_settings(settings)
+        self._convert_to_asa_settings(settings)
+        status = asa.SetSettings(self._lib, self._server, self._asa_settings)
+        if status != 0:
+            logging.error("SetSettings failed: %s", str(status))
+            raise Exception("SetSettings failed")
+        self._wait_for_completion()
+        self._settings = settings
+
+    def set_value_to_parameter(self, attribute_name: str, value: Any):
+        """
+        Method sets value to attribute of measurer with given name.
+        :param attribute_name: name of attribute;
+        :param value: value for attribute.
+        """
+
+        if attribute_name in self.__dict__:
+            setattr(self, attribute_name, value)
+
+    @_close_on_error
+    def trigger_measurement(self):
+        if not self.is_freezed():
+            self._measurement_is_ready = False
+            asa.TriggerMeasurement(self._lib, self._server)
+            self._wait_for_completion()
+            self._measurement_is_ready = True
