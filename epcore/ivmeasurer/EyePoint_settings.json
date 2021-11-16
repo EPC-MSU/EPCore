@@ -1,0 +1,13 @@
+{
+    "name": "EyePoint device",
+    "elements":
+    [
+        {
+            "description": "Кнопка для проведения калибровки",
+            "type": "button",
+            "label_ru": "Калибровка",
+            "label_en": "Calibration",
+            "func": "calibrate"
+        }
+    ]
+}

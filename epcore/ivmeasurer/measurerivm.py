@@ -294,7 +294,9 @@ class IVMeasurerIVM10(IVMeasurerBase):
             return False
 
     @_close_on_error
-    def set_settings(self, settings: MeasurementSettings):
+    def set_settings(self, settings: MeasurementSettings = None):
+        if settings is None:
+            return
         device_settings = self._device.get_measurement_settings()
         if (int(settings.sampling_rate) < 100 or
            int(settings.sampling_rate) > 2000000):

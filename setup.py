@@ -32,6 +32,7 @@ setup(
                               "asa10/libasa-win32/libxmlrpc_util.dll",
                               "asa10/libasa-win32/libxmlrpc_xmlparse.dll",
                               "asa10/libasa-win32/libxmlrpc_xmltok.dll",
+                              "EyePoint_settings.json",
                               "EyePoint_virtual_device_settings.json",
                               "ASA_device_settings.json",
                               "asa10/eplab_asa_options.json"],

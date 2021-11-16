@@ -3,7 +3,7 @@
     "elements":
     [
         {
-            "description": "Кнопка для проведения быстрой калибровки с закнутыми щупами",
+            "description": "Кнопка для проведения быстрой калибровки с замкнутыми щупами",
             "type": "button",
             "label_ru": "Быстрая калибровка с закнутыми щупами",
             "label_en": "Fast calibration with closed probes",
@@ -17,14 +17,14 @@
             "func": "calibrate_fast_and_open"
         },
         {
-            "description": "Кнопка для проведения полной калибровки с закнутыми щупами",
+            "description": "Кнопка для проведения полной калибровки с замкнутыми щупами",
             "type": "button",
             "label_ru": "Полная калибровка с закнутыми щупами",
             "label_en": "Full calibration with closed probes",
             "func": "calibrate_full_and_closed"
         },
         {
-            "description": "Кнопка для проведения полной калибровки с размкнутыми щупами",
+            "description": "Кнопка для проведения полной калибровки с разомкнутыми щупами",
             "type": "button",
             "label_ru": "Полная калибровка с разомкнутыми щупами",
             "label_en": "Full calibration with open probes",
