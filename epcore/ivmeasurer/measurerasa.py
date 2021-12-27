@@ -5,7 +5,7 @@ The old name - Meridian.
 
 import logging
 import time
-from ctypes import c_char_p, c_double, c_uint32
+from ctypes import c_char_p, c_double, c_uint32, CDLL
 from typing import Any, Callable, Dict, Tuple
 import numpy as np
 from . import IVMeasurerIdentityInformation
@@ -66,11 +66,8 @@ class IVMeasurerVirtualASA(IVMeasurerVirtual):
         """
 
         super().__init__(url, name, defer_open)
-        self.__default_settings = MeasurementSettings(
-            internal_resistance=1000.,
-            max_voltage=5.,
-            probe_signal_frequency=100,
-            sampling_rate=12254)
+        self.__default_settings = MeasurementSettings(internal_resistance=1000., max_voltage=5.,
+                                                      probe_signal_frequency=100, sampling_rate=12254)
 
     def open_device(self):
         self._open = True
@@ -80,11 +77,10 @@ class IVMeasurerVirtualASA(IVMeasurerVirtual):
 class IVMeasurerASA(IVMeasurerBase):
     """
     Class for controlling EyePoint ASA devices (EP H10) with API version 1.0.1.
-    All instances should be initialized with device URL. Format:
-    xmlrpc://ip_address:port.
+    All instances should be initialized with device URL. Format: xmlrpc://ip_address:port.
     """
 
-    _calibration_types = {"Быстрая калибровка. Замкнутые щупы": 0,
+    _CALIBRATION_TYPES = {"Быстрая калибровка. Замкнутые щупы": 0,
                           "Быстрая калибровка. Разомкнутые щупы": 1,
                           "Полная калибровка. Замкнутые щупы": 2,
                           "Полная калибровка. Разомкнутые щупы": 3}
@@ -97,8 +93,7 @@ class IVMeasurerASA(IVMeasurerBase):
     n_charge_points: int = _N_POINTS
     n_points: int = _N_POINTS
 
-    def __init__(self, url: str = "", name: str = "",
-                 defer_open: bool = False):
+    def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
         :param url: url for device identification in computer system. For
         devices url will be "xmlrpc://xxx.xxx.xxx.xxx";
@@ -107,18 +102,15 @@ class IVMeasurerASA(IVMeasurerBase):
         """
 
         self._host, self._port = _parse_address(url)
-        self._name = name
-        self._lib = asa.get_dll()
+        self._name: str = name
+        self._lib: CDLL = asa.get_dll()
         self._server: asa.Server = None
-        self._asa_settings = asa.AsaSettings()
-        self._settings = MeasurementSettings(
-            internal_resistance=1000.,
-            max_voltage=5.,
-            probe_signal_frequency=100,
-            sampling_rate=12254)
+        self._asa_settings: asa.AsaSettings = asa.AsaSettings()
+        self._settings: MeasurementSettings = MeasurementSettings(internal_resistance=1000., max_voltage=5.,
+                                                                  probe_signal_frequency=100, sampling_rate=12254)
         self._measurement_is_ready: bool = False
-        self._SMOOTHING_KERNEL_SIZE = 5
-        self._NORMAL_NUM_POINTS = 100
+        self._SMOOTHING_KERNEL_SIZE: int = 5
+        self._NORMAL_NUM_POINTS: int = 100
         if not defer_open:
             self.open_device()
         super().__init__(url, name)
@@ -135,37 +127,31 @@ class IVMeasurerASA(IVMeasurerBase):
         frequency = settings.probe_signal_frequency
         voltage = settings.max_voltage
         all_allowable_voltages = (1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 6.7, 7.5, 10)
-        allowable_voltages = {
-            3000000: (1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 6.7),
-            6000000: (1, 1.5, 2, 2.5, 3),
-            12000000: (1, 1.5, 2)}
+        allowable_voltages = {3000000: (1, 1.5, 2, 2.5, 3, 4, 4.5, 5, 6, 6.7),
+                              6000000: (1, 1.5, 2, 2.5, 3),
+                              12000000: (1, 1.5, 2)}
         v_allowable = allowable_voltages.get(frequency, all_allowable_voltages)
         if voltage not in v_allowable:
-            msg = (f"Invalid value of max voltage {voltage} V at the given value of "
-                   f"probe signal frequency {frequency} Hz.\n"
-                   f"Allowable max voltage values: {v_allowable} V")
-            raise ValueError(msg)
+            raise ValueError(f"Invalid value of max voltage {voltage} V at the given value of probe signal "
+                             f"frequency {frequency} Hz.\nAllowable max voltage values: {v_allowable} V")
         # Check resistances depending on voltages
         resistance = settings.internal_resistance
-        allowable_resistances = {
-            1: (100, 200, 1000, 2000),
-            1.5: (100, 300),
-            2: (200, 400, 1000, 2000),
-            2.5: (100,),
-            3: (200, 300),
-            4: (400, 2000),
-            4.5: (300,),
-            5: (100, 200, 1000),
-            6: (400,),
-            6.7: (670,),
-            7.5: (100, 300),
-            10: (111, 200, 400, 1000, 2000)}
+        allowable_resistances = {1: (100, 200, 1000, 2000),
+                                 1.5: (100, 300),
+                                 2: (200, 400, 1000, 2000),
+                                 2.5: (100,),
+                                 3: (200, 300),
+                                 4: (400, 2000),
+                                 4.5: (300,),
+                                 5: (100, 200, 1000),
+                                 6: (400,),
+                                 6.7: (670,),
+                                 7.5: (100, 300),
+                                 10: (111, 200, 400, 1000, 2000)}
         r_allowable = allowable_resistances.get(voltage, tuple())
         if resistance not in r_allowable:
-            msg = (f"Invalid value of internal resistance {resistance} Ohm at "
-                   f"the given value of max voltage {voltage} V.\n"
-                   f"Allowable resistance values: {r_allowable} Ohm")
-            raise ValueError(msg)
+            raise ValueError(f"Invalid value of internal resistance {resistance} Ohm at the given value of max "
+                             f"voltage {voltage} V.\nAllowable resistance values: {r_allowable} Ohm")
         return True
 
     def _convert_to_asa_settings(self, settings: MeasurementSettings):
@@ -178,20 +164,21 @@ class IVMeasurerASA(IVMeasurerBase):
         self._asa_settings.number_points = c_uint32(_N_POINTS)
         self._asa_settings.number_charge_points = c_uint32(self.n_charge_points)
         self._asa_settings.measure_flags = c_uint32(_FLAGS)
-        self._asa_settings.probe_signal_frequency_hz = \
-            c_double(int(settings.probe_signal_frequency))
+        self._asa_settings.probe_signal_frequency_hz = c_double(int(settings.probe_signal_frequency))
         self._asa_settings.voltage_ampl_v = c_double(settings.max_voltage)
-        max_current = round(1000 * settings.max_voltage / settings.internal_resistance, 1)
+        max_current = 1000 * settings.max_voltage / settings.internal_resistance
+        if max_current < 1:
+            max_current = round(max_current, 1)
+        else:
+            max_current = int(max_current)
         self._asa_settings.max_current_m_a = c_double(max_current)
-        self._asa_settings.debug_model_type = \
-            c_uint32(2 * (self.model_type.lower() == "capacitor") +
-                     (self.model_type.lower() == "resistor"))
+        self._asa_settings.debug_model_type = c_uint32(2 * (self.model_type.lower() == "capacitor") +
+                                                       (self.model_type.lower() == "resistor"))
         self._asa_settings.trigger_mode = c_uint32(self.mode.lower() == "manual")
         self._asa_settings.debug_model_nominal = c_double(self.model_nominal)
 
     @staticmethod
-    def _get_from_asa_settings(asa_settings: asa.AsaSettings) -> \
-            Tuple[MeasurementSettings, Dict]:
+    def _get_from_asa_settings(asa_settings: asa.AsaSettings) -> Tuple[MeasurementSettings, Dict]:
         """
         Method gets values of settings from ASA format.
         :return: main and additional measurement settings.
@@ -219,10 +206,8 @@ class IVMeasurerASA(IVMeasurerBase):
         precharge_delay = n_charge_points / sampling_rate
         if int(precharge_delay) == 0:
             precharge_delay = None
-        settings = MeasurementSettings(sampling_rate=sampling_rate,
-                                       internal_resistance=internal_resistance,
-                                       max_voltage=max_voltage,
-                                       probe_signal_frequency=probe_signal_frequency,
+        settings = MeasurementSettings(sampling_rate=sampling_rate, internal_resistance=internal_resistance,
+                                       max_voltage=max_voltage, probe_signal_frequency=probe_signal_frequency,
                                        precharge_delay=precharge_delay)
         additional_settings = {"flags": flags,
                                "mode": mode,
@@ -278,28 +263,28 @@ class IVMeasurerASA(IVMeasurerBase):
         Method performs calibration of type "Быстрая калибровка. Замкнутые щупы".
         """
 
-        self.calibrate(self._calibration_types["Быстрая калибровка. Замкнутые щупы"])
+        self.calibrate(self._CALIBRATION_TYPES["Быстрая калибровка. Замкнутые щупы"])
 
     def calibrate_fast_and_open(self):
         """
         Method performs calibration of type "Быстрая калибровка. Разомкнутые щупы".
         """
 
-        self.calibrate(self._calibration_types["Быстрая калибровка. Разомкнутые щупы"])
+        self.calibrate(self._CALIBRATION_TYPES["Быстрая калибровка. Разомкнутые щупы"])
 
     def calibrate_full_and_closed(self):
         """
         Method performs calibration of type "Полная калибровка. Замкнутые щупы".
         """
 
-        self.calibrate(self._calibration_types["Полная калибровка. Замкнутые щупы"])
+        self.calibrate(self._CALIBRATION_TYPES["Полная калибровка. Замкнутые щупы"])
 
     def calibrate_full_and_open(self):
         """
         Method performs calibration of type "Полная калибровка. Разомкнутые щупы".
         """
 
-        self.calibrate(self._calibration_types["Полная калибровка. Разомкнутые щупы"])
+        self.calibrate(self._CALIBRATION_TYPES["Полная калибровка. Разомкнутые щупы"])
 
     def close_device(self):
         pass
@@ -314,14 +299,9 @@ class IVMeasurerASA(IVMeasurerBase):
 
     @_close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
-        return IVMeasurerIdentityInformation(
-            manufacturer="Meridian",
-            device_name="ASA device",
-            device_class="ASA device",
-            hardware_version=tuple(),
-            firmware_version=(1, 0, 1),
-            name="ASA device",
-            rank=1)
+        return IVMeasurerIdentityInformation(manufacturer="Meridian", device_name="ASA device",
+                                             device_class="ASA device", hardware_version=tuple(),
+                                             firmware_version=(1, 0, 1), name="ASA device", rank=1)
 
     @cache_curve
     @_close_on_error
@@ -334,8 +314,7 @@ class IVMeasurerASA(IVMeasurerBase):
         try:
             curve = asa.IvCurve()
             asa.GetSettings(self._lib, self._server, self._asa_settings)
-            assert asa.GetIVCurve(self._lib, self._server, curve,
-                                  self._asa_settings.number_points) == 0
+            assert asa.GetIVCurve(self._lib, self._server, curve, self._asa_settings.number_points) == 0
             n_points = asa.GetNumberPointsForSinglePeriod(self._lib, self._asa_settings)
         except AssertionError:
             logging.error("Curve was not received. Something went wrong")
