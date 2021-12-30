@@ -15,7 +15,6 @@ from .processing import smooth_curve, interpolate_curve
 from .virtual import IVMeasurerVirtual
 from ..elements import IVCurve, MeasurementSettings
 
-
 _FLAGS = 1
 _N_POINTS = 512
 
@@ -108,7 +107,6 @@ class IVMeasurerASA(IVMeasurerBase):
         self._asa_settings: asa.AsaSettings = asa.AsaSettings()
         self._settings: MeasurementSettings = MeasurementSettings(internal_resistance=1000., max_voltage=5.,
                                                                   probe_signal_frequency=100, sampling_rate=12254)
-        self._measurement_is_ready: bool = False
         self._SMOOTHING_KERNEL_SIZE: int = 5
         self._NORMAL_NUM_POINTS: int = 100
         if not defer_open:
@@ -314,15 +312,12 @@ class IVMeasurerASA(IVMeasurerBase):
         try:
             curve = asa.IvCurve()
             asa.GetSettings(self._lib, self._server, self._asa_settings)
-            assert asa.GetIVCurve(self._lib, self._server, curve, self._asa_settings.number_points) == 0
+            result = asa.GetIVCurve(self._lib, self._server, curve, self._asa_settings.number_points)
+            if result != asa.AsaResponseStatus.ASA_OK:
+                raise Exception("Getting IV-curve failed")
             n_points = asa.GetNumberPointsForSinglePeriod(self._lib, self._asa_settings)
-        except AssertionError:
-            logging.error("Curve was not received. Something went wrong")
-            if self._cashed_curve:
-                return self._cashed_curve
-            return IVCurve()
-        except OSError:
-            logging.error("Curve was not received")
+        except Exception as exc:
+            logging.error("Curve was not received. Something went wrong: %s", exc)
             if self._cashed_curve:
                 return self._cashed_curve
             return IVCurve()
@@ -355,20 +350,17 @@ class IVMeasurerASA(IVMeasurerBase):
     def measurement_is_ready(self) -> bool:
         if self.is_freezed():
             return False
-        return self._measurement_is_ready
+        return asa.GetLastOperationResult(self._lib, self._server) == asa.AsaResponseStatus.ASA_OK
 
     @_close_on_error
     def open_device(self):
         self._set_server_host()
-        attempt_number = 0
-        while attempt_number < 1:
-            try:
-                self.set_settings()
-                self.get_settings()
-            except (asa.AsaFormatError, asa.AsaTypeError, asa.AsaValueError):
-                attempt_number += 1
-                continue
-            break
+        try:
+            self.set_settings()
+            self.get_settings()
+        except (asa.AsaFormatError, asa.AsaTypeError, asa.AsaValueError) as exc:
+            logging.error("Error occurred while opening ASA measurer: %s", exc)
+            raise
         self._wait_for_completion()
 
     def reconnect(self) -> bool:
@@ -404,7 +396,4 @@ class IVMeasurerASA(IVMeasurerBase):
     @_close_on_error
     def trigger_measurement(self):
         if not self.is_freezed():
-            self._measurement_is_ready = False
             asa.TriggerMeasurement(self._lib, self._server)
-            self._wait_for_completion()
-            self._measurement_is_ready = True

@@ -5,9 +5,10 @@ This is a part of xigen2_utils
 Don’t modify this outside xigen2_utils repository!!!
 """
 
-import os
 import configparser
+import os
 from distutils.version import StrictVersion
+from typing import Callable
 
 
 class SafeOpenError(Exception):
@@ -206,22 +207,22 @@ class _OpenManager:
             return
 
 
-def open_device_safe(uri: str, klass: type, conf: str, log, force_open=False):
+def open_device_safe(uri: str, klass: type, conf: str, log: Callable, force_open: bool = False):
     """
-    Function open device safe: check versions of firmware, library and program soft
-    This function works similarly to open_device, but checks device name and protocol compatibility
-    In case of failure (and if force_open is set to False) device will be closed
-    :param uri: path to device, str (like in open_device function)
-    :param klass: device handle, class
-    :param conf: path to config file, str
-    :param log: logging callback, Callable[int, str, int]
-    :param force_open: device will be opened despite the errors
-    :return: device (device handle exemplar)
-    :return: status (ok/not-ok)(bool)
-    :return: device name (str)
-    :return: library version (str)
-    :return: firmware version (str)
-    :return: all supported firmware versions (List[str])
+    Function opens device safely: check versions of firmware, library and program soft.
+    This function works similarly to open_device, but checks device name and protocol compatibility.
+    In case of failure (and if force_open is set to False) device will be closed.
+    :param uri: path to device, str (like in open_device function);
+    :param klass: device handle, class;
+    :param conf: path to config file, str;
+    :param log: logging callback, Callable[int, str, int];
+    :param force_open: device will be opened despite the errors.
+    :return: device (device handle exemplar);
+    :return: status (ok/not-ok)(bool);
+    :return: device name (str);
+    :return: library version (str);
+    :return: firmware version (str);
+    :return: all supported firmware versions (List[str]).
     """
 
     device = klass(uri, defer_open=True)
