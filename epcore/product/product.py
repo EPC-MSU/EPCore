@@ -140,8 +140,8 @@ class MeasurementParameterOptionEplab:
     label_en: str
     dependent_params: dict
 
-    def _find_dependent_option(self, required_option_name: str, parameter: "Parameter") ->\
-            Optional["MeasurementParameterOptionEplab"]:
+    def _find_dependent_option(self, required_option_name: str, parameter
+                               ) -> Optional["MeasurementParameterOptionEplab"]:
         """
         Method returns option of dependent parameter with given names.
         :param required_option_name: name of required option;
@@ -158,9 +158,8 @@ class MeasurementParameterOptionEplab:
             return self.dependent_params[parameter][0]
         return None
 
-    def _find_dependent_option_by_value(
-            self, settings: MeasurementSettings, parameter: "Parameter") ->\
-            Optional["MeasurementParameterOptionEplab"]:
+    def _find_dependent_option_by_value(self, settings: MeasurementSettings, parameter
+                                        ) -> Optional["MeasurementParameterOptionEplab"]:
         """
         Method returns option of dependent parameter with given values.
         :param settings: measurement settings;
@@ -203,10 +202,9 @@ class MeasurementParameterOptionEplab:
             name=json_data["name"], value=json_data["value"], label_ru=json_data["label_ru"],
             label_en=json_data["label_en"], dependent_params=dependent_params)
 
-    def get_available(self, settings: MeasurementSettings) -> Dict["Parameter", List]:
+    def get_available(self, settings: MeasurementSettings) -> Dict:
         """
-        Method returns available options for dependent parameters of given
-        option.
+        Method returns available options for dependent parameters of given option.
         :param settings: measurement settings.
         :return: dictionary with available options.
         """
@@ -230,8 +228,7 @@ class MeasurementParameterOptionEplab:
         return MeasurementParameterOption(name=self.name, value=self.value, label_ru=self.label_ru,
                                           label_en=self.label_en)
 
-    def set_option(self, options: Dict["Parameter", str], settings: MeasurementSettings,
-                   parameter: "Parameter"):
+    def set_option(self, options: Dict, settings: MeasurementSettings, parameter):
         """
         Method writes value of parameter from
         :param options: dictionary with options of parameters;
@@ -244,8 +241,7 @@ class MeasurementParameterOptionEplab:
             option = self._find_dependent_option_by_value(settings, dependent_param)
             option.set_option(options, settings, dependent_param)
 
-    def write_to_settings(self, options: Dict["Parameter", str], settings: MeasurementSettings,
-                          parameter: "Parameter"):
+    def write_to_settings(self, options: Dict, settings: MeasurementSettings, parameter):
         """
         Method writes value of parameter from options dictionary to
         measurement settings.
@@ -290,7 +286,7 @@ class Parameters:
             self.initialize(data)
 
     @staticmethod
-    def _check_dict_for_recording(options: Dict["Parameter", Any]) -> bool:
+    def _check_dict_for_recording(options: Dict) -> bool:
         """
         Method checks if options dictionary has all required fields.
         :param options: options dictionary.
@@ -338,7 +334,7 @@ class Parameters:
         settings_to.max_voltage = settings_from.max_voltage
         settings_to.internal_resistance = settings_from.internal_resistance
 
-    def get_available_options(self, settings: MeasurementSettings) -> Dict["Parameter", List]:
+    def get_available_options(self, settings: MeasurementSettings) -> Dict:
         """
         Method returns available options for parameters of measuring system.
         :param settings: measurement settings.
@@ -367,7 +363,7 @@ class Parameters:
                 available = {**available, **new_available}
         return available
 
-    def get_options(self, settings: MeasurementSettings) -> Dict["Parameter", str]:
+    def get_options(self, settings: MeasurementSettings) -> Dict:
         """
         Method writes values from measurement settings to dictionary with
         options of parameters.
@@ -401,7 +397,7 @@ class Parameters:
             warn(f"Unknown device internal resistance {settings.internal_resistance}")
         return options
 
-    def get_parameters(self) -> Dict["Parameter", MeasurementParameter]:
+    def get_parameters(self) -> Dict:
         """
         Method returns dictionary with measurement parameters of measuring
         system. This method works correctly if EPLab uses default json-file
@@ -436,7 +432,7 @@ class Parameters:
         if sensitives_data:
             self.sensitives = self._create_measurement_parameter(sensitives_data)
 
-    def write_to_settings(self, options: Dict["Parameter", str], settings: MeasurementSettings):
+    def write_to_settings(self, options: Dict, settings: MeasurementSettings):
         """
         Method writes values from options dictionary to measurement settings.
         :param options: dictionary with string values of parameters;
