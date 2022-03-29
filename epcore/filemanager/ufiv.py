@@ -50,7 +50,7 @@ def _check_json_data_for_ufiv_format(json_data: Dict) -> Dict:
     elements = json_data.get("elements", [])
     for element in elements:
         bounding_zone = element.get("bounding_zone")
-        if not bounding_zone:
+        if not bounding_zone and "bounding_zone" in element:
             element.pop("bounding_zone")
     return json_data
 
@@ -160,7 +160,9 @@ def save_board_to_ufiv(path: str, board: Board) -> str:
     # Save json file in archive
     json_name = os.path.basename(path.replace(".uzf", ".json"))
     json_path = os.path.join(temp_dir.name, json_name)
+    print("Before")
     json_file = _check_json_data_for_ufiv_format(board.to_json())
+    print("After")
     with open(json_path, "w") as file:
         dump(json_file, file, indent=1)
     archive.write(json_path, arcname=json_name)
