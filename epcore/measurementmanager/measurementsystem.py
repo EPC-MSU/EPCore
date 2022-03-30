@@ -20,8 +20,7 @@ class MeasurementSystem:
         self.measurers = measurers or []
         # Two containers for the same thing is not a good feature.
         # Consider removing and try not to use this.
-        self.measurers_map = {measurer.name: measurer for measurer in self.measurers
-                              if measurer.name}
+        self.measurers_map = {measurer.name: measurer for measurer in self.measurers if measurer.name}
 
     def trigger_measurements(self):
         """
@@ -33,7 +32,7 @@ class MeasurementSystem:
 
     def measurements_are_ready(self) -> bool:
         """
-        Return True if all measurers have done their job.
+        :return: True if all measurers have done their job.
         """
 
         return all([m.measurement_is_ready() for m in self.measurers if not m.is_freezed()])
@@ -41,6 +40,7 @@ class MeasurementSystem:
     def measure_iv_curves(self) -> List[IVCurve]:
         """
         Make measurements and get new curves from all devices.
+        :return: list of IV-curves.
         """
 
         self.trigger_measurements()
@@ -51,6 +51,7 @@ class MeasurementSystem:
     def set_settings(self, settings: MeasurementSettings):
         """
         Assign same settings for all measurers.
+        :param settings: measurement settings to be set.
         """
 
         for measurer in self.measurers:
@@ -59,32 +60,52 @@ class MeasurementSystem:
     def get_settings(self) -> MeasurementSettings:
         """
         Check whether all measurers have the same settings.
-        If the same - return. Else throw RuntimeError.
+        :return: measurement settings.
         """
 
         all_settings = [measurer.get_settings() for measurer in self.measurers]
         if not all_settings:
-            raise ValueError("No ivc measurers")
+            raise ValueError("No IVC measurers")
         precision = 0.01
         s0 = all_settings[0]
         for s in all_settings:
             if (not np.isclose(s.internal_resistance, s0.internal_resistance, atol=precision) or
-                    s.sampling_rate != s0.sampling_rate or
-                    s.probe_signal_frequency != s0.probe_signal_frequency or
+                    s.sampling_rate != s0.sampling_rate or s.probe_signal_frequency != s0.probe_signal_frequency or
                     not np.isclose(s.max_voltage, s0.max_voltage, atol=precision)):
                 raise ValueError("Settings are different for measurers")
         return deepcopy(all_settings[0])
 
     def unfreeze(self):
         """
-        Unfreeze all measurers
+        Unfreeze all measurers.
         """
+
         for measurer in self.measurers:
             measurer.unfreeze()
 
     def calibrate(self):
+        """
+        Calibrate all measurers.
+        """
+
         for measurer in self.measurers:
             measurer.calibrate()
 
     def reconnect(self) -> bool:
+        """
+        Reconnect all measurers.
+        :return: True if reconnection is successful for all measurers.
+        """
+
         return all([measurer.reconnect() for measurer in self.measurers])
+
+    def set_default_settings(self):
+        """
+        Set default measurement settings.
+        """
+
+        try:
+            for measurer in self.measurers:
+                measurer.set_default_settings()
+        except Exception:
+            pass

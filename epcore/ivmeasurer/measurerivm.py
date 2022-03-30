@@ -245,8 +245,12 @@ class IVMeasurerIVM10(IVMeasurerBase):
     """
     Class for controlling EyePoint IVM devices with API version 1.0. All
     instances should be initialized with device URL. Format for Windows:
-    "com:\\\\.\\COMx", format for Linux: "///dev/ttyACMx".
+    "com:\\\\.\\COMx", format for Linux: "com:///dev/ttyACMx".
     """
+
+    DEFAULT_MEASUREMENT_SETTINGS = MeasurementSettings(sampling_rate=10000, internal_resistance=4750,
+                                                       max_voltage=5, probe_signal_frequency=100,
+                                                       precharge_delay=0)
 
     def __init__(self, url: str = "", name: str = "", config: str = "", defer_open: bool = False):
         """
@@ -265,7 +269,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         self._NORMAL_NUM_POINTS = 100
         self._default_settings = MeasurementSettings(
             sampling_rate=10000,
-            internal_resistance=475,
+            internal_resistance=4750,
             max_voltage=5,
             probe_signal_frequency=100,
             precharge_delay=0
@@ -426,3 +430,11 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
         if attribute_name in self.__dict__:
             setattr(self, attribute_name, value)
+
+    @_close_on_error
+    def set_default_settings(self):
+        """
+        Method sets default measurement settings.
+        """
+
+        self.set_settings(self.DEFAULT_MEASUREMENT_SETTINGS)

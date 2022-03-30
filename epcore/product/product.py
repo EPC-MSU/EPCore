@@ -523,20 +523,17 @@ class EyePointProduct(ProductBase):
         :return: data from json file.
         """
 
-        with open(join(dirname(abspath(__file__)), json_filename), "r",
-                  encoding="utf-8") as file:
+        with open(join(dirname(abspath(__file__)), json_filename), "r", encoding="utf-8") as file:
             return json.load(file)
 
     @classmethod
     def _schema(cls) -> Dict:
-        with open(join(dirname(abspath(__file__)), "doc", "eplab_schema.json"), "r",
-                  encoding="utf-8") as file:
+        with open(join(dirname(abspath(__file__)), "doc", "eplab_schema.json"), "r", encoding="utf-8") as file:
             return json.load(file)
 
     def __init__(self, json_data: Optional[Dict] = None):
         """
-        :param json_data: dictionary with options for parameters of measurement
-        system.
+        :param json_data: dictionary with options for parameters of measurement system.
         """
 
         super().__init__()
@@ -545,8 +542,7 @@ class EyePointProduct(ProductBase):
     def change_options(self, json_data: Optional[Dict] = None):
         """
         Method changes options for parameters of measurement system.
-        :param json_data: dictionary with options for parameters of measurement
-        system.
+        :param json_data: dictionary with options for parameters of measurement system.
         """
 
         if json_data is None:
@@ -575,8 +571,7 @@ class EyePointProduct(ProductBase):
 
         return self._parameters.get_options(settings)
 
-    def options_to_settings(self, options: Dict["Parameter", str],
-                            settings: MeasurementSettings) -> MeasurementSettings:
+    def options_to_settings(self, options: Dict[Parameter, str], settings: MeasurementSettings) -> MeasurementSettings:
         """
         Method writes values from options dictionary to measurement settings.
         :param options: dictionary with string values of parameters;
@@ -594,8 +589,7 @@ class EyePointProduct(ProductBase):
         :return: voltage and current scales.
         """
 
-        horizontal, vertical = self._scale_adjuster.get_values(settings.max_voltage,
-                                                               settings.internal_resistance)
+        horizontal, vertical = self._scale_adjuster.get_values(settings.max_voltage, settings.internal_resistance)
         if horizontal is not None and vertical is not None:
             return horizontal, vertical
         return super().adjust_plot_scale(settings)
@@ -633,13 +627,12 @@ class EyePointProduct(ProductBase):
         :return: v_amplitude, c_amplitude.
         """
 
-        horizontal, vertical = self._noise_adjuster.get_values(settings.max_voltage,
-                                                               settings.internal_resistance)
+        horizontal, vertical = self._noise_adjuster.get_values(settings.max_voltage, settings.internal_resistance)
         if horizontal is not None and vertical is not None:
             return horizontal, vertical
         return super().adjust_noise_amplitude(settings)
 
-    def get_available_options(self, settings: MeasurementSettings) -> Dict["Parameter", List]:
+    def get_available_options(self, settings: MeasurementSettings) -> Dict[Parameter, List]:
         """
         Method returns available options for parameters of measuring system.
         :param settings: measurement settings.
