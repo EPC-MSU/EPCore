@@ -250,7 +250,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
     """
 
     DEFAULT_MEASUREMENT_SETTINGS = MeasurementSettings(sampling_rate=10000, internal_resistance=4750,
-                                                       max_voltage=3.3, probe_signal_frequency=100,
+                                                       max_voltage=5, probe_signal_frequency=100,
                                                        precharge_delay=0)
 
     def __init__(self, url: str = "", name: str = "", config: str = "", defer_open: bool = False):
