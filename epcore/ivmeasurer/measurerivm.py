@@ -2,6 +2,7 @@
 IVMeasurer Implementation for EyePoint IVM hardware measurer.
 """
 
+import copy
 from typing import Any, Callable
 import numpy as np
 from . import IVMeasurerIdentityInformation
@@ -249,7 +250,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
     """
 
     DEFAULT_MEASUREMENT_SETTINGS = MeasurementSettings(sampling_rate=10000, internal_resistance=4750,
-                                                       max_voltage=5, probe_signal_frequency=100,
+                                                       max_voltage=3.3, probe_signal_frequency=100,
                                                        precharge_delay=0)
 
     def __init__(self, url: str = "", name: str = "", config: str = "", defer_open: bool = False):
@@ -431,10 +432,10 @@ class IVMeasurerIVM10(IVMeasurerBase):
         if attribute_name in self.__dict__:
             setattr(self, attribute_name, value)
 
-    @_close_on_error
-    def set_default_settings(self):
+    def get_default_settings(self) -> MeasurementSettings:
         """
-        Method sets default measurement settings.
+        Method returns default measurement settings.
+        :return: default measurement settings.
         """
 
-        self.set_settings(self.DEFAULT_MEASUREMENT_SETTINGS)
+        return copy.deepcopy(self.DEFAULT_MEASUREMENT_SETTINGS)

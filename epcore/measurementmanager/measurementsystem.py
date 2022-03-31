@@ -98,14 +98,3 @@ class MeasurementSystem:
         """
 
         return all([measurer.reconnect() for measurer in self.measurers])
-
-    def set_default_settings(self):
-        """
-        Set default measurement settings.
-        """
-
-        try:
-            for measurer in self.measurers:
-                measurer.set_default_settings()
-        except Exception:
-            pass
