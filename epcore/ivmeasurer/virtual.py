@@ -38,8 +38,8 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.url = url
         self.__default_settings = MeasurementSettings(
             sampling_rate=10000,
-            internal_resistance=475.,
-            max_voltage=5.,
+            internal_resistance=4750,
+            max_voltage=5,
             probe_signal_frequency=100
         )
         self.__last_curve = IVCurve()
