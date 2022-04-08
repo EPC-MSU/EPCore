@@ -3,7 +3,7 @@ File with class to work with multiplexer.
 """
 
 from enum import Enum
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 from dataclasses import dataclass
 from epcore.analogmultiplexer.epmux.epmux import EpmuxDeviceHandle
 
@@ -91,6 +91,7 @@ class Multiplexer:
         except (OSError, RuntimeError):
             pass
 
+    @_close_on_error
     def connect_channel(self, module_number: int, channel_number: int,
                         line_type: Optional[LineTypes] = LineTypes.TYPE_A):
         """
@@ -116,6 +117,7 @@ class Multiplexer:
             else:
                 raise ValueError("Invalid line type for module type B")
 
+    @_close_on_error
     def disconnect_all_channels(self):
         """
         Method disconnects all channels from output.
@@ -123,6 +125,7 @@ class Multiplexer:
 
         self._device.all_channels_off()
 
+    @_close_on_error
     def get_chain_info(self) -> List[ModuleTypes]:
         """
         Method returns information about chain.
@@ -154,6 +157,22 @@ class Multiplexer:
             product_name=bytes(buffer.product_name).decode("utf-8").replace("\x00", ""),
             reserved=bytes(buffer.controller_name).decode("utf-8").replace("\x00", ""),
             serial_number=int(buffer.serial_number))
+
+    @_close_on_error
+    def get_connected_channel(self, line_type: LineTypes = LineTypes.TYPE_A) -> Optional[Tuple]:
+        """
+        Method returns address of channel connected to given line.
+        :param line_type: line.
+        :return: address of channel - module number and channel number within the module.
+        """
+
+        buffer = None
+        if line_type == LineTypes.TYPE_A:
+            buffer = self._device.get_channel_for_line_a()
+        elif line_type == LineTypes.TYPE_B:
+            buffer = self._device.get_channel_for_line_b()
+        if buffer:
+            return buffer.module_number, buffer.channel_number
 
     @_close_on_error
     def open_device(self):
