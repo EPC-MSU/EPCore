@@ -8,20 +8,18 @@ import logging
 import os
 import re
 import zipfile
-from json import load, dump
+from json import dump, load
 from tempfile import TemporaryDirectory
 from typing import Dict, Optional, Tuple
 from jsonschema import validate, ValidationError
-from PIL import Image
-from ..doc import path_to_ufiv_schema, path_to_p10_elements_schema, path_to_p10_elements_2_schema
+from PIL import Image, ImageOps
+from ..doc import path_to_p10_elements_2_schema, path_to_p10_elements_schema, path_to_ufiv_schema
 from ..elements import Board
-from .file_formats import (FileArchivedUFIVFormat, FileP10NewFormat, FileP10NormalFormat,
-                           FileUFIVFormat)
+from .file_formats import FileArchivedUFIVFormat, FileP10NewFormat, FileP10NormalFormat, FileUFIVFormat
 
 
 MAX_ERR_MSG_LEN = 256
-# Path to the last image of board
-_image_path: str = None
+_image_path: str = None  # path to the last image of board
 
 
 class Formats(enum.Enum):
@@ -81,7 +79,8 @@ def add_image_to_ufiv(path: str, board: Board) -> Board:
 
     global _image_path
     _image_path = path
-    board.image = Image.open(path)
+    image = Image.open(path)
+    board.image = ImageOps.exif_transpose(image)
     return board
 
 
@@ -115,8 +114,7 @@ def detect_format(path: str) -> Formats:
     return Formats.UFIV
 
 
-def load_board_from_ufiv(path: str, validate_input: bool = True,
-                         auto_convert_p10: bool = True) -> Board:
+def load_board_from_ufiv(path: str, validate_input: bool = True, auto_convert_p10: bool = True) -> Board:
     """
     Function loads board (json and png) from directory.
     :param path: path to json file;

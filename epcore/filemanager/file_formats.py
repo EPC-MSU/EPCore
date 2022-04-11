@@ -2,25 +2,24 @@ import json
 import os
 import zipfile
 from tempfile import TemporaryDirectory
-from typing import Tuple
-from PIL import Image
+from typing import Optional, Tuple
+from PIL import Image, ImageOps
 from ..elements import version
 from ..utils import convert_p10, convert_p10_2
 
 
 class FileUFIVFormat:
     """
-    Common class for board files (in UFIV format)
+    Common class for board files (in UFIV format).
     """
-
-    json_pth = ""
-    img_pth = ""
 
     def __init__(self, json_path: str = None):
         """
         :param json_path: path to json file.
         """
 
+        self.img_pth: str = ""
+        self.json_pth: str = ""
         if json_path is None:
             return
         self.json_pth = json_path
@@ -55,6 +54,7 @@ class FileUFIVFormat:
         image = None
         if self.img_pth and os.path.isfile(self.img_pth):
             image = Image.open(self.img_pth)
+            image = ImageOps.exif_transpose(image)
         return input_json, image
 
 
@@ -83,17 +83,14 @@ class FileP10NormalFormat(FileUFIVFormat):
 
     def get_json_and_image(self, p10_convert_flag: bool) -> Tuple:
         """
-        Method converts from P10 format to UFIV and returns json file and
-        image of board.
-        :param p10_convert_flag: if True json file content will be converted
-        to UFIV format.
+        Method converts from P10 format to UFIV and returns json file and image of board.
+        :param p10_convert_flag: if True json file content will be converted to UFIV format.
         :return: json file content and image of board.
         """
 
         input_json, image = super().get_json_and_image()
         if p10_convert_flag:
-            input_json = self.convert_func(input_json, version=version,
-                                           force_reference=True)
+            input_json = self.convert_func(input_json, version=version, force_reference=True)
         return input_json, image
 
 
@@ -125,10 +122,9 @@ class FileArchivedUFIVFormat(FileUFIVFormat):
         super().__init__(json_path)
 
     @staticmethod
-    def convert_to_ufiv(path: str) -> str:
+    def convert_to_ufiv(path: str) -> Optional[str]:
         """
-        Method extracts content from UFIV zipped file and returns path to
-        extracted json file.
+        Method extracts content from UFIV zipped file and returns path to extracted json file.
         :param path: path to UFIV zipped file.
         :return: path to extracted json file.
         """
