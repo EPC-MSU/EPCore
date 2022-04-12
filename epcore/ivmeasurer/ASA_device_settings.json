@@ -7,6 +7,8 @@
             "type": "button",
             "label_ru": "Быстрая калибровка с закнутыми щупами",
             "label_en": "Fast calibration with closed probes",
+            "tooltip_ru": "Замкните щупы и нажмите эту кнопку",
+            "tooltip_en": "Close the probes and press this button",
             "func": "calibrate_fast_and_closed"
         },
         {
@@ -14,6 +16,8 @@
             "type": "button",
             "label_ru": "Быстрая калибровка с разомкнутыми щупами",
             "label_en": "Fast calibration with open probes",
+            "tooltip_ru": "Сначала проведите быструю калибровку с замкнутыми щупами, потом разомкните щупы и нажмите эту кнопку",
+            "tooltip_en": "First do fast calibration with closed probes, then open the probes and press this button",
             "func": "calibrate_fast_and_open"
         },
         {
@@ -21,6 +25,8 @@
             "type": "button",
             "label_ru": "Полная калибровка с закнутыми щупами",
             "label_en": "Full calibration with closed probes",
+            "tooltip_ru": "Замкните щупы и нажмите эту кнопку",
+            "tooltip_en": "Close the probes and press this button",
             "func": "calibrate_full_and_closed"
         },
         {
@@ -28,10 +34,12 @@
             "type": "button",
             "label_ru": "Полная калибровка с разомкнутыми щупами",
             "label_en": "Full calibration with open probes",
+            "tooltip_ru": "Сначала проведите полную калибровку с замкнутыми щупами, потом разомкните щупы и нажмите эту кнопку",
+            "tooltip_en": "First do full calibration with closed probes, then open the probes and press this button",
             "func": "calibrate_full_and_open"
         },
         {
-            "description": "Модель (резистор, конденсатор)",
+            "description": "Модель для виртуального измерителя (резистор, конденсатор)",
             "parameter": "model_type",
             "parameter_name_ru": "Модель",
             "parameter_name_en": "Model",

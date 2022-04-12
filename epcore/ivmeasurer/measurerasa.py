@@ -16,7 +16,6 @@ from .virtual import IVMeasurerVirtual
 from ..elements import IVCurve, MeasurementSettings
 
 _FLAGS = 1
-_N_POINTS = 512
 
 
 def _close_on_error(func: Callable):
@@ -84,8 +83,8 @@ class IVMeasurerASA(IVMeasurerBase):
     mode: str = "manual"
     model_nominal: float = 1.0e-7
     model_type: str = "capacitor"
-    n_charge_points: int = _N_POINTS
-    n_points: int = _N_POINTS
+    n_charge_points: int = asa.N_POINTS
+    n_points: int = asa.N_POINTS
 
     def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
@@ -154,7 +153,7 @@ class IVMeasurerASA(IVMeasurerBase):
         """
 
         self._asa_settings.sampling_rate_hz = c_double(int(settings.sampling_rate))
-        self._asa_settings.number_points = c_uint32(_N_POINTS)
+        self._asa_settings.number_points = c_uint32(asa.N_POINTS)
         self._asa_settings.number_charge_points = c_uint32(self.n_charge_points)
         self._asa_settings.measure_flags = c_uint32(_FLAGS)
         self._asa_settings.probe_signal_frequency_hz = c_double(int(settings.probe_signal_frequency))

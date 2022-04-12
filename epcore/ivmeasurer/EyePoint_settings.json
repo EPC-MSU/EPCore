@@ -7,6 +7,8 @@
             "type": "button",
             "label_ru": "Калибровка",
             "label_en": "Calibration",
+            "tooltip_ru": "Кнопка для проведения калибровки",
+            "tooltip_en": "",
             "func": "calibrate"
         }
     ]
