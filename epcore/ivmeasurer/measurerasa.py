@@ -29,8 +29,8 @@ def _close_on_error(func: Callable):
     def handle(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
-        except (RuntimeError, OSError) as err:
-            raise err
+        except (OSError, RuntimeError) as exc:
+            raise exc
     return handle
 
 
@@ -59,7 +59,7 @@ class IVMeasurerVirtualASA(IVMeasurerVirtual):
 
     def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
-        :param url: url for device identification in computer system;
+        :param url: URL for device identification in computer system;
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization.
         """
@@ -79,11 +79,6 @@ class IVMeasurerASA(IVMeasurerBase):
     All instances should be initialized with device URL. Format: xmlrpc://ip_address:port.
     """
 
-    _CALIBRATION_TYPES = {"Быстрая калибровка. Замкнутые щупы": 0,
-                          "Быстрая калибровка. Разомкнутые щупы": 1,
-                          "Полная калибровка. Замкнутые щупы": 4,
-                          "Полная калибровка. Разомкнутые щупы": 5}
-
     # ASA device additional parameters
     flags: int = _FLAGS
     mode: str = "manual"
@@ -94,8 +89,8 @@ class IVMeasurerASA(IVMeasurerBase):
 
     def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
-        :param url: url for device identification in computer system. For
-        devices url will be "xmlrpc://xxx.xxx.xxx.xxx";
+        :param url: URL for device identification in computer system. For
+        devices URL will be "xmlrpc://xxx.xxx.xxx.xxx";
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization.
         """
@@ -107,8 +102,8 @@ class IVMeasurerASA(IVMeasurerBase):
         self._asa_settings: asa.AsaSettings = asa.AsaSettings()
         self._settings: MeasurementSettings = MeasurementSettings(internal_resistance=1000., max_voltage=5.,
                                                                   probe_signal_frequency=100, sampling_rate=12254)
-        self._SMOOTHING_KERNEL_SIZE: int = 5
         self._NORMAL_NUM_POINTS: int = 100
+        self._SMOOTHING_KERNEL_SIZE: int = 5
         if not defer_open:
             self.open_device()
         super().__init__(url, name)
@@ -179,6 +174,7 @@ class IVMeasurerASA(IVMeasurerBase):
     def _get_from_asa_settings(asa_settings: asa.AsaSettings) -> Tuple[MeasurementSettings, Dict]:
         """
         Method gets values of settings from ASA format.
+        :param asa_settings: settings in ASA format.
         :return: main and additional measurement settings.
         """
 
@@ -192,11 +188,13 @@ class IVMeasurerASA(IVMeasurerBase):
         n_points = int(asa_settings.number_points)
         n_charge_points = int(asa_settings.number_charge_points)
         flags = int(asa_settings.measure_flags)
-        if int(asa_settings.debug_model_type) == 1:
+        if int(asa_settings.debug_model_type) == asa.COMPONENT_MODEL_TYPE_RESISTOR:
             model_type = "resistor"
-        else:
+        elif int(asa_settings.debug_model_type) == asa.COMPONENT_MODEL_TYPE_CAPACITOR:
             model_type = "capacitor"
-        if int(asa_settings.trigger_mode) == 1:
+        else:
+            model_type = "none"
+        if int(asa_settings.trigger_mode) == asa.MODE_MANUAL:
             mode = "manual"
         else:
             mode = "auto"
@@ -237,8 +235,8 @@ class IVMeasurerASA(IVMeasurerBase):
         """
 
         status = asa.GetLastOperationResult(self._lib, self._server)
-        while status != asa.AsaResponseStatus.ASA_OK:
-            if status in asa.AsaResponseStatus.get_errors():
+        while status != asa.ASA_OK:
+            if status in (asa.ASA_CONNECTION_ERROR, asa.SERVER_RESPONSE_ERROR):
                 break
             time.sleep(0.2)
             status = asa.GetLastOperationResult(self._lib, self._server)
@@ -261,28 +259,28 @@ class IVMeasurerASA(IVMeasurerBase):
         Method performs calibration of type "Быстрая калибровка. Замкнутые щупы".
         """
 
-        self.calibrate(self._CALIBRATION_TYPES["Быстрая калибровка. Замкнутые щупы"])
+        self.calibrate(asa.FAST_CLOSE_CALIBRATE)
 
     def calibrate_fast_and_open(self):
         """
         Method performs calibration of type "Быстрая калибровка. Разомкнутые щупы".
         """
 
-        self.calibrate(self._CALIBRATION_TYPES["Быстрая калибровка. Разомкнутые щупы"])
+        self.calibrate(asa.FAST_OPEN_CALIBRATE)
 
     def calibrate_full_and_closed(self):
         """
         Method performs calibration of type "Полная калибровка. Замкнутые щупы".
         """
 
-        self.calibrate(self._CALIBRATION_TYPES["Полная калибровка. Замкнутые щупы"])
+        self.calibrate(asa.FULL_CLOSE_CALIBRATE_AND_SAVE)
 
     def calibrate_full_and_open(self):
         """
         Method performs calibration of type "Полная калибровка. Разомкнутые щупы".
         """
 
-        self.calibrate(self._CALIBRATION_TYPES["Полная калибровка. Разомкнутые щупы"])
+        self.calibrate(asa.FULL_OPEN_CALIBRATE_AND_SAVE)
 
     def close_device(self):
         pass
@@ -313,7 +311,7 @@ class IVMeasurerASA(IVMeasurerBase):
             curve = asa.IvCurve()
             asa.GetSettings(self._lib, self._server, self._asa_settings)
             result = asa.GetIVCurve(self._lib, self._server, curve, self._asa_settings.number_points)
-            if result != asa.AsaResponseStatus.ASA_OK:
+            if result != asa.ASA_OK:
                 raise Exception("Getting IV-curve failed")
             n_points = asa.GetNumberPointsForSinglePeriod(self._lib, self._asa_settings)
         except Exception as exc:
@@ -350,7 +348,7 @@ class IVMeasurerASA(IVMeasurerBase):
     def measurement_is_ready(self) -> bool:
         if self.is_freezed():
             return False
-        return asa.GetLastOperationResult(self._lib, self._server) == asa.AsaResponseStatus.ASA_OK
+        return asa.GetLastOperationResult(self._lib, self._server) == asa.ASA_OK
 
     @_close_on_error
     def open_device(self):

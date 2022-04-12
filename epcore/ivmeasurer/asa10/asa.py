@@ -1,85 +1,46 @@
+import os
+import struct
+import sys
 import time
 from collections import Sequence
-from ctypes import (Array, byref, c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8,
-                    CDLL, POINTER, Structure)
-from os.path import abspath, dirname, join
+from ctypes import (Array, byref, c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8, CDLL, POINTER,
+                    Structure)
 from platform import system
 from typing import Callable
 
 
-def _get_full_path(name: str) -> str:
-    """
-    Function returns full path to file with given name.
-    :param name: name of file.
-    :return: full path to file.
-    """
+COMPONENT_MODEL_TYPE_NONE = 0  # undefined type
+COMPONENT_MODEL_TYPE_RESISTOR = 1  # resistor
+COMPONENT_MODEL_TYPE_CAPACITOR = 2  # capacitor
 
-    return join(dirname(abspath(__file__)), name)
+MODE_AUTO = 0  # automatic start of measurements
+MODE_MANUAL = 1  # manual start of measurements
 
+ASA_OK = 0  # everything works normally
+ASA_IN_PROGRESS = 1  # operation in progress
+SERVER_RESPONSE_ERROR = -1  # incorrect server response
+INTERNAL_SERVER_ERROR = -2  # error occurred while executing the function on the server
+ASA_VALUE_ERROR = -3  # server received value out of range
+ASA_TYPE_ERROR = -4  # server received value with the wrong type
+ASA_FORMAT_ERROR = -5  # server received value with incorrect format or not received at all
+ASA_CONNECTION_ERROR = -6  # server failed to connect to device
 
-def get_dll() -> CDLL:
-    """
-    Function returns library to work with ASA device.
-    :return: ASA library.
-    """
+FAST_CLOSE_CALIBRATE = 0  # starting calibration for given set of parameters with closed probes
+FAST_OPEN_CALIBRATE = 1  # starting calibration for given set of parameters with open probes
+FAST_CLOSE_CALIBRATE_AND_SAVE = 2  # starting calibration for given set of parameters with closed probes,
+# saving result to device
+FAST_OPEN_CALIBRATE_AND_SAVE = 3  # starting calibration for given set of parameters with open probes,
+# saving result to device
+FULL_CLOSE_CALIBRATE_AND_SAVE = 4  # starting calibration for all parameters with closed probes,
+# saving results to device
+FULL_OPEN_CALIBRATE_AND_SAVE = 5  # starting calibration for all parameters with open probes,
+# saving results to device
 
-    if system() == "Linux":
-        return CDLL("libasa.so")
-    if system() == "Windows":
-        return CDLL(_get_full_path("libasa-win32/asa.dll"))
-    raise NotImplementedError("Unsupported platform {}".format(system()))
-
-
+MIN_VAR_V_DEFAULT = 0.6
+MIN_VAR_C_DEFAULT = 0.0002
+N_POINTS = 512
 MAX_NUM_POINTS = 1000
 NUM_COMBINATION = 380
-HOST = c_char_p("172.16.128.137".encode("utf-8"))
-PORT = c_char_p("8888".encode("utf-8"))
-
-
-class _IterableStructure(Structure):
-    def __iter__(self):
-        return (getattr(self, n) for n, t in self._fields_)
-
-
-def _normalize_arg(value, desired_ctype):
-
-    if isinstance(value, desired_ctype):
-        return value
-    if issubclass(desired_ctype, Array) and isinstance(value, Sequence):
-        member_type = desired_ctype._type_
-        if desired_ctype._length_ < len(value):
-            raise ValueError()
-        if issubclass(member_type, c_ubyte) and isinstance(value, bytes):
-            return desired_ctype.from_buffer_copy(value)
-        if issubclass(member_type, c_ubyte) and isinstance(value, bytearray):
-            return value
-        return desired_ctype(*value)
-    return value
-
-
-class AsaResponseStatus:
-    """
-    Class with status values from ASA device response.
-    """
-
-    ASA_OK = 0
-    ASA_IN_PROGRESS = 1
-    SERVER_RESPONSE_ERROR = -1
-    INTERNAL_SERVER_ERROR = -2
-    ASA_VALUE_ERROR = -3
-    ASA_TYPE_ERROR = -4
-    ASA_FORMAT_ERROR = -5
-    ASA_CONNECTION_ERROR = -6
-
-    @classmethod
-    def get_errors(cls) -> tuple:
-        """
-        Method returns status values that indicate problems with connection
-        to server.
-        :return: status values.
-        """
-
-        return cls.ASA_CONNECTION_ERROR, cls.SERVER_RESPONSE_ERROR
 
 
 class AsaConnectionError(Exception):
@@ -114,50 +75,38 @@ def check_exception(func: Callable):
 
     def wrapper(*args, **kwargs):
         status = func(*args, **kwargs)
-        if status == AsaResponseStatus.ASA_CONNECTION_ERROR:
+        if status == ASA_CONNECTION_ERROR:
             raise AsaConnectionError
-        if status == AsaResponseStatus.ASA_FORMAT_ERROR:
+        if status == ASA_FORMAT_ERROR:
             raise AsaFormatError
-        if status == AsaResponseStatus.INTERNAL_SERVER_ERROR:
+        if status == INTERNAL_SERVER_ERROR:
             raise AsaInternalServerError
-        if status == AsaResponseStatus.SERVER_RESPONSE_ERROR:
+        if status == SERVER_RESPONSE_ERROR:
             raise AsaServerResponseError
-        if status == AsaResponseStatus.ASA_TYPE_ERROR:
+        if status == ASA_TYPE_ERROR:
             raise AsaTypeError
-        if status == AsaResponseStatus.ASA_VALUE_ERROR:
+        if status == ASA_VALUE_ERROR:
             raise AsaValueError
         return status
     return wrapper
 
 
-class Version(_IterableStructure):
+class _IterableStructure(Structure):
+    def __iter__(self):
+        return (getattr(self, n) for n, t in self._fields_)
+
+
+class AsaCoefficients(_IterableStructure):
     _fields_ = (
-        ("major", c_uint8),
-        ("minor", c_uint8),
-        ("bugfix", c_uint8)
-     )
-
-
-class Server(_IterableStructure):
-    _fields_ = (
-          ("host", c_char_p),
-          ("port", c_char_p)
-    )
-
-
-class Buttons(_IterableStructure):
-    _fields_ = (
-        ("gray_button", c_uint32),
-        ("blue_button", c_uint32)
-    )
-
-
-class Temperature(_IterableStructure):
-    _fields_ = (
-        ("gray_temp", c_uint32),
-        ("blue_temp", c_uint32),
-        ("overheat_gray", c_uint32),
-        ("overheat_blue", c_uint32)
+        ("probe_freq_array", c_double * NUM_COMBINATION),
+        ("voltage_ampl_array", c_double * NUM_COMBINATION),
+        ("max_current_array", c_double * NUM_COMBINATION),
+        ("limit_resistor_array", c_uint32 * NUM_COMBINATION),
+        ("sense_resistor_array", c_uint32 * NUM_COMBINATION),
+        ("cur_calibration_array", c_uint32 * NUM_COMBINATION),
+        ("volt_calibration_array", c_uint32 * NUM_COMBINATION),
+        ("cur_calibration_kz_array", c_uint32 * NUM_COMBINATION),
+        ("volt_calibration_kz_array", c_uint32 * NUM_COMBINATION)
     )
 
 
@@ -176,17 +125,10 @@ class AsaSettings(_IterableStructure):
     )
 
 
-class AsaCoefficients(_IterableStructure):
+class Buttons(_IterableStructure):
     _fields_ = (
-        ("probe_freq_array", c_double * NUM_COMBINATION),
-        ("voltage_ampl_array", c_double * NUM_COMBINATION),
-        ("max_current_array", c_double * NUM_COMBINATION),
-        ("limit_resistor_array", c_uint32 * NUM_COMBINATION),
-        ("sense_resistor_array", c_uint32 * NUM_COMBINATION),
-        ("cur_calibration_array", c_uint32 * NUM_COMBINATION),
-        ("volt_calibration_array", c_uint32 * NUM_COMBINATION),
-        ("cur_calibration_kz_array", c_uint32 * NUM_COMBINATION),
-        ("volt_calibration_kz_array", c_uint32 * NUM_COMBINATION)
+        ("gray_button", c_uint32),
+        ("blue_button", c_uint32)
     )
 
 
@@ -201,18 +143,136 @@ class IvCurve(_IterableStructure):
         self.length = MAX_NUM_POINTS
 
 
-def GetLibraryVersion(lib: CDLL):
-    version = lib.GetLibraryVersion
-    version.argtype = None
-    version.restype = Version
-    res = version()
-    res.major = _normalize_arg(res.major, c_uint8)
-    res.minor = _normalize_arg(res.minor, c_uint8)
-    res.bugfix = _normalize_arg(res.bugfix, c_uint8)
-    return res.major, res.minor, res.bugfix
+class Server(_IterableStructure):
+    _fields_ = (
+        ("host", c_char_p),
+        ("port", c_char_p)
+    )
 
 
-def GetAPIVersion(lib: CDLL):
+class Temperature(_IterableStructure):
+    _fields_ = (
+        ("gray_temp", c_uint32),
+        ("blue_temp", c_uint32),
+        ("overheat_gray", c_uint32),
+        ("overheat_blue", c_uint32)
+    )
+
+
+class Version(_IterableStructure):
+    _fields_ = (
+        ("major", c_uint8),
+        ("minor", c_uint8),
+        ("bugfix", c_uint8)
+    )
+
+
+def _check_status(lib: CDLL, server: Server, status: int, func_name: str):
+    """
+    Function writes information about last operation with server.
+    :param lib: libasa library;
+    :param server: server with measuring device;
+    :param status: status of last operation;
+    :param func_name: name of last operation.
+    """
+
+    wait_iter = 0
+    while status == ASA_IN_PROGRESS:
+        if wait_iter == 0:
+            print("Operation is in progress")
+        elif wait_iter % 10 == 0:
+            print(".")
+        wait_iter += 1
+        status = GetLastOperationResult(lib, server)
+        if status == ASA_OK:
+            print("\n{} is done!\n".format(func_name))
+            break
+        elif status != ASA_IN_PROGRESS and status != ASA_OK:
+            print("")
+            break
+    if status == ASA_CONNECTION_ERROR:
+        print("ConnectionError during {} call. ConnectionError code: {}".format(func_name, status))
+        sys.exit(-1)
+    elif status < ASA_OK:
+        print("Error during {} call. Error code: {}".format(func_name, status))
+        sys.exit(-1)
+
+
+def get_dll() -> CDLL:
+    if system() == "Linux":
+        return CDLL(_get_full_path("libasa-debian/libasa.so"))
+    if system() == "Windows":
+        if 8 * struct.calcsize("P") == 32:
+            return CDLL(_get_full_path(os.path.join("libasa-win32", "asa.dll")))
+        else:
+            raise NotImplementedError("Unsupported platform Windows 64-bit")
+    raise NotImplementedError("Unsupported platform {}".format(system()))
+
+
+def _get_full_path(name: str) -> str:
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
+
+
+def _normalize_arg(value, desired_ctype):
+    if isinstance(value, desired_ctype):
+        return value
+    if issubclass(desired_ctype, Array) and isinstance(value, Sequence):
+        member_type = desired_ctype._type_
+        if desired_ctype._length_ < len(value):
+            raise ValueError()
+        if issubclass(member_type, c_ubyte) and isinstance(value, bytes):
+            return desired_ctype.from_buffer_copy(value)
+        if issubclass(member_type, c_ubyte) and isinstance(value, bytearray):
+            return value
+        return desired_ctype(*value)
+    return value
+
+
+HOST = c_char_p("172.16.128.137".encode("utf-8"))
+PORT = c_char_p("8888".encode("utf-8"))
+
+
+def Calibrate(lib: CDLL, server: Server, calibration_type: int) -> int:
+    """
+    Function calibrates measuring device on server.
+    :param lib: libasa library;
+    :param server: server;
+    :param calibration_type: type of calibration to be performed.
+    :return: status of operation.
+    """
+
+    lib_func = lib.Calibrate
+    lib_func.argtype = Server, c_uint8
+    lib_func.restype = c_int8
+    res = _normalize_arg(lib_func(byref(server), c_uint8(calibration_type)), c_int8)
+    return res
+
+
+def CompareIvc(lib: CDLL, first_iv_curve: IvCurve, second_iv_curve: IvCurve):
+    """
+    Function compares two IV-curves.
+    :param lib: libasa library;
+    :param first_iv_curve: first IV-curve;
+    :param second_iv_curve: second IV-curve.
+    :return: degree of difference.
+    """
+
+    lib_func = lib.CompareIVC
+    lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
+    lib_func.restype = c_double
+    res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, len(first_iv_curve.voltages),
+                   second_iv_curve.voltages, second_iv_curve.currents, len(second_iv_curve.voltages))
+    res = _normalize_arg(res, c_double)
+    return res
+
+
+def GetAPIVersion(lib: CDLL) -> tuple:
+    """
+    Function returns API version.
+    :param lib: libasa library.
+    :return: tuple with major, minor and bugfix values of version.
+    """
+
     version = lib.GetAPIVersion
     version.argtype = None
     version.restype = Version
@@ -223,129 +283,16 @@ def GetAPIVersion(lib: CDLL):
     return res.major, res.minor, res.bugfix
 
 
-@check_exception
-def SetSettings(lib: CDLL, server: Server, settings: AsaSettings) -> int:
-    lib_func = lib.SetSettings
-    lib_func.argtype = Server, AsaSettings
-    lib_func.restype = c_int8
-    res = _normalize_arg(lib_func(byref(server), byref(settings)), c_int8)
-    return res
-
-
-@check_exception
-def GetSettings(lib: CDLL, server: Server, settings: AsaSettings) -> int:
-    lib_func = lib.GetSettings
-    lib_func.argtype = Server, AsaSettings
-    lib_func.restype = c_int8
-    res = _normalize_arg(lib_func(byref(server), byref(settings)), c_int8)
-    return res
-
-
-@check_exception
-def GetIVCurve(lib: CDLL, server: Server, iv_curve: IvCurve, size: c_uint32) -> int:
-    lib_func = lib.GetIVCurve
-    lib_func.argtype = Server, IvCurve, c_uint32
-    lib_func.restype = c_int8
-    res = _normalize_arg(lib_func(byref(server), byref(iv_curve), c_uint32(size)), c_int8)
-    return res
-
-
-@check_exception
-def TriggerMeasurement(lib: CDLL, server: Server) -> int:
-    lib_func = lib.TriggerMeasurement
-    lib_func.argtype = Server
-    lib_func.restype = c_int8
-    res = _normalize_arg(lib_func(byref(server)), c_int8)
-    return res
-
-
-@check_exception
-def Calibrate(lib: CDLL, server: Server, calibration_type: int) -> int:
-    lib_func = lib.Calibrate
-    lib_func.argtype = Server, c_uint8
-    lib_func.restype = c_int8
-    res = _normalize_arg(lib_func(byref(server), c_uint8(calibration_type)), c_int8)
-    return res
-
-
-@check_exception
-def GetStatusButtons(lib: CDLL, server: Server, button_pressed: Buttons) -> int:
-    lib_func = lib.GetStatusButtons
-    lib_func.argtype = Server, Buttons
-    lib_func.restype = c_int8
-    res = _normalize_arg(lib_func(byref(server), byref(button_pressed)), c_int8)
-    return res
-
-
-@check_exception
-def GetTempProbes(lib: CDLL, server: Server, temperature: Temperature) -> int:
-    lib_func = lib.GetTempProbes
-    lib_func.argtype = Server, Temperature
-    lib_func.restype = c_int8
-    res = _normalize_arg(lib_func(byref(server), byref(temperature)), c_int8)
-    return res
-
-
-def SetMinVC(lib, min_var_v, min_var_c):
-    lib_func = lib.SetMinVC
-    lib_func.argtype = c_double, c_double
-    lib_func(c_double(min_var_v), c_double(min_var_c))
-
-
-def CompareIvc(lib, first_iv_curve, second_iv_curve):
-    lib_func = lib.CompareIVC
-    lib_func.argtype = (POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double),
-                        POINTER(c_double), c_size_t)
-    lib_func.restype = c_double
-    res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, len(first_iv_curve.voltages),
-                   second_iv_curve.voltages, second_iv_curve.currents,
-                   len(second_iv_curve.voltages))
-    res = _normalize_arg(res, c_double)
-    return res
-
-
-@check_exception
-def GetNumberPointsForSinglePeriod(lib: CDLL, settings: AsaSettings) -> int:
-    lib_func = lib.GetNumberPointsForSinglePeriod
-    lib_func.argtype = AsaSettings
-    lib_func.restype = c_uint32
-    res = _normalize_arg(lib_func(byref(settings)), c_uint32)
-    return res
-
-
-def GetLastOperationResult(lib: CDLL, server: Server) -> int:
-    lib_func = lib.GetLastOperationResult
-    lib_func.argtype = Server
-    lib_func.restype = c_int8
-    res = lib_func(byref(server))
-    return res
-
-
-def LoadCoefficients(lib: CDLL, file_name: c_char_p, coefficients: AsaCoefficients):
-    lib_func = lib.LoadCoefficientTable
-    lib_func.argtype = c_char_p, AsaCoefficients
-    lib_func.restype = None
-    lib_func(file_name, byref(coefficients))
-
-
-def SaveCoefficients(lib: CDLL, file_name: c_char_p, coefficients: AsaCoefficients):
-    lib_func = lib.SaveCoefficientTable
-    lib_func.argtype = c_char_p, AsaCoefficients
-    lib_func.restype = None
-    lib_func(file_name, byref(coefficients))
-
-
-@check_exception
-def SetCoefficients(lib: CDLL, server: Server, coefficients: AsaCoefficients) -> int:
-    lib_func = lib.SetCoefficients
-    lib_func.argtype = Server, AsaCoefficients
-    lib_func.restype = c_int8
-    res = _normalize_arg(lib_func(byref(server), byref(coefficients)), c_int8)
-    return res
-
-
-@check_exception
 def GetCoefficients(lib: CDLL, server: Server, coefficients: AsaCoefficients) -> int:
+    """
+    Function reads calibration coefficients on measuring device from server and
+    writes them to AsaCoefficients object.
+    :param lib: libasa library;
+    :param server: server;
+    :param coefficients: object to writing coefficients.
+    :return: status of operation.
+    """
+
     lib_func = lib.GetCoefficients
     lib_func.argtype = Server, AsaCoefficients
     lib_func.restype = c_int8
@@ -353,62 +300,295 @@ def GetCoefficients(lib: CDLL, server: Server, coefficients: AsaCoefficients) ->
     return res
 
 
+def GetIVCurve(lib: CDLL, server: Server, iv_curve: IvCurve, size: int) -> int:
+    """
+    Function reads IV-curve from server and saves them to IvCurve object.
+    :param lib: libasa library;
+    :param server: server;
+    :param iv_curve: object to writing IV-curve;
+    :param size: number of point in required IV-curve.
+    :return: status of operation.
+    """
+
+    lib_func = lib.GetIVCurve
+    lib_func.argtype = Server, IvCurve, c_uint32
+    lib_func.restype = c_int8
+    res = _normalize_arg(lib_func(byref(server), byref(iv_curve), c_uint32(size)), c_int8)
+    return res
+
+
+def GetLastOperationResult(lib: CDLL, server: Server) -> int:
+    """
+    Function returns status of last operation.
+    :param lib: libasa library;
+    :param server: server.
+    :return: status of last operation.
+    """
+
+    lib_func = lib.GetLastOperationResult
+    lib_func.argtype = Server
+    lib_func.restype = c_int8
+    res = lib_func(byref(server))
+    return res
+
+
+def GetLibraryVersion(lib: CDLL) -> tuple:
+    """
+    Function returns libasa library version.
+    :param lib: libasa library.
+    :return: tuple with major, minor and bugfix values of version.
+    """
+
+    version = lib.GetLibraryVersion
+    version.argtype = None
+    version.restype = Version
+    res = version()
+    res.major = _normalize_arg(res.major, c_uint8)
+    res.minor = _normalize_arg(res.minor, c_uint8)
+    res.bugfix = _normalize_arg(res.bugfix, c_uint8)
+    return res.major, res.minor, res.bugfix
+
+
+def GetNumberPointsForSinglePeriod(lib: CDLL, settings: AsaSettings) -> int:
+    """
+    Function returns number of points for single period.
+    :param lib: libasa library;
+    :param settings: measurement settings.
+    :return: number of points for single period.
+    """
+
+    lib_func = lib.GetNumberPointsForSinglePeriod
+    lib_func.argtype = AsaSettings
+    lib_func.restype = c_uint32
+    res = _normalize_arg(lib_func(byref(settings)), c_uint32)
+    return res
+
+
+def GetSettings(lib: CDLL, server: Server, settings: AsaSettings) -> int:
+    """
+    Function reads measurement settings from server and saves them to AsaSettings object.
+    :param lib: libasa library;
+    :param server: server;
+    :param settings: object to writing measurement settings.
+    :return: status of operation.
+    """
+
+    lib_func = lib.GetSettings
+    lib_func.argtype = Server, AsaSettings
+    lib_func.restype = c_int8
+    res = _normalize_arg(lib_func(byref(server), byref(settings)), c_int8)
+    return res
+
+
+def GetStatusButtons(lib: CDLL, server: Server, button_pressed: Buttons) -> int:
+    """
+    Function reads statuses of buttons on gray and blue probes from server.
+    :param lib: libasa library;
+    :param server: server;
+    :param button_pressed: object to writing statuses of buttons.
+    :return: status of operation.
+    """
+
+    lib_func = lib.GetStatusButtons
+    lib_func.argtype = Server, Buttons
+    lib_func.restype = c_int8
+    res = _normalize_arg(lib_func(byref(server), byref(button_pressed)), c_int8)
+    return res
+
+
+def GetTempProbes(lib: CDLL, server: Server, temperature: Temperature) -> int:
+    """
+    Function reads temperatures of gray and blue probes from server.
+    :param lib: libasa library;
+    :param server: server;
+    :param temperature: object to writing temperatures of probes.
+    :return: status of operation.
+    """
+
+    lib_func = lib.GetTempProbes
+    lib_func.argtype = Server, Temperature
+    lib_func.restype = c_int8
+    res = _normalize_arg(lib_func(byref(server), byref(temperature)), c_int8)
+    return res
+
+
+def LoadCoefficients(lib: CDLL, file_name: str, coefficients: AsaCoefficients):
+    """
+    Function reads calibration coefficients from file.
+    :param lib: libasa library;
+    :param file_name: name of file with calibration coefficients;
+    :param coefficients: object to writing calibration coefficients.
+    """
+
+    lib_func = lib.LoadCoefficientTable
+    lib_func.argtype = c_char_p, AsaCoefficients
+    lib_func.restype = None
+    lib_func(file_name, byref(coefficients))
+
+
+def SetSettings(lib: CDLL, server: Server, settings: AsaSettings) -> int:
+    """
+    Function writes measurement settings to device.
+    :param lib: libasa library;
+    :param server: server;
+    :param settings: measurement settings.
+    :return: status of operation.
+    """
+
+    lib_func = lib.SetSettings
+    lib_func.argtype = Server, AsaSettings
+    lib_func.restype = c_int8
+    res = _normalize_arg(lib_func(byref(server), byref(settings)), c_int8)
+    return res
+
+
+def SaveCoefficients(lib: CDLL, file_name: str, coefficients: AsaCoefficients):
+    """
+    Function writes calibration coefficients to file.
+    :param lib: libasa library;
+    :param file_name: name of file to save coefficients;
+    :param coefficients: calibration coefficients.
+    """
+
+    lib_func = lib.SaveCoefficientTable
+    lib_func.argtype = c_char_p, AsaCoefficients
+    lib_func.restype = None
+    lib_func(file_name, byref(coefficients))
+
+
+def SetMinVC(lib: CDLL, min_var_v: float, min_var_c: float):
+    """
+    :param lib: libasa library;
+    :param min_var_v:
+    :param min_var_c:
+    """
+
+    lib_func = lib.SetMinVC
+    lib_func.argtype = c_double, c_double
+    lib_func(c_double(min_var_v), c_double(min_var_c))
+
+
+def SetCoefficients(lib: CDLL, server: Server, coefficients: AsaCoefficients) -> int:
+    """
+    Function writes calibration coefficients to device.
+    :param lib: libasa library;
+    :param server: server;
+    :param coefficients: calibration coefficients.
+    :return: status of operation.
+    """
+
+    lib_func = lib.SetCoefficients
+    lib_func.argtype = Server, AsaCoefficients
+    lib_func.restype = c_int8
+    res = _normalize_arg(lib_func(byref(server), byref(coefficients)), c_int8)
+    return res
+
+
+def TriggerMeasurement(lib: CDLL, server: Server) -> int:
+    """
+    Function starts measurements on server.
+    :param lib: libasa library;
+    :param server: server.
+    :return: status of operation.
+    """
+
+    lib_func = lib.TriggerMeasurement
+    lib_func.argtype = Server
+    lib_func.restype = c_int8
+    res = _normalize_arg(lib_func(byref(server)), c_int8)
+    return res
+
+
 if __name__ == "__main__":
-
-    def wait_finish(lib: CDLL):
-        while GetLastOperationResult(lib, server) != AsaResponseStatus.ASA_OK:
-            time.sleep(0.2)
-
+    if len(sys.argv) < 2:
+        host = input("Enter ASA device IP address (format: 192.168.1.1): ")
+    else:
+        host = sys.argv[1]
     local_lib = get_dll()
-    server = Server(HOST, PORT)
-    settings_from_device = AsaSettings()
+    host = c_char_p(host.encode("utf-8"))
+    server = Server(host, PORT)
 
-    GetSettings(local_lib, server, settings_from_device)
-    wait_finish(local_lib)
-    print(settings_from_device.sampling_rate_hz)
-    print(settings_from_device.debug_model_nominal)
-
+    print("Using libasa {}".format(".".join(list(map(str, GetLibraryVersion(local_lib))))))
+    print("Using API {}".format(".".join(list(map(str, GetAPIVersion(local_lib))))))
+    print("-- Update device settings --")
     settings = AsaSettings()
     settings.sampling_rate_hz = c_double(10000)
-    settings.number_points = c_uint32(100)
-    settings.number_charge_points = c_uint32(400)
-    settings.measure_flags = c_uint32(0)
+    settings.number_points = c_uint32(N_POINTS)
+    settings.number_charge_points = c_uint32(N_POINTS)
     settings.probe_signal_frequency_hz = c_double(100)
-    settings.voltage_ampl_v = c_double(5)
-    settings.max_current_m_a = c_double(5)
-    settings.debug_model_type = c_uint32(1)
-    settings.debug_model_nominal = c_double(0.20)
-    settings.trigger_mode = c_uint32(0)
-    SetSettings(local_lib, server, settings)
-    wait_finish(local_lib)
+    settings.voltage_ampl_v = c_double(1)
+    settings.max_current_m_a = c_double(10)
+    settings.measure_flags = c_uint32(0)
+    settings.debug_model_type = c_uint32(COMPONENT_MODEL_TYPE_CAPACITOR)
+    settings.debug_model_nominal = c_double(0.00000001)
+    settings.trigger_mode = c_uint32(MODE_MANUAL)
+    status = SetSettings(local_lib, server, settings)
+    _check_status(local_lib, server, status, "SetSettings")
 
-    GetSettings(local_lib, server, settings_from_device)
-    wait_finish(local_lib)
-    print(settings_from_device.sampling_rate_hz)
-    print(settings_from_device.debug_model_nominal)
+    print("-- Read settings from device --")
+    settings_in = AsaSettings()
+    status = GetSettings(local_lib, server, settings_in)
+    _check_status(local_lib, server, status, "GetSettings")
 
-    settings.debug_model_nominal = c_double(12783)
-    SetSettings(local_lib, server, settings)
-    wait_finish(local_lib)
+    print("-- Do fast calibration with open probes --")
+    status = Calibrate(local_lib, server, FAST_OPEN_CALIBRATE)
+    _check_status(local_lib, server, status, "Calibrate")
+    if status < 0:
+        print("Calibration was not started")
+        sys.exit(1)
+    while GetLastOperationResult(local_lib, server) == ASA_OK:
+        time.sleep(0.5)
+    while GetLastOperationResult(local_lib, server) == ASA_IN_PROGRESS:
+        time.sleep(0.5)
+    if GetLastOperationResult(local_lib, server) == ASA_OK:
+        print("Calibration completed successfully")
+    else:
+        print("Calibration completed unsuccessfully")
 
-    GetSettings(local_lib, server, settings_from_device)
-    wait_finish(local_lib)
+    print("-- Do measure IV curve --")
+    status = TriggerMeasurement(local_lib, server)
+    while GetLastOperationResult(local_lib, server) != ASA_OK:
+        time.sleep(0.5)
+    _check_status(local_lib, server, status, "TriggerMeasurement")
 
-    print(settings_from_device.debug_model_nominal)
-
+    print("-- Get measured IV curve --")
     iv_curve = IvCurve()
     status = GetIVCurve(local_lib, server, iv_curve, settings.number_points)
-    settings.voltage_ampl_v = c_double(15)
-    SetSettings(local_lib, server, settings)
-    ivc_curve = IvCurve()
-    # status = CalibrateVoltage(server)
-    status = GetIVCurve(local_lib, server, ivc_curve, settings.number_points)
-    SetMinVC(local_lib, 0, 0)
-    f = CompareIvc(local_lib, iv_curve, ivc_curve)
-    temp = Temperature()
-    button_pressed = Buttons()
-    GetStatusButtons(local_lib, server, button_pressed)
-    GetTempProbes(local_lib, server, temp)
-    n_p = GetNumberPointsForSinglePeriod(local_lib, settings)
-    print("N_P: {}\n".format(n_p))
-    print(temp.overheat_blue, button_pressed.gray_button)
+    _check_status(local_lib, server, status, "GetIVCurve")
+
+    print("-- Get status of buttons --")
+    buttons = Buttons()
+    status = GetStatusButtons(local_lib, server, buttons)
+    _check_status(local_lib, server, status, "GetStatusButtons")
+
+    print("-- Get temperature of probes --")
+    temperature = Temperature()
+    status = GetTempProbes(local_lib, server, temperature)
+    _check_status(local_lib, server, status, "GetTempProbes")
+
+    print("Got settings (Out, In):")
+    print("Probe signal frequency: ({:.1f}, {:.1f}) Hz".format(settings.probe_signal_frequency_hz,
+                                                               settings_in.probe_signal_frequency_hz))
+    print("Voltage amplitude: ({:.1f}, {:.1f}) V".format(settings.voltage_ampl_v, settings_in.voltage_ampl_v))
+    print("Number of points: ({}, {})".format(settings.number_points, settings_in.number_points))
+    print("Maximum current: ({:.1f}, {:.1f}) mA".format(settings.max_current_m_a, settings_in.max_current_m_a))
+    print("Virtual component model: ({}, {})".format(settings.debug_model_type, settings_in.debug_model_type))
+    print("Virtual component model nominal: ({}, {})".format(settings.debug_model_nominal,
+                                                             settings_in.debug_model_nominal))
+    print("Virtual component model: ({}, {})".format(settings.trigger_mode, settings_in.trigger_mode))
+    print("ButtonPressed: ({}, {})".format(buttons.gray_button, buttons.blue_button))
+    print("Temperature: ({}, {}, {}, {})".format(temperature.overheat_gray, temperature.gray_temp,
+                                                 temperature.overheat_blue, temperature.blue_temp))
+    print("-- Get number of points for one period of curve --")
+    num_points_to_print = GetNumberPointsForSinglePeriod(local_lib, settings_in)
+    print("Number of points for one period of curve: {}".format(num_points_to_print))
+    print("Voltages (V) and currents (A) of received curve:")
+    for i in range(num_points_to_print):
+        print("[{:.4f}, {:.4f}];".format(iv_curve.voltages[i], iv_curve.currents[i]))
+
+    print("-- Set default values as threshold of noise for compare curves --")
+    SetMinVC(local_lib, MIN_VAR_V_DEFAULT, MIN_VAR_C_DEFAULT)
+
+    print("-- Comparison of two identical curves must be 0 --")
+    score = CompareIvc(local_lib, iv_curve, iv_curve)
+    print("Score = {}".format(score))
