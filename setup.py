@@ -13,7 +13,8 @@ setup(
         "scipy==1.5.4"  # for curve interpolation
     ],
     package_data={
-        "epcore.analogmultiplexer": ["epmux/epmux-win32/epmux.dll",
+        "epcore.analogmultiplexer": ["epmux/epmux-debian/libepmux.so",
+                                     "epmux/epmux-win32/epmux.dll",
                                      "epmux/epmux-win64/epmux.dll"],
         "epcore.ivmeasurer": ["ivm02/ivm-debian/libivm.so",
                               "ivm02/ivm-win32/ivm.dll",
