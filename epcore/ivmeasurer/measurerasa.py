@@ -4,9 +4,10 @@ The old name - Meridian.
 """
 
 import logging
+import threading
 import time
 from ctypes import c_char_p, c_double, c_uint32, CDLL
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 import numpy as np
 from . import IVMeasurerIdentityInformation
 from .asa10 import asa
@@ -15,7 +16,21 @@ from .processing import smooth_curve, interpolate_curve
 from .virtual import IVMeasurerVirtual
 from ..elements import IVCurve, MeasurementSettings
 
+formatter = logging.Formatter("%(asctime)s - %(levelname)s: %(message)s")
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+stream_handler.setLevel(logging.INFO)
+logger = logging.getLogger("asa_measurer_logger")
+logger.addHandler(stream_handler)
+logger.setLevel(logging.INFO)
+logger.propagate = False
 _FLAGS = 1
+_FREQUENCIES = [(1, 197), (5, 816), (10, 1750), (50, 12254), (100, 12254), (400, 49019), (1500, 196078),
+                (6000, 787401), (25000, 3225806), (100000, 14285714), (400000, 100000000), (1500000, 100000000),
+                (3000000, 100000000), (6000000, 100000000), (12000000, 100000000)]
+_RESISTANCES = [[2000, 1000, 200, 100], [300, 100], [2000, 1000, 400, 200], [100], [300, 200], [2000, 400],
+                [300], [1000, 200, 100], [400], [670], [300, 100], [2000, 1000, 400, 200, 111]]
+_VOLTAGES = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 4.5, 5.0, 6.0, 6.7, 7.5, 10.0]
 
 
 def _close_on_error(func: Callable):
@@ -31,6 +46,32 @@ def _close_on_error(func: Callable):
         except (OSError, RuntimeError) as exc:
             raise exc
     return handle
+
+
+def _get_settings_for_index(index: int) -> Optional[tuple]:
+    """
+    Function returns measurement settings for given index of settings.
+    :param index: index of required measurement settings.
+    :return: probe signal frequency, sampling rate, max voltage and
+    internal resistance of next measurement settings.
+    """
+
+    current_index = 0
+    for frequency, sampling_rate in _FREQUENCIES:
+        if frequency == 3000000:
+            standard_voltages = _VOLTAGES[:-2]
+        elif frequency == 6000000:
+            standard_voltages = _VOLTAGES[:5]
+        elif frequency == 12000000:
+            standard_voltages = _VOLTAGES[:3]
+        else:
+            standard_voltages = _VOLTAGES
+        for voltage in standard_voltages:
+            for resistance in _RESISTANCES[standard_voltages.index(voltage)]:
+                if current_index == index:
+                    return frequency, sampling_rate, voltage, resistance
+                current_index += 1
+    return None
 
 
 def _parse_address(full_address: str) -> Tuple[str, str]:
@@ -85,6 +126,7 @@ class IVMeasurerASA(IVMeasurerBase):
     model_type: str = "capacitor"
     n_charge_points: int = asa.N_POINTS
     n_points: int = asa.N_POINTS
+    _MAX_CALIBRATION_WAIT: int = 1000
 
     def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
@@ -95,12 +137,15 @@ class IVMeasurerASA(IVMeasurerBase):
         """
 
         self._host, self._port = _parse_address(url)
-        self._name: str = name
-        self._lib: CDLL = asa.get_dll()
-        self._server: asa.Server = None
         self._asa_settings: asa.AsaSettings = asa.AsaSettings()
+        self._lib: CDLL = asa.get_dll()
+        self._logger_for_signals: logging.Logger = logger
+        self._name: str = name
+        self._server: asa.Server = None
         self._settings: MeasurementSettings = MeasurementSettings(internal_resistance=1000., max_voltage=5.,
                                                                   probe_signal_frequency=100, sampling_rate=12254)
+        self._stop_full_calibration: bool = False
+        self._timer: threading.Timer = None
         self._NORMAL_NUM_POINTS: int = 100
         self._SMOOTHING_KERNEL_SIZE: int = 5
         if not defer_open:
@@ -212,6 +257,64 @@ class IVMeasurerASA(IVMeasurerBase):
                                "n_points": n_points}
         return settings, additional_settings
 
+    def _perform_calibration(self, calibration_type: int, calibration_name: str, settings_index: int):
+        """
+        Method performs calibration of measuring device for measurement settings
+        with given index.
+        :param calibration_type: type of full calibration;
+        :param calibration_name: name of calibration type;
+        :param settings_index: index of measurement settings.
+        """
+
+        if self._timer:
+            self._timer.cancel()
+        settings = _get_settings_for_index(settings_index)
+        if settings is None:
+            self._logger_for_signals.info("Calibration finished")
+            return
+        frequency, sampling_rate, voltage, resistance = settings
+        self._logger_for_signals.info("Frequency = %s Hz, sampling_rate = %s Hz, voltage = %s Ohm, resistance = %s Ohm",
+                                      frequency, sampling_rate, voltage, resistance)
+        new_settings = MeasurementSettings(internal_resistance=resistance, max_voltage=voltage,
+                                           probe_signal_frequency=frequency, sampling_rate=sampling_rate)
+        self.set_settings(new_settings)
+        self._wait_for_completion()
+        self._perform_fast_calibration(calibration_type, calibration_name)
+        self._wait_for_completion()
+        settings_index += 1
+        if not self._stop_full_calibration and settings_index < asa.NUM_COMBINATION:
+            self._timer = threading.Timer(0.5, self._perform_calibration, args=(calibration_type, calibration_name,
+                                                                                settings_index))
+            self._timer.start()
+
+    def _perform_fast_calibration(self, calibration_type: int, calibration_name: str):
+        """
+        Method performs fast calibration of measuring device.
+        :param calibration_type: type of fast calibration;
+        :param calibration_name: name of calibration type.
+        """
+
+        self._logger_for_signals.info("Start calibration '%s'", calibration_name)
+        try:
+            assert asa.Calibrate(self._lib, self._server, calibration_type) >= 0
+        except AssertionError:
+            self._logger_for_signals.error("Failed to start calibration '%s'", calibration_name)
+        _ask = 0
+        while asa.GetLastOperationResult(self._lib, self._server) == asa.ASA_OK:
+            self._logger_for_signals.info("Calibration '%s' is waiting in line", calibration_name)
+            _ask += 1
+            if _ask > self._MAX_CALIBRATION_WAIT / self._settings.probe_signal_frequency:
+                break
+            time.sleep(0.05)
+        while True:
+            time.sleep(0.2)
+            if asa.GetLastOperationResult(self._lib, self._server) < 1:
+                break
+        if asa.GetLastOperationResult(self._lib, self._server) < 0:
+            self._logger_for_signals.warning("Calibration '%s' was unsuccessful", calibration_name)
+        else:
+            self._logger_for_signals.info("Calibration '%s' was successful", calibration_name)
+
     def _set_server_host(self):
         """
         Method sets device host.
@@ -258,28 +361,32 @@ class IVMeasurerASA(IVMeasurerBase):
         Method performs calibration of type "Быстрая калибровка. Замкнутые щупы".
         """
 
-        self.calibrate(asa.FAST_CLOSE_CALIBRATE)
+        self._perform_fast_calibration(asa.FAST_CLOSE_CALIBRATE, "Fast calibration with closed probes")
 
     def calibrate_fast_and_open(self):
         """
         Method performs calibration of type "Быстрая калибровка. Разомкнутые щупы".
         """
 
-        self.calibrate(asa.FAST_OPEN_CALIBRATE)
+        self._perform_fast_calibration(asa.FAST_OPEN_CALIBRATE, "Fast calibration with open probes")
 
     def calibrate_full_and_closed(self):
         """
         Method performs calibration of type "Полная калибровка. Замкнутые щупы".
         """
 
-        self.calibrate(asa.FULL_CLOSE_CALIBRATE_AND_SAVE)
+        self._init_settings = self.get_settings()
+        self._stop_full_calibration = False
+        self._perform_calibration(asa.FULL_CLOSE_CALIBRATE_AND_SAVE, "Full calibration with closed probes", 0)
 
     def calibrate_full_and_open(self):
         """
         Method performs calibration of type "Полная калибровка. Разомкнутые щупы".
         """
 
-        self.calibrate(asa.FULL_OPEN_CALIBRATE_AND_SAVE)
+        self._init_settings = self.get_settings()
+        self._stop_full_calibration = False
+        self._perform_calibration(asa.FULL_OPEN_CALIBRATE_AND_SAVE, "Full calibration with open probes", 0)
 
     def close_device(self):
         pass
@@ -389,6 +496,17 @@ class IVMeasurerASA(IVMeasurerBase):
 
         if attribute_name in self.__dict__:
             setattr(self, attribute_name, value)
+
+    def stop_full_calibration(self):
+        """
+        Method to stop full calibration.
+        """
+
+        self._stop_full_calibration = True
+        if self._timer:
+            self._timer.cancel()
+        time.sleep(2)
+        self.set_settings(self._init_settings)
 
     @_close_on_error
     def trigger_measurement(self):
