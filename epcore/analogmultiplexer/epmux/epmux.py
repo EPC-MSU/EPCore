@@ -381,18 +381,16 @@ class EpmuxDeviceHandle:
         def reserved(self, value: Union[Sequence[int], c_ubyte*8]) -> None:
             self._reserved = _normalize_arg(value, c_ubyte*8)
 
+    """
     @overload  # noqa: F811
-    def debug_write(
-            self,
-            debug_data: Union[Sequence[int], c_ubyte*128],
-            reserved: Union[Sequence[int], c_ubyte*8]
-    ) -> None: pass
+    def debug_write(self, debug_data: Union[Sequence[int], c_ubyte*128], reserved: Union[Sequence[int], c_ubyte*8]
+                    ) -> None:
+        pass
 
     @overload  # noqa: F811
-    def debug_write(
-            self,
-            src_buffer: DebugWriteRequest
-    ) -> None: pass
+    def debug_write(self, src_buffer: DebugWriteRequest) -> None:  # noqa: F811
+        pass
+    """
 
     def debug_write(self, *args) -> None:  # noqa: F811
         src_buffer = None
@@ -507,19 +505,16 @@ class EpmuxDeviceHandle:
         _validate_call(_lib.epmux_get_channel_for_line_a(self._handle, byref(dst_buffer)))
         return dst_buffer
 
+    """
     @overload  # noqa: F811
-    def set_channel_for_line_a(
-            self,
-            module_number: Union[int, c_ubyte],
-            channel_number: Union[int, c_ubyte],
-            reserved: Union[Sequence[int], c_ubyte*14]
-    ) -> None: pass
+    def set_channel_for_line_a(self, module_number: Union[int, c_ubyte], channel_number: Union[int, c_ubyte],
+                               reserved: Union[Sequence[int], c_ubyte*14]) -> None:
+        pass
 
     @overload  # noqa: F811
-    def set_channel_for_line_a(
-            self,
-            src_buffer: ChannelForLineARequest
-    ) -> None: pass
+    def set_channel_for_line_a(self, src_buffer: ChannelForLineARequest) -> None:
+        pass
+    """
 
     def set_channel_for_line_a(self, *args) -> None:  # noqa: F811
         src_buffer = None
@@ -571,19 +566,16 @@ class EpmuxDeviceHandle:
         _validate_call(_lib.epmux_get_channel_for_line_b(self._handle, byref(dst_buffer)))
         return dst_buffer
 
+    """
     @overload  # noqa: F811
-    def set_channel_for_line_b(
-            self,
-            module_number: Union[int, c_ubyte],
-            channel_number: Union[int, c_ubyte],
-            reserved: Union[Sequence[int], c_ubyte*14]
-    ) -> None: pass
+    def set_channel_for_line_b(self, module_number: Union[int, c_ubyte], channel_number: Union[int, c_ubyte],
+                               reserved: Union[Sequence[int], c_ubyte*14]) -> None:
+        pass
 
     @overload  # noqa: F811
-    def set_channel_for_line_b(
-            self,
-            src_buffer: ChannelForLineBRequest
-    ) -> None: pass
+    def set_channel_for_line_b(self, src_buffer: ChannelForLineBRequest) -> None:
+        pass
+    """
 
     def set_channel_for_line_b(self, *args) -> None:  # noqa: F811
         src_buffer = None

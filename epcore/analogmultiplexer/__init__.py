@@ -3,7 +3,7 @@ Module to work with epmux multiplexer.
 
 To run example in Windows:
 cd <to root epcore directory>
-python -m epcore.analogmultiplexer com:\\.\COMx
+python -m epcore.analogmultiplexer com:\\\\.\\COMx
 
 To run example in Linux:
 cd <to root epcore directory>

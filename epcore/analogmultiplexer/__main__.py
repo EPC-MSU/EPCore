@@ -28,14 +28,14 @@ if __name__ == "__main__":
         module_number, channel_number = multiplexer.get_connected_channel()
         print(f"Channel {module_number}.{channel_number} connected")
     except Exception as exc:
-        print(f"Failed to connect channel {module_number_to_connect}.{channel_number_to_connect}")
+        print(f"Failed to connect channel {module_number_to_connect}.{channel_number_to_connect}: {exc}")
     try:
         line_to_connect = LineTypes.TYPE_B
         multiplexer.connect_channel(module_number_to_connect, channel_number_to_connect, line_to_connect)
         module_number, channel_number = multiplexer.get_connected_channel(LineTypes.TYPE_B)
         print(f"Channel {module_number}.{channel_number} connected")
     except Exception as exc:
-        print(f"Failed to connect channel {module_number_to_connect}.{channel_number_to_connect}")
+        print(f"Failed to connect channel {module_number_to_connect}.{channel_number_to_connect}: {exc}")
     # Disconnect all channels
     multiplexer.disconnect_all_channels()
     print("All channels disconnected")
