@@ -5,7 +5,6 @@ from PIL.Image import Image
 from .abstract import JsonConvertible
 from .element import Element
 
-
 version = "1.1.1"
 
 
@@ -19,20 +18,12 @@ class PCBInfo(JsonConvertible):
     image_resolution_ppcm: Optional[float] = None
     comment: Optional[str] = None
 
-    def to_json(self) -> Dict:
-        """
-        Return object as dict with structure compatible with UFIV JSON file schema.
-        """
-
-        json_data = {"pcb_name": self.pcb_name,
-                     "image_resolution_ppcm": self.image_resolution_ppcm,
-                     "comment": self.comment}
-        return json_data
-
     @classmethod
     def create_from_json(cls, json_data: Dict) -> "PCBInfo":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
+        :param json_data: dict with information.
+        :return: object.
         """
 
         return PCBInfo(
@@ -40,6 +31,17 @@ class PCBInfo(JsonConvertible):
             image_resolution_ppcm=json_data.get("image_resolution_ppcm"),
             comment=json_data.get("comment")
         )
+
+    def to_json(self) -> Dict:
+        """
+        Return dict with structure compatible with UFIV JSON file schema.
+        :return: dict with information about object.
+        """
+
+        json_data = {"pcb_name": self.pcb_name,
+                     "image_resolution_ppcm": self.image_resolution_ppcm,
+                     "comment": self.comment}
+        return self.remove_unused(json_data)
 
 
 @dataclass
@@ -53,19 +55,12 @@ class Board(JsonConvertible):
     image: Optional[Image] = None
     pcb: Optional[PCBInfo] = None
 
-    def to_json(self) -> Dict:
-        """
-        Return object as dict with structure compatible with UFIV JSON file schema.
-        """
-
-        json_data = {"elements": [el.to_json() for el in self.elements],
-                     "version": version}
-        return json_data
-
     @classmethod
     def create_from_json(cls, json_data: Dict) -> "Board":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
+        :param json_data: dict with information about board.
+        :return: board object.
         """
 
         if json_data["version"] != version:
@@ -74,3 +69,12 @@ class Board(JsonConvertible):
             elements=[Element.create_from_json(el) for el in json_data["elements"]],
             pcb=PCBInfo.create_from_json(json_data.get("PCB", {}))
         )
+
+    def to_json(self) -> Dict:
+        """
+        Return dict with structure compatible with UFIV JSON file schema.
+        :return: dict with information about board.
+        """
+
+        return {"elements": [el.to_json() for el in self.elements],
+                "version": version}

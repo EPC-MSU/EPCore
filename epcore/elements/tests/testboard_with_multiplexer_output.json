@@ -38,7 +38,11 @@
               "currents": [8, 7, 6, 5],
               "voltages": [4, 3, 2, 1]
             }
-          ]
+          ],
+          "multiplexer_output": {
+            "channel_number": 33,
+            "module_number": 5
+          }
         }
       ]
     }

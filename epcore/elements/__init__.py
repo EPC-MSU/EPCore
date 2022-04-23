@@ -29,15 +29,9 @@ python -m unittest discover epcore/elements
 from .board import Board, PCBInfo, version
 from .element import Element
 from .measurement import IVCurve, Measurement, MeasurementSettings
-from .pin import Pin
+from .pin import MultiplexerOutput, Pin
 
-__all__ = ["Board",
-           "Element",
-           "IVCurve",
-           "Measurement",
-           "MeasurementSettings",
-           "PCBInfo",
-           "Pin",
+__all__ = ["Board", "Element", "IVCurve", "Measurement", "MeasurementSettings", "MultiplexerOutput", "PCBInfo", "Pin",
            "version"]
 
 __author__ = "mihalin"
