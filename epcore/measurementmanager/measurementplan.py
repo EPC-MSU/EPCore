@@ -85,7 +85,7 @@ class MeasurementPlan(Board):
         """
 
         indexes = []
-        for index, pin in self._all_pins:
+        for index, pin in enumerate(self._all_pins):
             if pin.multiplexer_output is None or\
                     (self.multiplexer and not self.multiplexer.is_correct_output(pin.multiplexer_output)):
                 indexes.append(index)
