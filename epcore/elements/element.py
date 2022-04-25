@@ -24,17 +24,43 @@ class Element(JsonConvertible):
 
     @property
     def center(self) -> Optional[np.array]:
+        """
+        Return center of element.
+        :return: center of element.
+        """
+
         if self.bounding_zone is not None:
             if len(self.bounding_zone) > 0:
                 return np.mean(np.array(self.bounding_zone), axis=0).tolist()
         if len(self.pins) > 0:
-            arr_xy = [(p.x, p.y) for p in self.pins]
+            arr_xy = [(pin.x, pin.y) for pin in self.pins]
             return np.mean(np.array(arr_xy), axis=0).tolist()
         return None
 
+    @classmethod
+    def create_from_json(cls, json_data: Dict) -> "Element":
+        """
+        Create object from dict with structure compatible with UFIV JSON file schema.
+        :param json_data: dict with information about element.
+        :return: element object.
+        """
+
+        return Element(
+            pins=[Pin.create_from_json(pin) for pin in json_data["pins"]],
+            set_automatically=json_data.get("set_automatically"),
+            name=json_data.get("name"),
+            package=json_data.get("package"),
+            # center=json_data.get("center"),
+            bounding_zone=json_data.get("bounding_zone"),
+            rotation=json_data.get("rotation"),
+            width=json_data.get("width"),
+            height=json_data.get("height")
+        )
+
     def to_json(self) -> Dict:
         """
-        Return object as dict with structure compatible with UFIV JSON file schema.
+        Return dict with structure compatible with UFIV JSON file schema.
+        :return: dict with information about element.
         """
 
         json_data = {
@@ -50,21 +76,3 @@ class Element(JsonConvertible):
             "height": self.height
         }
         return self.remove_unused(json_data)
-
-    @classmethod
-    def create_from_json(cls, json_data: Dict) -> "Element":
-        """
-        Create object from dict with structure compatible with UFIV JSON file schema.
-        """
-
-        return Element(
-            pins=[Pin.create_from_json(pin) for pin in json_data["pins"]],
-            set_automatically=json_data.get("set_automatically"),
-            name=json_data.get("name"),
-            package=json_data.get("package"),
-            # center=json_data.get("center"),
-            bounding_zone=json_data.get("bounding_zone"),
-            rotation=json_data.get("rotation"),
-            width=json_data.get("width"),
-            height=json_data.get("height")
-        )

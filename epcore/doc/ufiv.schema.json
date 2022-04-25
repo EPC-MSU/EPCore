@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "https://hg.ximc.ru/eyepoint/epcore/file/Schema1.1.1/epcore/doc/ufiv.schema.json",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "title": "UFIV - Universal file format for IV-curve measurements.",
     "description": "This format describes set of IV-curve measurements for a set of electrical components on a single PCB.",
     "additionalProperties": false,
@@ -148,6 +148,28 @@
                                             "measurement_settings"
                                         ]
                                     }
+                                },
+                                "multiplexer_output": {
+                                    "description": "Analog multiplexer output address.",
+                                    "type": "object",
+                                    "properties": {
+                                        "module_number": {
+                                            "description": "Number of module in analog multiplexer.",
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 12
+                                        },
+                                        "channel_number": {
+                                            "description": "Number of channel in given module in analog multiplexer.",
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 64
+                                        }
+                                    },
+                                    "required": [
+                                            "module_number",
+                                            "channel_number"
+                                    ]
                                 }
                             },
                             "required": [

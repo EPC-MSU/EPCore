@@ -3,7 +3,8 @@ File with an example of how to use the analogmutliplexer module.
 """
 
 import argparse
-from .multiplexer import LineTypes, Multiplexer
+from epcore.analogmultiplexer import AnalogMultiplexer, AnalogMultiplexerVirtual
+from epcore.elements import MultiplexerOutput
 
 
 if __name__ == "__main__":
@@ -12,7 +13,10 @@ if __name__ == "__main__":
                         type=str)
     args = parser.parse_args()
 
-    multiplexer = Multiplexer(args.url, defer_open=True)
+    if args.url == "virtual":
+        multiplexer = AnalogMultiplexerVirtual(args.url, defer_open=True)
+    else:
+        multiplexer = AnalogMultiplexer(args.url, defer_open=True)
     multiplexer.open_device()
     # Get identity information of multiplexer and print it
     multiplexer_info = multiplexer.get_identity_information()
@@ -23,19 +27,14 @@ if __name__ == "__main__":
     # Connect channel to output
     module_number_to_connect = 1
     channel_number_to_connect = 1
+    multiplexer_output = MultiplexerOutput(channel_number=channel_number_to_connect,
+                                           module_number=module_number_to_connect)
     try:
-        multiplexer.connect_channel(module_number_to_connect, channel_number_to_connect)
-        module_number, channel_number = multiplexer.get_connected_channel()
-        print(f"Channel {module_number}.{channel_number} connected")
+        multiplexer.connect_channel(multiplexer_output)
+        connected_channel = multiplexer.get_connected_channel()
+        print(f"Channel {connected_channel.channel_number} on module {connected_channel.module_number} was connected")
     except Exception as exc:
-        print(f"Failed to connect channel {module_number_to_connect}.{channel_number_to_connect}: {exc}")
-    try:
-        line_to_connect = LineTypes.TYPE_B
-        multiplexer.connect_channel(module_number_to_connect, channel_number_to_connect, line_to_connect)
-        module_number, channel_number = multiplexer.get_connected_channel(LineTypes.TYPE_B)
-        print(f"Channel {module_number}.{channel_number} connected")
-    except Exception as exc:
-        print(f"Failed to connect channel {module_number_to_connect}.{channel_number_to_connect}: {exc}")
+        print(f"Failed to connect channel {channel_number_to_connect} on module {module_number_to_connect}: {exc}")
     # Disconnect all channels
     multiplexer.disconnect_all_channels()
     print("All channels disconnected")

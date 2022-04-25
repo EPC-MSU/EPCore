@@ -7,12 +7,15 @@ python -m epcore.analogmultiplexer com:\\\\.\\COMx
 
 To run example in Linux:
 cd <to root epcore directory>
-python -m epcore.analogmutliplexer com:///dev/COMx
+python -m epcore.analogmutliplexer com:///dev/ttyACMx
 
 To build documentaion:
 pydoc -w epcore.analogmultiplexer
 """
 
-from .multiplexer import LineTypes, ModuleTypes, Multiplexer, MultiplexerIdentityInformation
+from .base import AnalogMultiplexerBase, LineTypes, ModuleTypes, MultiplexerIdentityInformation
+from .multiplexer import AnalogMultiplexer
+from .virtual import AnalogMultiplexerVirtual
 
-__all__ = ["LineTypes", "ModuleTypes", "Multiplexer", "MultiplexerIdentityInformation"]
+__all__ = ["AnalogMultiplexer", "AnalogMultiplexerBase", "AnalogMultiplexerVirtual", "LineTypes", "ModuleTypes",
+           "MultiplexerIdentityInformation"]

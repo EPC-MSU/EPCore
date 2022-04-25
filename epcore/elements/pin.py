@@ -5,6 +5,39 @@ from .measurement import Measurement
 
 
 @dataclass
+class MultiplexerOutput(JsonConvertible):
+    """
+    Class for information about multiplexer output.
+    """
+
+    channel_number: int = None
+    module_number: int = None
+
+    @classmethod
+    def create_from_json(cls, json_dict: Dict) -> Optional["MultiplexerOutput"]:
+        """
+        Create object from dict with structure compatible with UFIV JSON file schema.
+        :param json_dict: dict with information.
+        :return: object.
+        """
+
+        if json_dict.get("channel_number") and json_dict.get("module_number"):
+            return MultiplexerOutput(channel_number=json_dict.get("channel_number"),
+                                     module_number=json_dict.get("module_number"))
+        return None
+
+    def to_json(self) -> Dict:
+        """
+        Return dict with structure compatible with UFIV JSON file schema.
+        :return: dict with information about object.
+        """
+
+        json_dict = {"channel_number": self.channel_number,
+                     "module_number": self.module_number}
+        return self.remove_unused(json_dict)
+
+
+@dataclass
 class Pin(JsonConvertible):
     """
     Class for a pin of electric component.
@@ -12,17 +45,56 @@ class Pin(JsonConvertible):
 
     x: float
     y: float
-    measurements: Optional[List[Measurement]] = field(default_factory=list)
     comment: Optional[str] = None
+    measurements: Optional[List[Measurement]] = field(default_factory=list)
+    multiplexer_output: Optional[MultiplexerOutput] = None
+
+    def append_test_measurement(self, measurement: Measurement):
+        """
+        Append new test measurement to pin.
+        :param measurement: new test measurement.
+        """
+
+        if measurement.is_reference:
+            raise ValueError("It must be non reference measurement")
+        self.measurements.append(measurement)
+
+    @classmethod
+    def create_from_json(cls, json_data: Dict) -> "Pin":
+        """
+        Create object from dict with structure compatible with UFIV JSON file schema.
+        :param json_data: dict with information.
+        :return: pin object.
+        """
+
+        return Pin(
+            comment=json_data.get("comment"),
+            x=json_data["x"],
+            y=json_data["y"],
+            measurements=[Measurement.create_from_json(measure) for measure in json_data["iv_curves"]],
+            multiplexer_output=MultiplexerOutput.create_from_json(json_data.get("multiplexer_output", {}))
+        )
 
     def get_main_measurement(self) -> Optional[Measurement]:
+        """
+        :return: first non reference measurement.
+        """
+
         non_ref = self.get_non_reference_measurements()
         return None if len(non_ref) == 0 else non_ref[0]
 
     def get_non_reference_measurements(self) -> Optional[List[Measurement]]:
+        """
+        :return: list of non reference measurements.
+        """
+
         return [m for m in self.measurements if not m.is_reference]
 
     def get_reference_measurement(self) -> Optional[Measurement]:
+        """
+        :return: reference measurement.
+        """
+
         reference_measures = [m for m in self.measurements if m.is_reference]
         if not reference_measures:
             return None
@@ -31,6 +103,11 @@ class Pin(JsonConvertible):
         return reference_measures[0]
 
     def set_reference_measurement(self, measurement: Measurement):
+        """
+        Set new reference measurement to pin.
+        :param measurement: new reference measurement.
+        """
+
         # First, remove all reference measurements
         self.measurements = [m for m in self.measurements if not m.is_reference]
         if not measurement.is_reference:
@@ -40,7 +117,8 @@ class Pin(JsonConvertible):
 
     def to_json(self) -> Dict:
         """
-        Return object as dict with structure compatible with UFIV JSON file schema.
+        Return dict with structure compatible with UFIV JSON file schema.
+        :return: dict with information about pin object.
         """
 
         json_data = {
@@ -50,17 +128,3 @@ class Pin(JsonConvertible):
             "iv_curves": [measure.to_json() for measure in self.measurements]
         }
         return self.remove_unused(json_data)
-
-    @classmethod
-    def create_from_json(cls, json_data: Dict) -> "Pin":
-        """
-        Create object from dict with structure compatible with UFIV JSON file schema.
-        """
-
-        return Pin(
-            comment=json_data.get("comment"),
-            x=json_data["x"],
-            y=json_data["y"],
-            measurements=[Measurement.create_from_json(measure)
-                          for measure in json_data["iv_curves"]]
-        )
