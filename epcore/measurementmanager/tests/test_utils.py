@@ -55,8 +55,7 @@ class TestPlan(unittest.TestCase):
         self.assertTrue(optimal_settings.sampling_rate == good_settings.sampling_rate)
         self.assertTrue(optimal_settings.internal_resistance == good_settings.internal_resistance)
         self.assertTrue(optimal_settings.max_voltage == good_settings.max_voltage)
-        self.assertTrue(optimal_settings.probe_signal_frequency ==
-                        good_settings.probe_signal_frequency)
+        self.assertTrue(optimal_settings.probe_signal_frequency == good_settings.probe_signal_frequency)
 
     def test_optimal_settings_capacitor(self):
         measurer = IVMeasurerVirtual()
@@ -75,5 +74,4 @@ class TestPlan(unittest.TestCase):
         self.assertTrue(optimal_settings.sampling_rate == good_settings.sampling_rate)
         self.assertTrue(optimal_settings.internal_resistance == good_settings.internal_resistance)
         self.assertTrue(optimal_settings.max_voltage == good_settings.max_voltage)
-        self.assertTrue(optimal_settings.probe_signal_frequency ==
-                        good_settings.probe_signal_frequency)
+        self.assertTrue(optimal_settings.probe_signal_frequency == good_settings.probe_signal_frequency)

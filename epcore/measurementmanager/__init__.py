@@ -12,6 +12,3 @@ from .measurementsystem import MeasurementSystem
 from .utils import Searcher
 
 __all__ = ["IVCComparator", "MeasurementPlan", "MeasurementSystem", "Searcher"]
-
-__author__ = ""
-__email__ = ""

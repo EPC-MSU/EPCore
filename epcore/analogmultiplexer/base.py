@@ -132,6 +132,18 @@ class AnalogMultiplexerBase(ABC):
 
         raise NotImplementedError
 
+    @close_on_error
+    def is_correct_output(self, output: MultiplexerOutput) -> bool:
+        """
+        Method checks if it is possible to set given output on multiplexer.
+        :param output: output to check correctness for multiplexer.
+        :return: True if output is correct for multiplexer otherwise False.
+        """
+
+        if 1 <= output.module_number <= len(self._chain_structure) and 1 <= output.channel_number <= MAX_CHANNEL_NUMBER:
+            return True
+        return False
+
     @abstractmethod
     def open_device(self):
         """

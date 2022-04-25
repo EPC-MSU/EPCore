@@ -49,6 +49,16 @@ class Pin(JsonConvertible):
     measurements: Optional[List[Measurement]] = field(default_factory=list)
     multiplexer_output: Optional[MultiplexerOutput] = None
 
+    def append_test_measurement(self, measurement: Measurement):
+        """
+        Append new test measurement to pin.
+        :param measurement: new test measurement.
+        """
+
+        if measurement.is_reference:
+            raise ValueError("It must be non reference measurement")
+        self.measurements.append(measurement)
+
     @classmethod
     def create_from_json(cls, json_data: Dict) -> "Pin":
         """
@@ -66,13 +76,25 @@ class Pin(JsonConvertible):
         )
 
     def get_main_measurement(self) -> Optional[Measurement]:
+        """
+        :return: first non reference measurement.
+        """
+
         non_ref = self.get_non_reference_measurements()
         return None if len(non_ref) == 0 else non_ref[0]
 
     def get_non_reference_measurements(self) -> Optional[List[Measurement]]:
+        """
+        :return: list of non reference measurements.
+        """
+
         return [m for m in self.measurements if not m.is_reference]
 
     def get_reference_measurement(self) -> Optional[Measurement]:
+        """
+        :return: reference measurement.
+        """
+
         reference_measures = [m for m in self.measurements if m.is_reference]
         if not reference_measures:
             return None
@@ -81,6 +103,11 @@ class Pin(JsonConvertible):
         return reference_measures[0]
 
     def set_reference_measurement(self, measurement: Measurement):
+        """
+        Set new reference measurement to pin.
+        :param measurement: new reference measurement.
+        """
+
         # First, remove all reference measurements
         self.measurements = [m for m in self.measurements if not m.is_reference]
         if not measurement.is_reference:

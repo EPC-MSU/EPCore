@@ -1,7 +1,7 @@
 import struct
 from ctypes import Array, c_double, c_size_t, CDLL, POINTER
 from os.path import abspath, dirname, join
-from platform import uname, system
+from platform import system, uname
 from typing import List
 from ..elements import IVCurve
 
@@ -32,6 +32,7 @@ def _to_c_array(arr: List[float]) -> Array:
 
 
 class IVCComparator:
+
     voltage_amplitude = 12.
     r_cs = 475.
     current_amplitude = (voltage_amplitude / r_cs * 1000)
@@ -40,12 +41,9 @@ class IVCComparator:
     def __init__(self):
         self._lib = get_dll()
         self._lib.SetMinVC.argtype = c_double, c_double
-        self._lib.CompareIVC.argtype = (POINTER(c_double), POINTER(c_double), POINTER(c_double),
-                                        POINTER(c_double), c_size_t)
+        self._lib.CompareIVC.argtype = (POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double),
+                                        c_size_t)
         self._lib.CompareIVC.restype = c_double
-
-    def set_min_ivc(self, min_var_v: float, min_var_c: float):
-        self._lib.SetMinVC(c_double(min_var_v), c_double(min_var_c))
 
     def compare_ivc(self, first_ivc: IVCurve, second_ivc: IVCurve) -> float:
         res = self._lib.CompareIVC(_to_c_array(first_ivc.voltages),
@@ -55,3 +53,6 @@ class IVCComparator:
                                    _to_c_array(second_ivc.currents),
                                    len(second_ivc.voltages))
         return float(res)
+
+    def set_min_ivc(self, min_var_v: float, min_var_c: float):
+        self._lib.SetMinVC(c_double(min_var_v), c_double(min_var_c))
