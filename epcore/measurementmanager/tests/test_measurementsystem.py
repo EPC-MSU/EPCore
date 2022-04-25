@@ -1,7 +1,8 @@
 import unittest
 from copy import deepcopy
 from time import sleep
-from epcore.elements import MeasurementSettings
+from epcore.analogmultiplexer import AnalogMultiplexerVirtual
+from epcore.elements import MeasurementSettings, MultiplexerOutput
 from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.measurementmanager import MeasurementSystem
 
@@ -46,7 +47,7 @@ class TestMeasurementSystem(unittest.TestCase):
         system = MeasurementSystem([iv1, iv2])
         system.trigger_measurements()
         sleep(2)
-        # Test that after some times all measurements are ready
+        # Test that after some time all measurements are ready
         self.assertTrue(system.measurements_are_ready())
         # Let's freeze one measurer
         iv1.freeze()
@@ -54,3 +55,26 @@ class TestMeasurementSystem(unittest.TestCase):
         sleep(2)
         # Test that freezed measurers are ignored
         self.assertTrue(system.measurements_are_ready())
+
+    def test_multiplexers_are_in_system(self):
+        """
+        Test checks if there are multiplexers in measurement system.
+        """
+
+        multiplexer = AnalogMultiplexerVirtual()
+        system_with_multiplexer = MeasurementSystem(multiplexers=[multiplexer])
+        self.assertTrue(system_with_multiplexer.has_active_analog_multiplexers())
+        system_without_multiplexer = MeasurementSystem()
+        self.assertFalse(system_without_multiplexer.has_active_analog_multiplexers())
+
+    def test_multiplexer_output(self):
+        """
+        Test checks that measurement system correctly sets output for
+        all multiplexers.
+        """
+
+        output = MultiplexerOutput(channel_number=33, module_number=2)
+        multiplexers = [AnalogMultiplexerVirtual() for _ in range(5)]
+        system = MeasurementSystem(multiplexers=multiplexers)
+        system.set_multiplexer_output(output)
+        self.assertTrue(all([multiplexer.get_connected_channel() == output for multiplexer in multiplexers]))

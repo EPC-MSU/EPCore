@@ -16,7 +16,7 @@ class AnalogMultiplexerVirtual(AnalogMultiplexerBase):
 
     NUMBER_OF_MODULES = 3
 
-    def __init__(self, url: str, defer_open: bool = False):
+    def __init__(self, url: str = "", defer_open: bool = False):
         """
         :param url: URL for device identification in computer system. For serial devices
         URL will be "com:\\\\.\\COMx" (for Windows) or com:///dev/ttyACMx" (for Linux);
