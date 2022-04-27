@@ -32,11 +32,13 @@ class MeasurementPlan(Board):
                 self._all_pins.append(pin)
         self._current_pin_index = 0
 
-    def _save_last_measurement(self, is_reference: bool = True):
+    def _save_last_measurement(self, is_reference: bool = True, invalidate_test: bool = False):
         """
         Method gets last measurement from measurer and saves it as
         reference or test measurement for current pin.
-        :param is_reference: if True then measurement will be saved as reference.
+        :param is_reference: if True then measurement will be saved as reference;
+        :param invalidate_test: if True then test measurements will be removed
+        from current pin.
         """
 
         curve = self.measurer.get_last_cached_iv_curve()
@@ -44,7 +46,7 @@ class MeasurementPlan(Board):
         measurement = Measurement(settings=deepcopy(settings), ivc=curve, is_reference=is_reference)
         pin = self.get_current_pin()
         if is_reference:
-            pin.set_reference_measurement(measurement)
+            pin.set_reference_measurement(measurement, invalidate_test)
         else:
             pin.set_test_measurement(measurement)
 
@@ -126,13 +128,15 @@ class MeasurementPlan(Board):
 
         self.elements = deepcopy(self._original_elements)
 
-    def save_last_measurement_as_reference(self):
+    def save_last_measurement_as_reference(self, invalidate_test: bool = False):
         """
         Method gets last measurement from measurer and saves it as
         reference measurement for current pin.
+        :param invalidate_test: if True then test measurements will be removed
+        from current pin.
         """
 
-        self._save_last_measurement()
+        self._save_last_measurement(is_reference=True, invalidate_test=invalidate_test)
 
     def save_last_measurement_as_test(self):
         """
@@ -140,4 +144,4 @@ class MeasurementPlan(Board):
         test measurement for current pin.
         """
 
-        self._save_last_measurement(False)
+        self._save_last_measurement(is_reference=False)

@@ -132,16 +132,21 @@ class Pin(JsonConvertible):
         self.measurements = [m for m in self.measurements if m.is_reference]
         self.measurements.append(measurement)
 
-    def set_reference_measurement(self, measurement: Measurement):
+    def set_reference_measurement(self, measurement: Measurement, invalidate_test: bool = False):
         """
         Set new reference measurement to pin.
-        :param measurement: new reference measurement.
+        :param measurement: new reference measurement;
+        :param invalidate_test: if True then test measurements will be
+        removed from pin.
         """
 
         if not measurement.is_reference:
             raise ValueError("It must be reference measurement")
-        self.measurements = [m for m in self.measurements if not m.is_reference]
-        self.measurements.append(measurement)
+        if invalidate_test:
+            self.measurements = [measurement]
+        else:
+            self.measurements = [m for m in self.measurements if not m.is_reference]
+            self.measurements.append(measurement)
 
     def to_json(self) -> Dict:
         """
