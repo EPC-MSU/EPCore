@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from .abstract import JsonConvertible
-from .measurement import Measurement
+from .measurement import Measurement, MeasurementSettings
 
 
 @dataclass
@@ -88,19 +88,49 @@ class Pin(JsonConvertible):
         :return: list of non reference measurements.
         """
 
-        return [m for m in self.measurements if not m.is_reference]
+        return [measurement for measurement in self.measurements if not measurement.is_reference]
+
+    def get_reference_and_test_measurements(self) -> Tuple[Optional[Measurement], Optional[Measurement],
+                                                           Optional[MeasurementSettings]]:
+        """
+        Method looks for reference measurement and test measurement
+        with the same settings.
+        :return: tuple with reference measurement, test measurement
+        and their settings.
+        """
+
+        ref_measurement = self.get_reference_measurement()
+        if ref_measurement:
+            settings = ref_measurement.settings
+        else:
+            settings = None
+        for measurement in self.measurements:
+            if not measurement.is_reference and ((settings and measurement.settings == settings) or not settings):
+                return ref_measurement, measurement, measurement.settings
+        return ref_measurement, None, settings
 
     def get_reference_measurement(self) -> Optional[Measurement]:
         """
         :return: reference measurement.
         """
 
-        reference_measures = [m for m in self.measurements if m.is_reference]
+        reference_measures = [measurement for measurement in self.measurements if measurement.is_reference]
         if not reference_measures:
             return None
         if len(reference_measures) > 2:
             raise ValueError("Too many reference curves; can't choose")
         return reference_measures[0]
+
+    def set_test_measurement(self, measurement: Measurement):
+        """
+        Set new test measurement to pin.
+        :param measurement: new test measurement.
+        """
+
+        if measurement.is_reference:
+            raise ValueError("It must be test measurement")
+        self.measurements = [m for m in self.measurements if m.is_reference]
+        self.measurements.append(measurement)
 
     def set_reference_measurement(self, measurement: Measurement):
         """
@@ -108,11 +138,9 @@ class Pin(JsonConvertible):
         :param measurement: new reference measurement.
         """
 
-        # First, remove all reference measurements
-        self.measurements = [m for m in self.measurements if not m.is_reference]
         if not measurement.is_reference:
             raise ValueError("It must be reference measurement")
-        # Add reference measurement
+        self.measurements = [m for m in self.measurements if not m.is_reference]
         self.measurements.append(measurement)
 
     def to_json(self) -> Dict:

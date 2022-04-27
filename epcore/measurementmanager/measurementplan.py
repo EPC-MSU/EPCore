@@ -46,7 +46,7 @@ class MeasurementPlan(Board):
         if is_reference:
             pin.set_reference_measurement(measurement)
         else:
-            pin.append_test_measurement(measurement)
+            pin.set_test_measurement(measurement)
 
     def all_pins_iterator(self) -> Iterable[Tuple[int, Pin]]:
         yield from enumerate(self._all_pins)
