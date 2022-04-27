@@ -107,7 +107,7 @@ class MeasurementPlan(Board):
         """
 
         if pin_number >= len(self._all_pins) or pin_number < 0:
-            raise ValueError(f"Pin {pin_number} does not exists")
+            raise ValueError(f"Pin {pin_number} does not exist")
         self._current_pin_index = pin_number
 
     def go_prev_pin(self):
