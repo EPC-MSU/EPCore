@@ -5,7 +5,7 @@ from PIL.Image import Image
 from .abstract import JsonConvertible
 from .element import Element
 
-version = "1.1.1"
+version = "1.1.2"
 
 
 @dataclass
