@@ -13,6 +13,14 @@ MIN_CHANNEL_NUMBER = 1
 MAX_CHANNEL_NUMBER = 64
 
 
+class BadMultiplexerOutputError(ValueError):
+    """
+    Exception for the case when the wrong output is set on the multiplexer.
+    """
+
+    pass
+
+
 def close_on_error(func: Callable):
     """
     Decorator to handle errors when executing multiplexer methods.

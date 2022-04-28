@@ -3,8 +3,9 @@ File with class to work with real analog multiplexer device.
 """
 
 from typing import Optional
-from epcore.analogmultiplexer.base import (AnalogMultiplexerBase, close_on_error, MAX_CHANNEL_NUMBER,
-                                           MIN_CHANNEL_NUMBER, ModuleTypes, MultiplexerIdentityInformation)
+from epcore.analogmultiplexer.base import (AnalogMultiplexerBase, BadMultiplexerOutputError, close_on_error,
+                                           MAX_CHANNEL_NUMBER, MIN_CHANNEL_NUMBER, ModuleTypes,
+                                           MultiplexerIdentityInformation)
 from epcore.analogmultiplexer.epmux.epmux import EpmuxDeviceHandle
 from epcore.elements import MultiplexerOutput
 
@@ -58,7 +59,7 @@ class AnalogMultiplexer(AnalogMultiplexerBase):
 
         if not (1 <= multiplexer_output.module_number <= len(self._chain_structure)) or\
                 not (MIN_CHANNEL_NUMBER <= multiplexer_output.channel_number <= MAX_CHANNEL_NUMBER):
-            raise ValueError("Invalid module or channel number")
+            raise BadMultiplexerOutputError("Invalid module or channel number")
         self._device.set_channel_for_line_a(multiplexer_output.module_number, multiplexer_output.channel_number, "")
 
     @close_on_error

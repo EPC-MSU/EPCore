@@ -1,8 +1,23 @@
 from copy import deepcopy
-from typing import Iterable, List, Optional, Tuple
+from typing import Callable, Iterable, List, Optional, Tuple
 from epcore.analogmultiplexer import AnalogMultiplexerBase
 from epcore.elements import Board, Element, Measurement, Pin
 from epcore.ivmeasurer import IVMeasurerBase
+
+
+def set_current_pin_output_to_multiplexer(func: Callable):
+    """
+    Decorator sets output of current pin to multiplexer.
+    :param func: decorated function.
+    """
+
+    def wrapper(self, *args, **kwargs):
+        func(self, *args, **kwargs)
+        pin = self.get_current_pin()
+        if not self.multiplexer or not pin.multiplexer_output:
+            return
+        self.multiplexer.connect_channel(pin.multiplexer_output)
+    return wrapper
 
 
 class MeasurementPlan(Board):
@@ -93,6 +108,7 @@ class MeasurementPlan(Board):
                 indexes.append(index)
         return indexes
 
+    @set_current_pin_output_to_multiplexer
     def go_next_pin(self):
         """
         Go to next pin.
@@ -102,6 +118,7 @@ class MeasurementPlan(Board):
         if self._current_pin_index >= len(self._all_pins):
             self._current_pin_index = 0
 
+    @set_current_pin_output_to_multiplexer
     def go_pin(self, pin_number: int):
         """
         Go to pin with given index.
@@ -112,6 +129,7 @@ class MeasurementPlan(Board):
             raise ValueError(f"Pin {pin_number} does not exist")
         self._current_pin_index = pin_number
 
+    @set_current_pin_output_to_multiplexer
     def go_prev_pin(self):
         """
         Go to previous pin.

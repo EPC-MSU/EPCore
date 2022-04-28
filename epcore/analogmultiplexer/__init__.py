@@ -13,9 +13,10 @@ To build documentaion:
 pydoc -w epcore.analogmultiplexer
 """
 
-from .base import AnalogMultiplexerBase, LineTypes, ModuleTypes, MultiplexerIdentityInformation
+from .base import (AnalogMultiplexerBase, BadMultiplexerOutputError, LineTypes, ModuleTypes,
+                   MultiplexerIdentityInformation)
 from .multiplexer import AnalogMultiplexer
 from .virtual import AnalogMultiplexerVirtual
 
-__all__ = ["AnalogMultiplexer", "AnalogMultiplexerBase", "AnalogMultiplexerVirtual", "LineTypes", "ModuleTypes",
-           "MultiplexerIdentityInformation"]
+__all__ = ["AnalogMultiplexer", "AnalogMultiplexerBase", "AnalogMultiplexerVirtual", "BadMultiplexerOutputError",
+           "LineTypes", "ModuleTypes", "MultiplexerIdentityInformation"]

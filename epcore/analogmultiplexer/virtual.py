@@ -4,8 +4,8 @@ File with class for virtual multiplexer.
 
 import copy
 from typing import Optional
-from epcore.analogmultiplexer.base import (AnalogMultiplexerBase, MAX_CHANNEL_NUMBER, MIN_CHANNEL_NUMBER,
-                                           ModuleTypes, MultiplexerIdentityInformation)
+from epcore.analogmultiplexer.base import (AnalogMultiplexerBase, BadMultiplexerOutputError, MAX_CHANNEL_NUMBER,
+                                           MIN_CHANNEL_NUMBER, ModuleTypes, MultiplexerIdentityInformation)
 from epcore.elements import MultiplexerOutput
 
 
@@ -45,7 +45,7 @@ class AnalogMultiplexerVirtual(AnalogMultiplexerBase):
 
         if not (1 <= multiplexer_output.module_number <= len(self._chain_structure)) or\
                 not (MIN_CHANNEL_NUMBER <= multiplexer_output.channel_number <= MAX_CHANNEL_NUMBER):
-            raise ValueError("Invalid module or channel number")
+            raise BadMultiplexerOutputError("Invalid module or channel number")
         self._connected_channel = MultiplexerOutput(channel_number=multiplexer_output.channel_number,
                                                     module_number=multiplexer_output.module_number)
 
