@@ -13,7 +13,7 @@ testall.bat
 
 ## Тесты в Linux
 
-Выполните команду
+Выполните команду:
 
 ```bash
 bash testall.sh
