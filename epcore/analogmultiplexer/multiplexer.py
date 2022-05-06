@@ -95,7 +95,7 @@ class AnalogMultiplexer(AnalogMultiplexerBase):
         """
 
         buffer = self._device.get_channel_for_line_a()
-        if buffer:
+        if buffer and buffer.channel_number and buffer.module_number:
             return MultiplexerOutput(channel_number=buffer.channel_number, module_number=buffer.module_number)
         return None
 
