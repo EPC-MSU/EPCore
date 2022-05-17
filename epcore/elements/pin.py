@@ -26,6 +26,16 @@ class MultiplexerOutput(JsonConvertible):
                                      module_number=json_dict.get("module_number"))
         return None
 
+    def is_good(self) -> bool:
+        """
+        Returns True if object is correct.
+        :return: True if object is correct.
+        """
+
+        if isinstance(self.channel_number, int) and isinstance(self.module_number, int):
+            return True
+        return False
+
     def to_json(self) -> Dict:
         """
         Return dict with structure compatible with UFIV JSON file schema.
@@ -160,4 +170,6 @@ class Pin(JsonConvertible):
             "y": self.y,
             "iv_curves": [measure.to_json() for measure in self.measurements]
         }
+        if self.multiplexer_output and self.multiplexer_output.to_json():
+            json_data["multiplexer_output"] = self.multiplexer_output.to_json()
         return self.remove_unused(json_data)

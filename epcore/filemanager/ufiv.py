@@ -158,6 +158,7 @@ def save_board_to_ufiv(path: str, board: Board) -> str:
     # Save json file in archive
     json_name = os.path.basename(path.replace(".uzf", ".json"))
     json_path = os.path.join(temp_dir.name, json_name)
+    print(board)
     json_file = _check_json_data_for_ufiv_format(board.to_json())
     with open(json_path, "w") as file:
         dump(json_file, file, indent=1)
