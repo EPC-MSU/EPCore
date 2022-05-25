@@ -156,8 +156,7 @@
                                         "module_number": {
                                             "description": "Number of module in analog multiplexer.",
                                             "type": "integer",
-                                            "minimum": 1,
-                                            "maximum": 12
+                                            "minimum": 1
                                         },
                                         "channel_number": {
                                             "description": "Number of channel in given module in analog multiplexer.",
