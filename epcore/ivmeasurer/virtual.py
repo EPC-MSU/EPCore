@@ -62,7 +62,6 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.set_settings(self.__default_settings)
 
     def reconnect(self) -> bool:
-        time.sleep(1)
         self.open_device()
         return True
 
