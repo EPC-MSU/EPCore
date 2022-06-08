@@ -89,8 +89,8 @@ class ProductBase:
         """
         You can use this function for setting IVCurve plot scale for current
         setting. By default it returns:
-        voltage = max_voltage * 1.2
-        current = max_voltage * 1.2
+        voltage = 1.2 * max_voltage
+        current = 1.2 * 1000 * max_voltage / internal_resistance
         If you want to adjust the scale for some modes, you should redefine
         this function.
         Note! This function return value in A, but you probably will plot
@@ -104,19 +104,19 @@ class ProductBase:
     @abstractmethod
     def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Adjust plot borders.
+        Method returns plot borders.
         """
 
         raise NotImplementedError()
 
     def adjust_noise_amplitude(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Get noise amplitude for specified settings.
+        Method returns noise amplitude for specified settings.
         :param settings: measurement settings.
         :return: v_amplitude, c_amplitude.
         """
 
-        return settings.max_voltage / 20, settings.internal_resistance * 20
+        return settings.max_voltage / 20, settings.max_voltage / (settings.internal_resistance * 20)
 
     @property
     def plot_parameters(self) -> PlotParameters:
@@ -184,8 +184,7 @@ class MeasurementParameterOptionEplab:
         """
         Method creates object from dictionary.
         :param json_data: dictionary with data about options of parameter.
-        :return: object of class with full information about options of
-        parameter.
+        :return: object of class with full information about options of parameter.
         """
 
         parameters = {EyePointProduct.Parameter.frequency: "frequency",
@@ -467,18 +466,17 @@ class Adjuster:
     Class for objects that adjust scale or border of plot horizontally and vertically.
     """
 
-    _voltages: List[float] = []
-    _sensitives: List[float] = []
-    _horizontals: List[float] = []
-    _verticals: List[float] = []
-    _precision: float = 0.01
-
     def __init__(self, json_data: Optional[List] = None, precision: Optional[float] = None):
         """
         :param json_data: list with data for border or scale adjusters;
         :param precision: precision for equality comparison.
         """
 
+        self._voltages: List[float] = []
+        self._sensitives: List[float] = []
+        self._horizontals: List[float] = []
+        self._verticals: List[float] = []
+        self._precision: float = 0.01
         if json_data is not None:
             for item in json_data:
                 self._voltages.append(item["voltage"])
@@ -488,8 +486,7 @@ class Adjuster:
         if precision is not None:
             self._precision = precision
 
-    def get_values(self, voltage: float, sensitive: float) ->\
-            Tuple[Optional[float], Optional[float]]:
+    def get_values(self, voltage: float, sensitive: float) -> Tuple[Optional[float], Optional[float]]:
         """
         Method returns horizontal and vertical values for borders or scales of plot
         when measuring system has given values of max voltage and internal resistance.
@@ -559,7 +556,7 @@ class EyePointProduct(ProductBase):
         self._plot_parameters = PlotParameters.from_json(json_data["plot_parameters"])
         self._parameters = Parameters(json_options)
         self._scale_adjuster = Adjuster(json_data.get("scale_adjuster"))
-        self._noise_adjuster = Adjuster(json_data.get("noise_adjuster"))
+        self._noise_adjuster = Adjuster(json_data.get("noise_amplitude"))
 
     @property
     def plot_parameters(self) -> PlotParameters:
@@ -589,20 +586,19 @@ class EyePointProduct(ProductBase):
 
     def adjust_plot_scale(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Adjust plot scales.
+        Method returns plot scales.
         :param settings: measurement settings.
         :return: voltage and current scales.
         """
 
-        horizontal, vertical = self._scale_adjuster.get_values(settings.max_voltage,
-                                                               settings.internal_resistance)
+        horizontal, vertical = self._scale_adjuster.get_values(settings.max_voltage, settings.internal_resistance)
         if horizontal is not None and vertical is not None:
             return horizontal, vertical
         return super().adjust_plot_scale(settings)
 
     def adjust_plot_borders(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Adjust plot borders.
+        Method returns plot borders.
         :param settings: measurement settings.
         :return: voltage, current border.
         """
@@ -628,13 +624,12 @@ class EyePointProduct(ProductBase):
 
     def adjust_noise_amplitude(self, settings: MeasurementSettings) -> Tuple[float, float]:
         """
-        Get noise amplitude for specified settings.
+        Method returns noise amplitude for specified settings.
         :param settings: measurement settings.
         :return: v_amplitude, c_amplitude.
         """
 
-        horizontal, vertical = self._noise_adjuster.get_values(settings.max_voltage,
-                                                               settings.internal_resistance)
+        horizontal, vertical = self._noise_adjuster.get_values(settings.max_voltage, settings.internal_resistance)
         if horizontal is not None and vertical is not None:
             return horizontal, vertical
         return super().adjust_noise_amplitude(settings)
