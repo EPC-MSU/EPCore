@@ -103,9 +103,22 @@ class IVMeasurerASA(IVMeasurerBase):
                                                                   probe_signal_frequency=100, sampling_rate=12254)
         self._NORMAL_NUM_POINTS: int = 100
         self._SMOOTHING_KERNEL_SIZE: int = 5
+        self._check_host()
         if not defer_open:
             self.open_device()
         super().__init__(url, name)
+
+    def _check_host(self):
+        """
+        Method checks that correct IP address for server is set.
+        """
+
+        self._set_server_host()
+        try:
+            self.open_device()
+            self.close_device()
+        except Exception:
+            raise
 
     @staticmethod
     def _check_settings(settings: MeasurementSettings) -> bool:
@@ -351,7 +364,6 @@ class IVMeasurerASA(IVMeasurerBase):
 
     @_close_on_error
     def open_device(self):
-        self._set_server_host()
         try:
             self.set_settings()
             self.get_settings()
