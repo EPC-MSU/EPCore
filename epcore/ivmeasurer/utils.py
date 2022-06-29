@@ -1,41 +1,43 @@
+from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
 import logging
 from ..elements import IVCurve
-from typing import List
 
 
-def plot_curves(ivcs: List[IVCurve]):
+def plot_curve(iv_curve: IVCurve):
+    """
+    Function draws given IV-curve.
+    :param iv_curve: IV-curve to draw.
+    """
+
+    plot_curves([iv_curve])
+
+
+def plot_curves(iv_curves: List[IVCurve]):
+    """
+    Function draws IV-curves from given list.
+    :param iv_curves: list of IV-curves.
+    """
+
     logging.disable(logging.WARNING)  # Matplotlib has useless output
-
     plt.figure(figsize=(12, 5))
-
     plt.subplot(1, 2, 1)
     plt.title("Сигналы")
-    for i, ivc in enumerate(ivcs):
-        plt.plot(ivc.voltages, linestyle="None", marker="o",
-                 label="Напряжение [{}], В".format(i))
-        plt.plot(np.array(ivc.currents) * 1000, linestyle="None", marker="o",
-                 label="Ток [{}], мА".format(i))
+    for curve_index, iv_curve in enumerate(iv_curves):
+        plt.plot(iv_curve.voltages, linestyle="None", marker="o", label="Напряжение [{}], В".format(curve_index))
+        plt.plot(np.array(iv_curve.currents) * 1000, linestyle="None", marker="o",
+                 label="Ток [{}], мА".format(curve_index))
     plt.legend()
     plt.grid()
-
     plt.subplot(1, 2, 2)
     plt.title("ВАХ")
-    for i, ivc in enumerate(ivcs):
-        plt.plot(ivc.voltages,
-                 np.array(ivc.currents)*1000,
-                 linestyle="None", marker="o",
-                 label="ВАХ [{}]".format(i))
+    for curve_index, iv_curve in enumerate(iv_curves):
+        plt.plot(iv_curve.voltages, np.array(iv_curve.currents) * 1000, linestyle="None", marker="o",
+                 label="ВАХ [{}]".format(curve_index))
     plt.legend()
     plt.grid()
     plt.xlabel("Напряжение, В")
     plt.ylabel("Ток, мА")
-
     plt.show()
-
     logging.disable(0)  # Enable logging back
-
-
-def plot_curve(ivc: IVCurve):
-    plot_curves([ivc])
