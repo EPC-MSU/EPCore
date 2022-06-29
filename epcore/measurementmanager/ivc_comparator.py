@@ -40,19 +40,16 @@ class IVCComparator:
 
     def __init__(self):
         self._lib = get_dll()
-        self._lib.SetMinVC.argtype = c_double, c_double
+        self._lib.SetMinVarVC.argtype = c_double, c_double
         self._lib.CompareIVC.argtype = (POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double),
                                         c_size_t)
         self._lib.CompareIVC.restype = c_double
 
     def compare_ivc(self, first_ivc: IVCurve, second_ivc: IVCurve) -> float:
-        res = self._lib.CompareIVC(_to_c_array(first_ivc.voltages),
-                                   _to_c_array(first_ivc.currents),
-                                   len(first_ivc.voltages),
-                                   _to_c_array(second_ivc.voltages),
-                                   _to_c_array(second_ivc.currents),
-                                   len(second_ivc.voltages))
+        res = self._lib.CompareIVC(_to_c_array(first_ivc.voltages), _to_c_array(first_ivc.currents),
+                                   len(first_ivc.voltages), _to_c_array(second_ivc.voltages),
+                                   _to_c_array(second_ivc.currents), len(second_ivc.voltages))
         return float(res)
 
     def set_min_ivc(self, min_var_v: float, min_var_c: float):
-        self._lib.SetMinVC(c_double(min_var_v), c_double(min_var_c))
+        self._lib.SetMinVarVC(c_double(min_var_v), c_double(min_var_c))
