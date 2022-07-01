@@ -1,27 +1,27 @@
+import os
 import struct
 from ctypes import Array, c_double, c_size_t, CDLL, POINTER
-from os.path import abspath, dirname, join
 from platform import system, uname
 from typing import List
 from ..elements import IVCurve
 
 
 def get_full_path(name: str) -> str:
-    return join(dirname(abspath(__file__)), name)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
 
 
 def get_dll() -> CDLL:
     os_kind = system().lower()
     if os_kind == "windows":
         if 8 * struct.calcsize("P") == 32:
-            lib = CDLL(get_full_path("ivcmp-win32/ivcmp.dll"))
+            lib = CDLL(get_full_path(os.path.join("ivcmp-win32", "ivcmp.dll")))
         else:
-            lib = CDLL(get_full_path("ivcmp-win64/ivcmp.dll"))
+            lib = CDLL(get_full_path(os.path.join("ivcmp-win64", "ivcmp.dll")))
     elif os_kind == "freebsd" or "linux" in os_kind:
         if uname()[4] == "aarch64":
-            lib = CDLL(get_full_path("ivcmp-arm64/libivcmp.so"))
+            lib = CDLL(get_full_path(os.path.join("ivcmp-arm64", "libivcmp.so")))
         else:
-            lib = CDLL(get_full_path("ivcmp-debian/libivcmp.so"))
+            lib = CDLL(get_full_path(os.path.join("ivcmp-debian", "libivcmp.so")))
     else:
         raise NotImplementedError("Unsupported platform {}".format(os_kind))
     return lib
