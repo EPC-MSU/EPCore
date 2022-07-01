@@ -13,7 +13,8 @@ setup(
         "scipy==1.5.4"  # for curve interpolation
     ],
     package_data={
-        "epcore.analogmultiplexer": ["epmux/epmux-debian/libepmux.so",
+        "epcore.analogmultiplexer": ["epmux/epmux-arm64/libepmux.so",
+                                     "epmux/epmux-debian/libepmux.so",
                                      "epmux/epmux-win32/epmux.dll",
                                      "epmux/epmux-win64/epmux.dll"],
         "epcore.doc": ["p10_elements.schema.json",
@@ -35,6 +36,7 @@ setup(
                               "asa10/libasa-win32/libxmlrpc_xmltok.dll",
                               "EyePoint_settings.json",
                               "EyePoint_virtual_device_settings.json",
+                              "ivm02/ivm-arm64/libivm.so",
                               "ivm02/ivm-debian/libivm.so",
                               "ivm02/ivm-win32/ivm.dll",
                               "ivm02/ivm-win64/ivm.dll",
