@@ -114,9 +114,9 @@ def _get_dll():
     os_kind = platform.system().lower()
     if os_kind == "windows":
         if 8 * struct.calcsize("P") == 32:
-            lib = CDLL(_fullpath_lib("ivm-win32\\ivm.dll"))
+            lib = CDLL(_fullpath_lib("ivm-win32/ivm.dll"))
         else:
-            lib = CDLL(_fullpath_lib("ivm-win64\\ivm.dll"))
+            lib = CDLL(_fullpath_lib("ivm-win64/ivm.dll"))
     elif os_kind == "freebsd" or "linux" in os_kind:
         if platform.uname()[4] == "aarch64":
             lib = CDLL(_fullpath_lib("ivm-arm64/libivm.so"))

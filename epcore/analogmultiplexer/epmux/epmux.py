@@ -114,9 +114,9 @@ def _get_dll():
     os_kind = platform.system().lower()
     if os_kind == "windows":
         if 8 * struct.calcsize("P") == 32:
-            lib = CDLL(_fullpath_lib("epmux-win32\\epmux.dll"))
+            lib = CDLL(_fullpath_lib("epmux-win32/epmux.dll"))
         else:
-            lib = CDLL(_fullpath_lib("epmux-win64\\epmux.dll"))
+            lib = CDLL(_fullpath_lib("epmux-win64/epmux.dll"))
     elif os_kind == "freebsd" or "linux" in os_kind:
         if platform.uname()[4] == "aarch64":
             lib = CDLL(_fullpath_lib("epmux-arm64/libepmux.so"))
