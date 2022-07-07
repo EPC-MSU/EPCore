@@ -153,7 +153,7 @@ def save_board_to_ufiv(path: str, board: Board) -> str:
 
     if not re.match(r"^.*\.uzf$", path):
         path += ".uzf"
-    temp_dir = TemporaryDirectory()
+    temp_dir = TemporaryDirectory(dir=os.path.dirname(path))
     archive = zipfile.ZipFile(path, "w")
     # Save json file in archive
     json_name = os.path.basename(path.replace(".uzf", ".json"))
@@ -162,9 +162,9 @@ def save_board_to_ufiv(path: str, board: Board) -> str:
     with open(json_path, "w") as file:
         dump(json_file, file, indent=1)
     archive.write(json_path, arcname=json_name)
-    # Save image in archive
-    img_name = os.path.basename(path.replace(".uzf", ".png"))
     if board.image:
+        # Save image in archive
+        img_name = os.path.basename(path.replace(".uzf", ".png"))
         if not _image_path:
             img_path = os.path.join(temp_dir.name, img_name)
             board.image.save(img_path)
