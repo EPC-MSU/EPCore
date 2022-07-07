@@ -7,8 +7,6 @@ import enum
 import logging
 import os
 import re
-import shutil
-import uuid
 import zipfile
 from json import dump, load
 from tempfile import TemporaryDirectory
@@ -145,68 +143,17 @@ def load_board_from_ufiv(path: str, validate_input: bool = True, auto_convert_p1
     return board
 
 
-class TempDirectory:
-    """
-    Class to work with temporary directory.
-    """
-
-    def __init__(self, use_temp_dir: bool = True, path: Optional[str] = None):
-        """
-        :param use_temp_dir: if True then built-in tempfile module will be used;
-        :param path: path to the directory where temporary directory can be created.
-        """
-
-        self._use_temp_dir: bool = use_temp_dir
-        if use_temp_dir:
-            self._temp_dir: TemporaryDirectory = TemporaryDirectory()
-        else:
-            self._temp_dir: str = self._create_unique_name(path)
-
-    @property
-    def name(self) -> str:
-        """
-        :return: path to created temporary directory.
-        """
-
-        if self._use_temp_dir:
-            return self._temp_dir.name
-        return self._temp_dir
-
-    @staticmethod
-    def _create_unique_name(path: str) -> str:
-        """
-        Method creates unique name for temporary directory.
-        :param path: path to the directory where temporary directory can be created.
-        :return: path to temporary directory.
-        """
-
-        while True:
-            dir_name = os.path.join(path, f"{uuid.uuid4().hex}")
-            if not os.path.exists(dir_name):
-                os.makedirs(dir_name)
-                return dir_name
-
-    def remove_trash(self):
-        """
-        Method removes temporary directories.
-        """
-
-        if not self._use_temp_dir:
-            shutil.rmtree(self._temp_dir)
-
-
-def save_board_to_ufiv(path: str, board: Board, use_temp_dir: Optional[bool] = True) -> str:
+def save_board_to_ufiv(path: str, board: Board) -> str:
     """
     Function saves board (png, json) files.
     :param path: path to saved file;
-    :param board: board that should be saved;
-    :param use_temp_dir:
+    :param board: board that should be saved.
     :return: path to saved file.
     """
 
     if not re.match(r"^.*\.uzf$", path):
         path += ".uzf"
-    temp_dir = TempDirectory(use_temp_dir, os.path.dirname(path))
+    temp_dir = TemporaryDirectory(dir=os.path.dirname(path))
     archive = zipfile.ZipFile(path, "w")
     # Save json file in archive
     json_name = os.path.basename(path.replace(".uzf", ".json"))
@@ -225,5 +172,4 @@ def save_board_to_ufiv(path: str, board: Board, use_temp_dir: Optional[bool] = T
             img_path = _image_path
         archive.write(img_path, arcname=img_name)
     archive.close()
-    temp_dir.remove_trash()
     return path
