@@ -5,7 +5,7 @@ The old name - Meridian.
 
 import logging
 import time
-from ctypes import c_char_p, c_double, c_uint32, CDLL
+from ctypes import c_char_p, c_double, c_uint32
 from typing import Any, Callable, Dict, Tuple
 import numpy as np
 from . import IVMeasurerIdentityInformation
@@ -96,7 +96,6 @@ class IVMeasurerASA(IVMeasurerBase):
 
         self._host, self._port = _parse_address(url)
         self._name: str = name
-        self._lib: CDLL = asa.get_dll()
         self._server: asa.Server = None
         self._asa_settings: asa.AsaSettings = asa.AsaSettings()
         self._settings: MeasurementSettings = MeasurementSettings(internal_resistance=1000., max_voltage=5.,
@@ -246,12 +245,12 @@ class IVMeasurerASA(IVMeasurerBase):
         Method is waiting for the last operation to complete.
         """
 
-        status = asa.GetLastOperationResult(self._lib, self._server)
+        status = asa.GetLastOperationResult(self._server)
         while status != asa.ASA_OK:
             if status in (asa.ASA_CONNECTION_ERROR, asa.SERVER_RESPONSE_ERROR):
                 break
             time.sleep(0.2)
-            status = asa.GetLastOperationResult(self._lib, self._server)
+            status = asa.GetLastOperationResult(self._server)
 
     @_close_on_error
     def calibrate(self, value: int):
@@ -261,7 +260,7 @@ class IVMeasurerASA(IVMeasurerBase):
         """
 
         try:
-            result = asa.Calibrate(self._lib, self._server, value)
+            result = asa.Calibrate(self._server, value)
             assert result >= 0
         except AssertionError:
             logging.error("Calibration has not been performed")
@@ -321,11 +320,11 @@ class IVMeasurerASA(IVMeasurerBase):
 
         try:
             curve = asa.IvCurve()
-            asa.GetSettings(self._lib, self._server, self._asa_settings)
-            result = asa.GetIVCurve(self._lib, self._server, curve, self._asa_settings.number_points)
+            asa.GetSettings(self._server, self._asa_settings)
+            result = asa.GetIVCurve(self._server, curve, self._asa_settings.number_points)
             if result != asa.ASA_OK:
                 raise Exception("Getting IV-curve failed")
-            n_points = asa.GetNumberPointsForSinglePeriod(self._lib, self._asa_settings)
+            n_points = asa.GetNumberPointsForSinglePeriod(self._asa_settings)
         except Exception as exc:
             logging.error("Curve was not received. Something went wrong: %s", exc)
             if self._cashed_curve:
@@ -345,7 +344,7 @@ class IVMeasurerASA(IVMeasurerBase):
 
     @_close_on_error
     def get_settings(self) -> MeasurementSettings:
-        asa.GetSettings(self._lib, self._server, self._asa_settings)
+        asa.GetSettings(self._server, self._asa_settings)
         settings, additional_settings = self._get_from_asa_settings(self._asa_settings)
         if self._check_settings(settings):
             self.flags = additional_settings["flags"]
@@ -360,7 +359,7 @@ class IVMeasurerASA(IVMeasurerBase):
     def measurement_is_ready(self) -> bool:
         if self.is_freezed():
             return False
-        return asa.GetLastOperationResult(self._lib, self._server) == asa.ASA_OK
+        return asa.GetLastOperationResult(self._server) == asa.ASA_OK
 
     @_close_on_error
     def open_device(self):
@@ -385,7 +384,7 @@ class IVMeasurerASA(IVMeasurerBase):
             settings = self._settings
         self._check_settings(settings)
         self._convert_to_asa_settings(settings)
-        status = asa.SetSettings(self._lib, self._server, self._asa_settings)
+        status = asa.SetSettings(self._server, self._asa_settings)
         if status != 0:
             logging.error("SetSettings failed: %s", str(status))
             raise Exception("SetSettings failed")
@@ -405,4 +404,4 @@ class IVMeasurerASA(IVMeasurerBase):
     @_close_on_error
     def trigger_measurement(self):
         if not self.is_freezed():
-            asa.TriggerMeasurement(self._lib, self._server)
+            asa.TriggerMeasurement(self._server)

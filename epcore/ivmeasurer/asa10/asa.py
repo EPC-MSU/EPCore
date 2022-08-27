@@ -6,7 +6,7 @@ from collections import Sequence
 from ctypes import (Array, byref, c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8, CDLL, POINTER,
                     Structure)
 from platform import system
-from typing import Callable
+from typing import Callable, Tuple
 
 
 COMPONENT_MODEL_TYPE_NONE = 0  # undefined type
@@ -132,7 +132,7 @@ class Buttons(_IterableStructure):
     )
 
 
-class IvCurve(_IterableStructure):
+class IVCurve(_IterableStructure):
     _fields_ = (
         ("voltages", c_double * MAX_NUM_POINTS),
         ("currents", c_double * MAX_NUM_POINTS),
@@ -141,6 +141,9 @@ class IvCurve(_IterableStructure):
 
     def __init__(self):
         self.length = MAX_NUM_POINTS
+
+
+IvCurve = IVCurve  # to maintain compatibility with previous versions
 
 
 class Server(_IterableStructure):
@@ -167,10 +170,9 @@ class Version(_IterableStructure):
     )
 
 
-def _check_status(lib: CDLL, server: Server, status: int, func_name: str):
+def _check_status(server: Server, status: int, func_name: str):
     """
     Function writes information about last operation with server.
-    :param lib: libasa library;
     :param server: server with measuring device;
     :param status: status of last operation;
     :param func_name: name of last operation.
@@ -183,7 +185,7 @@ def _check_status(lib: CDLL, server: Server, status: int, func_name: str):
         elif wait_iter % 10 == 0:
             print(".")
         wait_iter += 1
-        status = GetLastOperationResult(lib, server)
+        status = GetLastOperationResult(server)
         if status == ASA_OK:
             print("\n{} is done!\n".format(func_name))
             break
@@ -198,18 +200,28 @@ def _check_status(lib: CDLL, server: Server, status: int, func_name: str):
         sys.exit(-1)
 
 
-def get_dll() -> CDLL:
+def _get_dll() -> CDLL:
+    """
+    Function returns loaded library.
+    :return: loaded libasa library.
+    """
+
     if system() == "Linux":
         return CDLL(_get_full_path("libasa-debian/libasa.so"))
     if system() == "Windows":
         if 8 * struct.calcsize("P") == 32:
             return CDLL(_get_full_path(os.path.join("libasa-win32", "asa.dll")))
-        else:
-            raise NotImplementedError("Unsupported platform Windows 64-bit")
+        return CDLL(_get_full_path(os.path.join("libasa-win64", "asa.dll")))
     raise NotImplementedError("Unsupported platform {}".format(system()))
 
 
 def _get_full_path(name: str) -> str:
+    """
+    Function returns path to file with given name.
+    :param name: name of file.
+    :return: path to file.
+    """
+
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
 
 
@@ -228,14 +240,14 @@ def _normalize_arg(value, desired_ctype):
     return value
 
 
+lib = _get_dll()
 HOST = c_char_p("172.16.128.137".encode("utf-8"))
 PORT = c_char_p("8888".encode("utf-8"))
 
 
-def Calibrate(lib: CDLL, server: Server, calibration_type: int) -> int:
+def Calibrate(server: Server, calibration_type: int) -> int:
     """
     Function calibrates measuring device on server.
-    :param lib: libasa library;
     :param server: server;
     :param calibration_type: type of calibration to be performed.
     :return: status of operation.
@@ -248,10 +260,9 @@ def Calibrate(lib: CDLL, server: Server, calibration_type: int) -> int:
     return res
 
 
-def CompareIvc(lib: CDLL, first_iv_curve: IvCurve, second_iv_curve: IvCurve):
+def CompareIVC(first_iv_curve: IVCurve, second_iv_curve: IVCurve) -> float:
     """
     Function compares two IV-curves.
-    :param lib: libasa library;
     :param first_iv_curve: first IV-curve;
     :param second_iv_curve: second IV-curve.
     :return: degree of difference.
@@ -266,10 +277,12 @@ def CompareIvc(lib: CDLL, first_iv_curve: IvCurve, second_iv_curve: IvCurve):
     return res
 
 
-def GetAPIVersion(lib: CDLL) -> tuple:
+CompareIvc = CompareIVC  # to maintain compatibility with previous versions
+
+
+def GetAPIVersion() -> Tuple[int, int, int]:
     """
     Function returns API version.
-    :param lib: libasa library.
     :return: tuple with major, minor and bugfix values of version.
     """
 
@@ -283,13 +296,12 @@ def GetAPIVersion(lib: CDLL) -> tuple:
     return res.major, res.minor, res.bugfix
 
 
-def GetCoefficients(lib: CDLL, server: Server, coefficients: AsaCoefficients) -> int:
+def GetCoefficients(server: Server, coefficients: AsaCoefficients) -> int:
     """
     Function reads calibration coefficients on measuring device from server and
-    writes them to AsaCoefficients object.
-    :param lib: libasa library;
+    writes to AsaCoefficients object.
     :param server: server;
-    :param coefficients: object to writing coefficients.
+    :param coefficients: object to write coefficients.
     :return: status of operation.
     """
 
@@ -300,27 +312,25 @@ def GetCoefficients(lib: CDLL, server: Server, coefficients: AsaCoefficients) ->
     return res
 
 
-def GetIVCurve(lib: CDLL, server: Server, iv_curve: IvCurve, size: int) -> int:
+def GetIVCurve(server: Server, iv_curve: IVCurve, size: int) -> int:
     """
-    Function reads IV-curve from server and saves them to IvCurve object.
-    :param lib: libasa library;
+    Function reads IV-curve from server and saves to IVCurve object.
     :param server: server;
-    :param iv_curve: object to writing IV-curve;
+    :param iv_curve: object to write IV-curve;
     :param size: number of point in required IV-curve.
     :return: status of operation.
     """
 
     lib_func = lib.GetIVCurve
-    lib_func.argtype = Server, IvCurve, c_uint32
+    lib_func.argtype = Server, IVCurve, c_uint32
     lib_func.restype = c_int8
     res = _normalize_arg(lib_func(byref(server), byref(iv_curve), c_uint32(size)), c_int8)
     return res
 
 
-def GetLastOperationResult(lib: CDLL, server: Server) -> int:
+def GetLastOperationResult(server: Server) -> int:
     """
     Function returns status of last operation.
-    :param lib: libasa library;
     :param server: server.
     :return: status of last operation.
     """
@@ -332,10 +342,9 @@ def GetLastOperationResult(lib: CDLL, server: Server) -> int:
     return res
 
 
-def GetLibraryVersion(lib: CDLL) -> tuple:
+def GetLibraryVersion() -> Tuple[int, int, int]:
     """
     Function returns libasa library version.
-    :param lib: libasa library.
     :return: tuple with major, minor and bugfix values of version.
     """
 
@@ -349,10 +358,9 @@ def GetLibraryVersion(lib: CDLL) -> tuple:
     return res.major, res.minor, res.bugfix
 
 
-def GetNumberPointsForSinglePeriod(lib: CDLL, settings: AsaSettings) -> int:
+def GetNumberPointsForSinglePeriod(settings: AsaSettings) -> int:
     """
     Function returns number of points for single period.
-    :param lib: libasa library;
     :param settings: measurement settings.
     :return: number of points for single period.
     """
@@ -364,12 +372,11 @@ def GetNumberPointsForSinglePeriod(lib: CDLL, settings: AsaSettings) -> int:
     return res
 
 
-def GetSettings(lib: CDLL, server: Server, settings: AsaSettings) -> int:
+def GetSettings(server: Server, settings: AsaSettings) -> int:
     """
-    Function reads measurement settings from server and saves them to AsaSettings object.
-    :param lib: libasa library;
+    Function reads measurement settings from server and saves to AsaSettings object.
     :param server: server;
-    :param settings: object to writing measurement settings.
+    :param settings: object to write measurement settings.
     :return: status of operation.
     """
 
@@ -380,12 +387,11 @@ def GetSettings(lib: CDLL, server: Server, settings: AsaSettings) -> int:
     return res
 
 
-def GetStatusButtons(lib: CDLL, server: Server, button_pressed: Buttons) -> int:
+def GetStatusButtons(server: Server, button_pressed: Buttons) -> int:
     """
     Function reads statuses of buttons on gray and blue probes from server.
-    :param lib: libasa library;
     :param server: server;
-    :param button_pressed: object to writing statuses of buttons.
+    :param button_pressed: object to write statuses of buttons.
     :return: status of operation.
     """
 
@@ -396,12 +402,11 @@ def GetStatusButtons(lib: CDLL, server: Server, button_pressed: Buttons) -> int:
     return res
 
 
-def GetTempProbes(lib: CDLL, server: Server, temperature: Temperature) -> int:
+def GetTempProbes(server: Server, temperature: Temperature) -> int:
     """
     Function reads temperatures of gray and blue probes from server.
-    :param lib: libasa library;
     :param server: server;
-    :param temperature: object to writing temperatures of probes.
+    :param temperature: object to write temperatures of probes.
     :return: status of operation.
     """
 
@@ -412,12 +417,11 @@ def GetTempProbes(lib: CDLL, server: Server, temperature: Temperature) -> int:
     return res
 
 
-def LoadCoefficients(lib: CDLL, file_name: str, coefficients: AsaCoefficients):
+def LoadCoefficients(file_name: str, coefficients: AsaCoefficients):
     """
     Function reads calibration coefficients from file.
-    :param lib: libasa library;
     :param file_name: name of file with calibration coefficients;
-    :param coefficients: object to writing calibration coefficients.
+    :param coefficients: object to write calibration coefficients.
     """
 
     lib_func = lib.LoadCoefficientTable
@@ -426,10 +430,9 @@ def LoadCoefficients(lib: CDLL, file_name: str, coefficients: AsaCoefficients):
     lib_func(file_name, byref(coefficients))
 
 
-def SetSettings(lib: CDLL, server: Server, settings: AsaSettings) -> int:
+def SetSettings(server: Server, settings: AsaSettings) -> int:
     """
     Function writes measurement settings to device.
-    :param lib: libasa library;
     :param server: server;
     :param settings: measurement settings.
     :return: status of operation.
@@ -442,10 +445,9 @@ def SetSettings(lib: CDLL, server: Server, settings: AsaSettings) -> int:
     return res
 
 
-def SaveCoefficients(lib: CDLL, file_name: str, coefficients: AsaCoefficients):
+def SaveCoefficients(file_name: str, coefficients: AsaCoefficients):
     """
     Function writes calibration coefficients to file.
-    :param lib: libasa library;
     :param file_name: name of file to save coefficients;
     :param coefficients: calibration coefficients.
     """
@@ -456,22 +458,24 @@ def SaveCoefficients(lib: CDLL, file_name: str, coefficients: AsaCoefficients):
     lib_func(file_name, byref(coefficients))
 
 
-def SetMinVC(lib: CDLL, min_var_v: float, min_var_c: float):
+def SetMinVarVC(min_var_v: float, min_var_c: float):
     """
-    :param lib: libasa library;
-    :param min_var_v:
-    :param min_var_c:
+    Function sets noise amplitudes of voltage and current to correctly compare IV-curves.
+    :param min_var_v: amplitude of voltage;
+    :param min_var_c: amplitude of current.
     """
 
-    lib_func = lib.SetMinVC
+    lib_func = lib.SetMinVarVC
     lib_func.argtype = c_double, c_double
     lib_func(c_double(min_var_v), c_double(min_var_c))
 
 
-def SetCoefficients(lib: CDLL, server: Server, coefficients: AsaCoefficients) -> int:
+SetMinVC = SetMinVarVC  # to maintain compatibility with previous versions
+
+
+def SetCoefficients(server: Server, coefficients: AsaCoefficients) -> int:
     """
     Function writes calibration coefficients to device.
-    :param lib: libasa library;
     :param server: server;
     :param coefficients: calibration coefficients.
     :return: status of operation.
@@ -484,10 +488,9 @@ def SetCoefficients(lib: CDLL, server: Server, coefficients: AsaCoefficients) ->
     return res
 
 
-def TriggerMeasurement(lib: CDLL, server: Server) -> int:
+def TriggerMeasurement(server: Server) -> int:
     """
     Function starts measurements on server.
-    :param lib: libasa library;
     :param server: server.
     :return: status of operation.
     """
@@ -504,12 +507,11 @@ if __name__ == "__main__":
         host = input("Enter ASA device IP address (format: 192.168.1.1): ")
     else:
         host = sys.argv[1]
-    local_lib = get_dll()
     host = c_char_p(host.encode("utf-8"))
     server = Server(host, PORT)
 
-    print("Using libasa {}".format(".".join(list(map(str, GetLibraryVersion(local_lib))))))
-    print("Using API {}".format(".".join(list(map(str, GetAPIVersion(local_lib))))))
+    print("Using libasa {}".format(".".join(list(map(str, GetLibraryVersion())))))
+    print("Using API {}".format(".".join(list(map(str, GetAPIVersion())))))
     print("-- Update device settings --")
     settings = AsaSettings()
     settings.sampling_rate_hz = c_double(10000)
@@ -522,49 +524,49 @@ if __name__ == "__main__":
     settings.debug_model_type = c_uint32(COMPONENT_MODEL_TYPE_CAPACITOR)
     settings.debug_model_nominal = c_double(0.00000001)
     settings.trigger_mode = c_uint32(MODE_MANUAL)
-    status = SetSettings(local_lib, server, settings)
-    _check_status(local_lib, server, status, "SetSettings")
+    status = SetSettings(server, settings)
+    _check_status(server, status, "SetSettings")
 
     print("-- Read settings from device --")
     settings_in = AsaSettings()
-    status = GetSettings(local_lib, server, settings_in)
-    _check_status(local_lib, server, status, "GetSettings")
+    status = GetSettings(server, settings_in)
+    _check_status(server, status, "GetSettings")
 
     print("-- Do fast calibration with open probes --")
-    status = Calibrate(local_lib, server, FAST_OPEN_CALIBRATE)
-    _check_status(local_lib, server, status, "Calibrate")
+    status = Calibrate(server, FAST_OPEN_CALIBRATE)
+    _check_status(server, status, "Calibrate")
     if status < 0:
         print("Calibration was not started")
         sys.exit(1)
-    while GetLastOperationResult(local_lib, server) == ASA_OK:
+    while GetLastOperationResult(server) == ASA_OK:
         time.sleep(0.5)
-    while GetLastOperationResult(local_lib, server) == ASA_IN_PROGRESS:
+    while GetLastOperationResult(server) == ASA_IN_PROGRESS:
         time.sleep(0.5)
-    if GetLastOperationResult(local_lib, server) == ASA_OK:
+    if GetLastOperationResult(server) == ASA_OK:
         print("Calibration completed successfully")
     else:
         print("Calibration completed unsuccessfully")
 
     print("-- Do measure IV curve --")
-    status = TriggerMeasurement(local_lib, server)
-    while GetLastOperationResult(local_lib, server) != ASA_OK:
+    status = TriggerMeasurement(server)
+    while GetLastOperationResult(server) != ASA_OK:
         time.sleep(0.5)
-    _check_status(local_lib, server, status, "TriggerMeasurement")
+    _check_status(server, status, "TriggerMeasurement")
 
     print("-- Get measured IV curve --")
-    iv_curve = IvCurve()
-    status = GetIVCurve(local_lib, server, iv_curve, settings.number_points)
-    _check_status(local_lib, server, status, "GetIVCurve")
+    iv_curve = IVCurve()
+    status = GetIVCurve(server, iv_curve, settings.number_points)
+    _check_status(server, status, "GetIVCurve")
 
     print("-- Get status of buttons --")
     buttons = Buttons()
-    status = GetStatusButtons(local_lib, server, buttons)
-    _check_status(local_lib, server, status, "GetStatusButtons")
+    status = GetStatusButtons(server, buttons)
+    _check_status(server, status, "GetStatusButtons")
 
     print("-- Get temperature of probes --")
     temperature = Temperature()
-    status = GetTempProbes(local_lib, server, temperature)
-    _check_status(local_lib, server, status, "GetTempProbes")
+    status = GetTempProbes(server, temperature)
+    _check_status(server, status, "GetTempProbes")
 
     print("Got settings (Out, In):")
     print("Probe signal frequency: ({:.1f}, {:.1f}) Hz".format(settings.probe_signal_frequency_hz,
@@ -580,15 +582,15 @@ if __name__ == "__main__":
     print("Temperature: ({}, {}, {}, {})".format(temperature.overheat_gray, temperature.gray_temp,
                                                  temperature.overheat_blue, temperature.blue_temp))
     print("-- Get number of points for one period of curve --")
-    num_points_to_print = GetNumberPointsForSinglePeriod(local_lib, settings_in)
+    num_points_to_print = GetNumberPointsForSinglePeriod(settings_in)
     print("Number of points for one period of curve: {}".format(num_points_to_print))
     print("Voltages (V) and currents (A) of received curve:")
     for i in range(num_points_to_print):
         print("[{:.4f}, {:.4f}];".format(iv_curve.voltages[i], iv_curve.currents[i]))
 
     print("-- Set default values as threshold of noise for compare curves --")
-    SetMinVC(local_lib, MIN_VAR_V_DEFAULT, MIN_VAR_C_DEFAULT)
+    SetMinVarVC(MIN_VAR_V_DEFAULT, MIN_VAR_C_DEFAULT)
 
     print("-- Comparison of two identical curves must be 0 --")
-    score = CompareIvc(local_lib, iv_curve, iv_curve)
+    score = CompareIVC(iv_curve, iv_curve)
     print("Score = {}".format(score))
