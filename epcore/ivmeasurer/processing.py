@@ -1,19 +1,18 @@
 import copy
 import numpy as np
 from scipy import interpolate as itl
-from ..elements import IVCurve
+from epcore.elements import IVCurve
 
 
-def interpolate_curve(curve: IVCurve, final_num_points: int):
+def interpolate_curve(curve: IVCurve, final_num_points: int) -> IVCurve:
     """
-    Effectively increase resolution by curve interpolation
-    :param curve: list or tuple of two arrays with voltages and currents
-    :param final_num_points: Number points in final interpolated curve
-    :return: interpolated curve in format same to the curve
+    Effectively increases resolution by curve interpolation.
+    :param curve: list or tuple of two arrays with voltages and currents;
+    :param final_num_points: number points in final interpolated curve.
+    :return: interpolated curve in format same to the curve.
     """
-    curve_arr = np.array(
-        (curve.voltages[1:], curve.currents[1:]), dtype=np.float32
-    )
+
+    curve_arr = np.array((curve.voltages[1:], curve.currents[1:]), dtype=np.float32)
 
     curve_len = curve_arr.shape[1]
     raw_t = np.linspace(0, curve_len - 1, curve_len, dtype=np.float32)
@@ -33,10 +32,10 @@ def interpolate_curve(curve: IVCurve, final_num_points: int):
 
 def smooth_curve(curve: IVCurve, kernel_size: int) -> IVCurve:
     """
-    Remove noise by averaging
-    :param curve: list or tuple of two arrays with voltages and currents
+    Removes noise by averaging.
+    :param curve: list or tuple of two arrays with voltages and currents;
     :param kernel_size: size of averaging kernel. Should be odd.
-    :return: averaged curve in format same to the curve
+    :return: averaged curve in format same to the curve.
     """
 
     if kernel_size % 2 == 0:

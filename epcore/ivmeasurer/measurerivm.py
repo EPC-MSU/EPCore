@@ -4,13 +4,13 @@ IVMeasurer Implementation for EyePoint IVM hardware measurer.
 
 from typing import Any, Callable
 import numpy as np
-from . import IVMeasurerIdentityInformation
-from .base import IVMeasurerBase, cache_curve
+from epcore.elements import IVCurve, MeasurementSettings
+from epcore.ivmeasurer import IVMeasurerIdentityInformation
+from epcore.ivmeasurer.base import IVMeasurerBase, cache_curve
 from epcore.ivmeasurer.ivm02.ivm import IvmDeviceHandle as Ivm02Handle, _logging_callback as _logging_ivm02
 from epcore.ivmeasurer.ivm10.ivm import IvmDeviceHandle as Ivm10Handle, _logging_callback as _logging_ivm10
-from .processing import smooth_curve, interpolate_curve
-from .safe_opener import open_device_safe
-from ..elements import IVCurve, MeasurementSettings
+from epcore.ivmeasurer.processing import interpolate_curve, smooth_curve
+from epcore.ivmeasurer.safe_opener import open_device_safe
 
 
 def _close_on_error(func: Callable):

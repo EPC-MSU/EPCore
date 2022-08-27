@@ -2,12 +2,12 @@ import unittest
 from epcore.ivmeasurer import IVMeasurerVirtualBad
 
 
-class VirtualBadText(unittest.TestCase):
+class TestVirtualBadIVC(unittest.TestCase):
 
     def test_raises(self):
         bad = IVMeasurerVirtualBad(fail_chance=0.3, defer_open=True)
         success = False
-        while not success:  # Open device
+        while not success:  # open device
             try:
                 bad.open_device()
                 success = True

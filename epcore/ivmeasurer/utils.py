@@ -1,8 +1,8 @@
+import logging
 from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
-import logging
-from ..elements import IVCurve
+from epcore.elements import IVCurve
 
 
 def plot_curve(iv_curve: IVCurve):

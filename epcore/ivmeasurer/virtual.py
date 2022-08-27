@@ -5,14 +5,14 @@ File with class for virtual current-voltage measurer.
 import copy
 import logging
 import time
-from typing import Any, List, Tuple
+from typing import Any, Callable, List, Tuple
 import numpy as np
-from .base import cache_curve, IVMeasurerBase, IVMeasurerIdentityInformation
-from .processing import interpolate_curve, smooth_curve
-from ..elements import IVCurve, MeasurementSettings
+from epcore.ivmeasurer.base import cache_curve, IVMeasurerBase, IVMeasurerIdentityInformation
+from epcore.ivmeasurer.processing import interpolate_curve, smooth_curve
+from epcore.elements import IVCurve, MeasurementSettings
 
 
-def _check_open(func):
+def _check_open(func: Callable):
     def handler(self: "IVMeasurerVirtual", *args, **kwargs):
         if not self._open:
             raise RuntimeError("Device is not opened")
@@ -25,33 +25,29 @@ class IVMeasurerVirtual(IVMeasurerBase):
     Virtual IVMeasurer.
     """
 
-    def __init__(self, url: str = "", name: str = "",
-                 defer_open: bool = False):
+    def __init__(self, url: str = "", name: str = "", defer_open: bool = False):
         """
         :param url: url for device identification in computer system. For
-        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
-        "com:///dev/tty/ttyACMx" (for Linux);
+        serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/tty/ttyACMx" (for Linux);
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization.
         """
 
         self.url = url
-        self.__default_settings = MeasurementSettings(
-            sampling_rate=10000,
-            internal_resistance=4750,
-            max_voltage=5,
-            probe_signal_frequency=100
-        )
-        self.__last_curve = IVCurve()
+        self.__default_settings: MeasurementSettings = MeasurementSettings(sampling_rate=10000,
+                                                                           internal_resistance=4750,
+                                                                           max_voltage=5, probe_signal_frequency=100)
+        self.__last_curve: IVCurve = IVCurve()
+        self.__measurement_is_ready: bool = False
         self.__ready_time = 0
-        self.__measurement_is_ready = False
-        self._open = False
-        self.phase = 0
-        self.model = "resistor"
-        self.nominal = 100
-        self.noise_factor = 0.05
-        self._SMOOTHING_KERNEL_SIZE = 5
+        self.__settings: MeasurementSettings = None
+        self._open: bool = False
+        self.model: str = "resistor"
+        self.noise_factor: float = 0.05
+        self.nominal: float = 100
+        self.phase: float = 0
         self._NORMAL_NUM_POINTS = 100
+        self._SMOOTHING_KERNEL_SIZE = 5
         if not defer_open:
             self.open_device()
         logging.debug("IVMeasurerVirtual created")
@@ -79,14 +75,9 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
     @_check_open
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
-        return IVMeasurerIdentityInformation(
-                manufacturer="EPC MSU",
-                device_class="EyePoint virtual device",
-                device_name="Virtual IV Measurer",
-                hardware_version=(0, 0, 0),
-                firmware_version=(0, 0, 0),
-                name="Virtual",
-                rank=0)
+        return IVMeasurerIdentityInformation(manufacturer="EPC MSU", device_class="EyePoint virtual device",
+                                             device_name="Virtual IV Measurer", hardware_version=(0, 0, 0),
+                                             firmware_version=(0, 0, 0), name="Virtual", rank=0)
 
     @_check_open
     def trigger_measurement(self):
@@ -138,10 +129,8 @@ class IVMeasurerVirtual(IVMeasurerBase):
         if self.__measurement_is_ready is not True:
             raise RuntimeError("Measurement is not ready")
         curve = copy.deepcopy(self.__last_curve)
-        curve = interpolate_curve(curve=curve,
-                                  final_num_points=self._NORMAL_NUM_POINTS)
-        curve = smooth_curve(curve=curve,
-                             kernel_size=self._SMOOTHING_KERNEL_SIZE)
+        curve = interpolate_curve(curve=curve, final_num_points=self._NORMAL_NUM_POINTS)
+        curve = smooth_curve(curve=curve, kernel_size=self._SMOOTHING_KERNEL_SIZE)
         return curve
 
     @_check_open
@@ -164,8 +153,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         if attribute_name in self.__dict__:
             setattr(self, attribute_name, value)
 
-    def __add_noise(self, voltages: List[float], currents: List[float]) ->\
-            Tuple[List[float], List[float]]:
+    def __add_noise(self, voltages: List[float], currents: List[float]) -> Tuple[List[float], List[float]]:
         """
         Method adds noise to values of voltages and currents.
         :param voltages: list of voltage values;
@@ -175,15 +163,13 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
         v_noise_ampl = self.__settings.max_voltage * self.noise_factor
         voltages = np.array(voltages) + v_noise_ampl * (2 * np.random.random(len(voltages)) - 1)
-        i_noise_ampl = (self.__settings.max_voltage / (self.__settings.internal_resistance + 100) *
-                        self.noise_factor)
+        i_noise_ampl = self.__settings.max_voltage / (self.__settings.internal_resistance + 100) * self.noise_factor
         currents = np.array(currents) + i_noise_ampl * (2 * np.random.random(len(currents)) - 1)
         return voltages, currents
 
     def __calculate_r_iv(self) -> IVCurve:
         """
-        Method calculates current and voltage with generated settings with
-        resistor.
+        Method calculates current and voltage with generated settings with resistor.
         """
 
         f = self.__settings.probe_signal_frequency
@@ -202,8 +188,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
     def __calculate_c_iv(self) -> IVCurve:
         """
-        Method calculates current and voltage with generated settings with
-        capacitor.
+        Method calculates current and voltage with generated settings with capacitor.
         """
 
         f = self.__settings.probe_signal_frequency

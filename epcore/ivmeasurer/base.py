@@ -9,7 +9,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Callable, Dict
-from ..elements import MeasurementSettings, IVCurve
+from ..elements import IVCurve, MeasurementSettings
 
 
 @dataclass
@@ -40,14 +40,14 @@ class IVMeasurerBase(ABC):
         :param name: friendly name (for measurement system).
         """
 
-        self._url = url
-        self._name = name
-        self._cashed_curve = None
-        self._freeze = False
+        self._cashed_curve: IVCurve = None
+        self._freeze: bool = False
+        self._name: str = name
+        self._url: str = url
         logging.debug("IVMeasurerBase created")
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @name.setter
@@ -55,7 +55,7 @@ class IVMeasurerBase(ABC):
         self._name = name
 
     @property
-    def url(self):
+    def url(self) -> str:
         return self._url
 
     @url.setter

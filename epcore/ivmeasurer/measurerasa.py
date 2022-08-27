@@ -9,11 +9,11 @@ from ctypes import c_char_p, c_double, c_uint32
 from typing import Any, Callable, Dict, Tuple
 import numpy as np
 from . import IVMeasurerIdentityInformation
-from .asa10 import asa
-from .base import IVMeasurerBase, cache_curve
-from .processing import smooth_curve, interpolate_curve
-from .virtual import IVMeasurerVirtual
-from ..elements import IVCurve, MeasurementSettings
+from epcore.elements import IVCurve, MeasurementSettings
+from epcore.ivmeasurer.asa10 import asa
+from epcore.ivmeasurer.base import cache_curve, IVMeasurerBase
+from epcore.ivmeasurer.processing import interpolate_curve, smooth_curve
+from epcore.ivmeasurer.virtual import IVMeasurerVirtual
 
 _FLAGS = 1
 
