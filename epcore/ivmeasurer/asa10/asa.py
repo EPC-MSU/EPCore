@@ -6,7 +6,7 @@ from collections import Sequence
 from ctypes import (Array, byref, c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8, CDLL, cdll,
                     POINTER, Structure)
 from platform import system
-from typing import Callable, Tuple
+from typing import Callable, Iterable, Tuple
 
 
 COMPONENT_MODEL_TYPE_NONE = 0  # undefined type
@@ -44,6 +44,8 @@ NUM_COMBINATION = 380
 
 ADDITIONAL_LIBRARIES_FOR_LINUX: Tuple[str] = ("libxmlrpc_util.so.4.51", "libxmlrpc.so.3.51", "libxmlrpc_client.so.3.51",
                                               "libxmlrpc_xmlparse.so.3.51", "libxmlrpc_xmltok.so.3.51")
+ADDITIONAL_LIBRARIES_FOR_WINDOWS: Tuple[str] = ("libxmlrpc_util.dll", "libxmlrpc_xmltok.dll", "libxmlrpc_xmlparse.dll",
+                                                "libxmlrpc.dll", "libxmlrpc_client.dll")
 
 
 class AsaConnectionError(Exception):
@@ -210,11 +212,19 @@ def _get_dll() -> CDLL:
     """
 
     if system() == "Linux":
-        _load_additional_libraries(ADDITIONAL_LIBRARIES_FOR_LINUX)
+        libraries = [_get_full_path(os.path.join("libasa-debian", library))
+                     for library in ADDITIONAL_LIBRARIES_FOR_WINDOWS]
+        _load_additional_libraries(libraries)
         return CDLL(_get_full_path(os.path.join("libasa-debian", "libasa.so")))
     if system() == "Windows":
         if 8 * struct.calcsize("P") == 32:
+            libraries = [_get_full_path(os.path.join("libasa-win32", library))
+                         for library in ADDITIONAL_LIBRARIES_FOR_WINDOWS]
+            _load_additional_libraries(libraries)
             return CDLL(_get_full_path(os.path.join("libasa-win32", "asa.dll")))
+        libraries = [_get_full_path(os.path.join("libasa-win64", library))
+                     for library in ADDITIONAL_LIBRARIES_FOR_WINDOWS]
+        _load_additional_libraries(libraries)
         return CDLL(_get_full_path(os.path.join("libasa-win64", "asa.dll")))
     raise NotImplementedError("Unsupported platform {}".format(system()))
 
@@ -229,14 +239,14 @@ def _get_full_path(name: str) -> str:
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
 
 
-def _load_additional_libraries(libraries: Tuple[str]):
+def _load_additional_libraries(libraries: Iterable[str]):
     """
     Function loads additional libraries with given names.
     :param libraries: tuple with names of additional libraries to load.
     """
 
     for library in libraries:
-        cdll.LoadLibrary(_get_full_path(os.path.join("libasa-debian", library)))
+        cdll.LoadLibrary(library)
 
 
 def _normalize_arg(value, desired_ctype):
