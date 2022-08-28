@@ -3,8 +3,8 @@ import struct
 import sys
 import time
 from collections import Sequence
-from ctypes import (Array, byref, c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8, CDLL, POINTER,
-                    Structure)
+from ctypes import (Array, byref, c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8, CDLL, cdll,
+                    POINTER, Structure)
 from platform import system
 from typing import Callable, Tuple
 
@@ -41,6 +41,9 @@ MIN_VAR_C_DEFAULT = 0.0002
 N_POINTS = 512
 MAX_NUM_POINTS = 1000
 NUM_COMBINATION = 380
+
+ADDITIONAL_LIBRARIES_FOR_LINUX: Tuple[str] = ("libxmlrpc_util.so.4.51", "libxmlrpc.so.3.51", "libxmlrpc_client.so.3.51",
+                                              "libxmlrpc_xmlparse.so.3.51", "libxmlrpc_xmltok.so.3.51")
 
 
 class AsaConnectionError(Exception):
@@ -207,7 +210,8 @@ def _get_dll() -> CDLL:
     """
 
     if system() == "Linux":
-        return CDLL(_get_full_path("libasa-debian/libasa.so"))
+        _load_additional_libraries(ADDITIONAL_LIBRARIES_FOR_LINUX)
+        return CDLL(_get_full_path(os.path.join("libasa-debian", "libasa.so")))
     if system() == "Windows":
         if 8 * struct.calcsize("P") == 32:
             return CDLL(_get_full_path(os.path.join("libasa-win32", "asa.dll")))
@@ -223,6 +227,16 @@ def _get_full_path(name: str) -> str:
     """
 
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
+
+
+def _load_additional_libraries(libraries: Tuple[str]):
+    """
+    Function loads additional libraries with given names.
+    :param libraries: tuple with names of additional libraries to load.
+    """
+
+    for library in libraries:
+        cdll.LoadLibrary(_get_full_path(os.path.join("libasa-debian", library)))
 
 
 def _normalize_arg(value, desired_ctype):
