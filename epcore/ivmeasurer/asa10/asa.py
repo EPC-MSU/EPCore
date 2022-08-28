@@ -213,7 +213,7 @@ def _get_dll() -> CDLL:
 
     if system() == "Linux":
         libraries = [_get_full_path(os.path.join("libasa-debian", library))
-                     for library in ADDITIONAL_LIBRARIES_FOR_WINDOWS]
+                     for library in ADDITIONAL_LIBRARIES_FOR_LINUX]
         _load_additional_libraries(libraries)
         return CDLL(_get_full_path(os.path.join("libasa-debian", "libasa.so")))
     if system() == "Windows":
