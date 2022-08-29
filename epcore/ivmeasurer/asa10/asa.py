@@ -42,8 +42,6 @@ N_POINTS = 512
 MAX_NUM_POINTS = 1000
 NUM_COMBINATION = 380
 
-ADDITIONAL_LIBRARIES_FOR_LINUX: Tuple[str] = ("libxmlrpc_util.so.4.51", "libxmlrpc.so.3.51", "libxmlrpc_client.so.3.51",
-                                              "libxmlrpc_xmlparse.so.3.51", "libxmlrpc_xmltok.so.3.51")
 ADDITIONAL_LIBRARIES_FOR_LINUX: Tuple[str] = ("libxmlrpc_util.so.4.51", "libxmlrpc_xmltok.so.3.51",
                                               "libxmlrpc_xmlparse.so.3.51", "libxmlrpc.so.3.51",
                                               "libxmlrpc_client.so.3.51")
