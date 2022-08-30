@@ -100,7 +100,7 @@ class IVMeasurerASA(IVMeasurerBase):
         self._asa_settings: asa.AsaSettings = asa.AsaSettings()
         self._settings: MeasurementSettings = MeasurementSettings(internal_resistance=1000., max_voltage=5.,
                                                                   probe_signal_frequency=100, sampling_rate=12254)
-        self._cached_curve = IVCurve()
+        self._cached_curve: IVCurve = IVCurve()
         self._NORMAL_NUM_POINTS: int = 100
         self._SMOOTHING_KERNEL_SIZE: int = 5
         self._check_host()
