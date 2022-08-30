@@ -215,6 +215,7 @@ def _get_dll() -> CDLL:
     if system() == "Linux":
         libraries = [_get_full_path(os.path.join("libasa-debian", library))
                      for library in ADDITIONAL_LIBRARIES_FOR_LINUX]
+        libraries.extend(["libcurl.so.4", "libcurl.so.4.5.0"])
         _load_additional_libraries(libraries)
         return CDLL(_get_full_path(os.path.join("libasa-debian", "libasa.so")))
     if system() == "Windows":
