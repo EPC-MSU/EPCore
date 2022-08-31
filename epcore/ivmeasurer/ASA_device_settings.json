@@ -6,15 +6,15 @@
             "description": "Поле с информацией о быстрой калибровке",
             "type": "text_browser",
             "label_ru": "Быстрая калибровка выполняется для выбранного режима измерения.<br>Чтобы выполнить быструю калибровку:<ol><li>замкните щупы;</li><li>нажмите кнопку 'Быстрая калибровка с замкнутыми щупами';</li><li>дождитесь завершения калибровки;</li><li>разомкните щупы;</li><li>нажмите кнопку 'Быстрая калибровка с разомкнутыми щупами';</li><li>дождитесь завершения калибровки.</li></ol>",
-            "label_en": "A fast calibration is performed for the selected measurement mode.<br>To perform a fast calibration:<ol><li>close the probes;</li><li>press the button 'Fast calibration with closed probes';</li><li>wait calibration completed;</li><li>open the probes;</li><li>press the button 'Fast calibration with open probes';</li><li>wait calibration completed.</li></ol>"
+            "label_en": "A fast calibration is performed for the selected measurement mode.<br>To perform a fast calibration:<ol><li>short the probes;</li><li>press the button 'Fast calibration with shorted probes';</li><li>wait calibration completed;</li><li>open the probes;</li><li>press the button 'Fast calibration with open probes';</li><li>wait calibration completed.</li></ol>"
         },
         {
             "description": "Кнопка для проведения быстрой калибровки с замкнутыми щупами",
             "type": "button",
-            "label_ru": "Быстрая калибровка с закнутыми щупами",
-            "label_en": "Fast calibration with closed probes",
+            "label_ru": "Быстрая калибровка с замкнутыми щупами",
+            "label_en": "Fast calibration with shorted probes",
             "tooltip_ru": "Замкните щупы и нажмите эту кнопку",
-            "tooltip_en": "Close the probes and press this button",
+            "tooltip_en": "Short the probes and press this button",
             "func": "calibrate_fast_and_closed"
         },
         {
@@ -23,22 +23,22 @@
             "label_ru": "Быстрая калибровка с разомкнутыми щупами",
             "label_en": "Fast calibration with open probes",
             "tooltip_ru": "Сначала проведите быструю калибровку с замкнутыми щупами, потом разомкните щупы и нажмите эту кнопку",
-            "tooltip_en": "First do fast calibration with closed probes, then open the probes and press this button",
+            "tooltip_en": "First do fast calibration with shorted probes, then open the probes and press this button",
             "func": "calibrate_fast_and_open"
         },
         {
             "description": "Поле с информацией о полной калибровке",
             "type": "text_browser",
             "label_ru": "Полная калибровка выполняется для всех режимов измерения.<br>Чтобы выполнить полную калибровку:<ol><li>замкните щупы;</li><li>нажмите кнопку 'Полная калибровка с замкнутыми щупами';</li><li>дождитесь завершения калибровки;</li><li>разомкните щупы;</li><li>нажмите кнопку 'Полная калибровка с разомкнутыми щупами';</li><li>дождитесь завершения калибровки.</li></ol>",
-            "label_en": "A full calibration is performed for all measurement modes.<br>To perform a full calibration:<ol><li>close the probes;</li><li>press the button 'Full calibration with closed probes';</li><li>wait calibration completed;</li><li>open the probes;</li><li>press the button 'Full calibration with open probes';</li><li>wait calibration completed.</li></ol>"
+            "label_en": "A full calibration is performed for all measurement modes.<br>To perform a full calibration:<ol><li>short the probes;</li><li>press the button 'Full calibration with shorted probes';</li><li>wait calibration completed;</li><li>open the probes;</li><li>press the button 'Full calibration with open probes';</li><li>wait calibration completed.</li></ol>"
         },
         {
             "description": "Кнопка для проведения полной калибровки с замкнутыми щупами",
             "type": "button",
-            "label_ru": "Полная калибровка с закнутыми щупами",
-            "label_en": "Full calibration with closed probes",
+            "label_ru": "Полная калибровка с замкнутыми щупами",
+            "label_en": "Full calibration with shorted probes",
             "tooltip_ru": "Замкните щупы и нажмите эту кнопку",
-            "tooltip_en": "Close the probes and press this button",
+            "tooltip_en": "Short the probes and press this button",
             "func": "calibrate_full_and_closed"
         },
         {
@@ -47,7 +47,7 @@
             "label_ru": "Полная калибровка с разомкнутыми щупами",
             "label_en": "Full calibration with open probes",
             "tooltip_ru": "Сначала проведите полную калибровку с замкнутыми щупами, потом разомкните щупы и нажмите эту кнопку",
-            "tooltip_en": "First do full calibration with closed probes, then open the probes and press this button",
+            "tooltip_en": "First do full calibration with shorted probes, then open the probes and press this button",
             "func": "calibrate_full_and_open"
         }
     ]
