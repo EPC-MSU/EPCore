@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://hg.ximc.ru/eyepoint/epcore/file/P10Schema1.0.0/epcore/doc/p10_elements.schema.json",
-  "$id": "hg://hg.ximc.ru/eyepoint-src/doc/elements.schema.json",
+  "$id": "https://gitlab.ximc.ru/eyepoint/epcore/-/blob/hg/P10Schema1.0.0/epcore/doc/p10_elements.schema.json",
+  "$id": "https://gitlab.ximc.ru/eyepoint/eyepoint-src/-/blob/dev-1.6/doc/elements.schema.json",
   "title": "EyePoint P10 elements.json format",
   "description": "This describes format of savefiles of Eyepoint P10 in elements.json. There are additional data in the saves, but this only describes one main json file.",
   "additionalProperties": false,
