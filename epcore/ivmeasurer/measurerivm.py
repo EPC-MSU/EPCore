@@ -248,13 +248,16 @@ class IVMeasurerIVM10(IVMeasurerBase):
     "com:\\\\.\\COMx", format for Linux: "com:///dev/ttyACMx".
     """
 
-    def __init__(self, url: str = "", name: str = "", config: str = "", defer_open: bool = False):
+    def __init__(self, url: str = "", name: str = "", config: str = "", defer_open: bool = False,
+                 force_open: bool = False) -> None:
         """
         :param url: url for device identification in computer system.
         For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/tty/ttyACMx";
         :param name: friendly name (for measurement system);
         :param config: path to config file;
-        :param defer_open: don't open serial port during initialization.
+        :param defer_open: don't open serial port during initialization;
+        :param force_open: to check device compatibility device will be opened despite the errors
+        (device will be closed after compatibility check).
         """
 
         super(IVMeasurerIVM10, self).__init__(url, name)
@@ -270,7 +273,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
             probe_signal_frequency=100,
             precharge_delay=0
         )
-        open_device_safe(self._url, Ivm10Handle, self._config, _logging_ivm10)
+        open_device_safe(self._url, Ivm10Handle, self._config, _logging_ivm10, force_open)
         if not defer_open:
             self.open_device()
 
