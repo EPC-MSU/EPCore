@@ -33,7 +33,7 @@ python -m epcore.filemanager
 
 ###### Добавление пакетной зависимости (например: numpy, simpleaudio, etc) 
 
-В файле `setup.py` укажите требуемый пакет, например:
+В файле **setup.py** укажите требуемый пакет, например:
 <pre>
     install_requires=[
         "numpy",  # for pin module
@@ -42,7 +42,7 @@ python -m epcore.filemanager
 </pre>
 
 ###### Добавление бинарной зависимости
-В файле `setup.py` укажите требуемый файл, например:
+В файле **setup.py** укажите требуемый файл, например:
 <pre>
     package_data={
         'epcore.sound': ['sound/foo.so']  # for sound module
