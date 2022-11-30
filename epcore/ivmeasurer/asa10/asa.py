@@ -1,12 +1,13 @@
 import os
 import struct
 import sys
+import platform
 import time
 from collections import Sequence
 from ctypes import (Array, byref, c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8, CDLL, cdll,
                     POINTER, Structure)
 from platform import system
-from typing import Callable, Iterable, Tuple
+from typing import Callable, Iterable, Optional, Tuple
 
 
 COMPONENT_MODEL_TYPE_NONE = 0  # undefined type
@@ -206,13 +207,16 @@ def _check_status(server: Server, status: int, func_name: str):
         sys.exit(-1)
 
 
-def _get_dll() -> CDLL:
+def _get_dll() -> Optional[CDLL]:
     """
     Function returns loaded library.
     :return: loaded libasa library.
     """
 
-    if system() == "Linux":
+    if platform.system() == "Linux":
+        if platform.uname()[4] == "aarch64":
+            # Library for this device was not built
+            return
         libraries = [_get_full_path(os.path.join("libasa-debian", library))
                      for library in ADDITIONAL_LIBRARIES_FOR_LINUX]
         _load_additional_libraries(libraries)

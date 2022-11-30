@@ -1,5 +1,6 @@
 !.hg*
 __pycache__
 *.pyc
+.idea
 venv/
 */__pycache__
