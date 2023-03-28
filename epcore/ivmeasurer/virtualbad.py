@@ -12,7 +12,7 @@ class IVMeasurerVirtualBad(IVMeasurerVirtual):
     def __init__(self, url: str = "", name: str = "", defer_open: bool = False, fail_chance: float = 0.01) -> None:
         """
         :param url: url for device identification in computer system.
-        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/tty/ttyACMx" (for Linux);
+        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/ttyACMx" (for Linux);
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization;
         :param fail_chance: how bad is that measurer (0 - good, 1 - each command will fail).
