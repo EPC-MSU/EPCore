@@ -5,7 +5,7 @@ from epcore.ivmeasurer import IVMeasurerVirtual
 
 class TestVirtualIVC(unittest.TestCase):
 
-    def test_cache(self):
+    def test_cache(self) -> None:
         measurer = IVMeasurerVirtual()
         with self.assertRaises(RuntimeError):
             measurer.get_last_iv_curve()  # measurement is not ready
@@ -25,7 +25,7 @@ class TestVirtualIVC(unittest.TestCase):
         self.assertTrue(measurer.get_last_cached_iv_curve())
         # ...but the last measured curve must be alive
 
-    def test_freeze(self):
+    def test_freeze(self) -> None:
         measurer = IVMeasurerVirtual()
         # Read one curve and store to cash
         measurer.measure_iv_curve()
@@ -33,7 +33,7 @@ class TestVirtualIVC(unittest.TestCase):
         measurer.trigger_measurement()
         sleep(2)
         # Measurement must NOT be ready because measurer is in freeze mode
-        self.assertTrue(not measurer.measurement_is_ready())
+        self.assertFalse(measurer.measurement_is_ready())
 
         # Cached curve must be alive in freeze mode
         curve = measurer.get_last_cached_iv_curve()
@@ -45,18 +45,19 @@ class TestVirtualIVC(unittest.TestCase):
         # Measurement must be ready because we are not in freeze mode
         self.assertTrue(measurer.measurement_is_ready())
 
-    def test_measurement(self):
+    def test_measurement(self) -> None:
         measurer = IVMeasurerVirtual()
         # Do a few measurements
         for _ in range(100):
             measurer.measure_iv_curve()
         self.assertTrue(True)
 
-    def test_open_device(self):
+    def test_open_device(self) -> None:
         measurer = IVMeasurerVirtual(defer_open=True)
 
         with self.assertRaises(RuntimeError):
-            measurer.calibrate()  # Device closed, it must not work!
+            measurer.calibrate()  # device closed, it must not work!
 
         measurer.open_device()
-        measurer.calibrate()  # Now it must work fine
+        measurer.calibrate()  # now it must work fine
+        self.assertTrue(True)

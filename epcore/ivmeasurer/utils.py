@@ -5,7 +5,7 @@ import numpy as np
 from epcore.elements import IVCurve
 
 
-def plot_curve(iv_curve: IVCurve):
+def plot_curve(iv_curve: IVCurve) -> None:
     """
     Function draws given IV-curve.
     :param iv_curve: IV-curve to draw.
@@ -14,7 +14,7 @@ def plot_curve(iv_curve: IVCurve):
     plot_curves([iv_curve])
 
 
-def plot_curves(iv_curves: List[IVCurve]):
+def plot_curves(iv_curves: List[IVCurve]) -> None:
     """
     Function draws IV-curves from given list.
     :param iv_curves: list of IV-curves.

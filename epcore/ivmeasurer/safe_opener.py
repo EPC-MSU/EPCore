@@ -1,5 +1,5 @@
 """
-This module provides functionality for firmware and library compatibility check for URPC devices.
+This module provides functionality for firmware and library compatibility check for uRPC devices.
 
 This is a part of xigen2_utils
 Don’t modify this outside xigen2_utils repository!!!

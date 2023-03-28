@@ -9,7 +9,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Callable, Dict
-from ..elements import IVCurve, MeasurementSettings
+from epcore.elements import IVCurve, MeasurementSettings
 
 
 @dataclass
@@ -32,11 +32,10 @@ class IVMeasurerBase(ABC):
     Base class which implements standard interface for all IVMeasurers.
     """
 
-    def __init__(self, url: str = "", name: str = ""):
+    def __init__(self, url: str = "", name: str = "") -> None:
         """
-        :param url: url for device identification in computer system. For
-        serial devices url will be "com:\\\\.\\COMx" (for Windows) or
-        "com:///dev/tty/ttyACMx" (for Linux);
+        :param url: url for device identification in computer system.
+        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/tty/ttyACMx" (for Linux);
         :param name: friendly name (for measurement system).
         """
 
@@ -51,7 +50,7 @@ class IVMeasurerBase(ABC):
         return self._name
 
     @name.setter
-    def name(self, name: str):
+    def name(self, name: str) -> None:
         self._name = name
 
     @property
@@ -59,92 +58,55 @@ class IVMeasurerBase(ABC):
         return self._url
 
     @url.setter
-    def url(self, url: str):
+    def url(self, url: str) -> None:
         self._url = url
 
     @abstractmethod
-    def open_device(self):
+    def calibrate(self, *args) -> None:
         """
-        Open device. You don't need that if defer_open is False.
-        """
-
-        raise NotImplementedError()
-
-    @abstractmethod
-    def reconnect(self) -> bool:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def set_settings(self, settings: MeasurementSettings):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_settings(self) -> MeasurementSettings:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def get_identity_information(self) -> IVMeasurerIdentityInformation:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def trigger_measurement(self):
-        """
-        Trigger measurement manually. You don’t need this if the hardware is
-        in continuous mode.
-        """
-
-        raise NotImplementedError()
-
-    @abstractmethod
-    def measurement_is_ready(self) -> bool:
-        """
-        Return True if new measurement is ready.
-        """
-
-        raise NotImplementedError()
-
-    @abstractmethod
-    def calibrate(self, *args):
-        """
-        Calibrate IVC.
+        Calibrates device.
         :param args: arguments.
         """
 
         raise NotImplementedError()
 
-    @abstractmethod
-    def get_last_iv_curve(self) -> IVCurve:
+    def freeze(self) -> None:
+        self._freeze = True
+
+    def get_all_settings(self) -> Dict[str, Any]:
         """
-        Return result of the last measurement.
-        :return: last measurement.
+        :return: dictionary with all settings for measurer device.
         """
 
-        raise NotImplementedError()
+        identity_info = self.get_identity_information()
+        device_class = identity_info.device_class
+        dir_name = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(dir_name, f"{device_class} settings.json".replace(" ", "_"))
+        if not os.path.exists(filename):
+            return {}
+        with open(filename, "r", encoding="utf-8") as file:
+            settings = json.load(file)
+        return settings
 
-    @abstractmethod
     def get_current_value_of_parameter(self, attribute_name: str) -> Any:
         """
-        Method returns current value of measurer parameter with given name.
-        :return: current value of parameter.
+        :return: current value of measurer device parameter with given name.
         """
 
-        raise NotImplementedError()
+        return getattr(self, attribute_name, None)
 
     @abstractmethod
-    def set_value_to_parameter(self, attribute_name: str, value: Any):
+    def get_identity_information(self) -> IVMeasurerIdentityInformation:
         """
-        Method sets value to attribute of measurer with given name.
-        :param attribute_name: name of attribute;
-        :param value: value for attribute.
+        :return: main identity information about device.
         """
 
         raise NotImplementedError()
 
     def get_last_cached_iv_curve(self) -> IVCurve:
         """
-        Return result of the last measurement. Even if the result is not yet
-        ready, the previous result will be returned.
-        :return: last measurement.
+        :return: result of the last measurement. Even if the result is not yet ready, the previous result will be
+        returned.
         """
 
         if self.measurement_is_ready():
@@ -153,19 +115,25 @@ class IVMeasurerBase(ABC):
             raise ValueError("Cache is empty")
         return self._cashed_curve
 
-    def freeze(self):
-        self._freeze = True
+    @abstractmethod
+    def get_last_iv_curve(self) -> IVCurve:
+        """
+        :return: last measurement.
+        """
 
-    def unfreeze(self):
-        self._freeze = False
+        raise NotImplementedError()
+
+    @abstractmethod
+    def get_settings(self) -> MeasurementSettings:
+        raise NotImplementedError()
 
     def is_freezed(self) -> bool:
         return self._freeze
 
     def measure_iv_curve(self) -> IVCurve:
         """
-        Perform measurement and return result for the measurement, which was
-        made. Blocking function. May take some time.
+        Performs measurement. Blocking function. May take some time.
+        :return: result for measurement.
         """
 
         if self._freeze:
@@ -175,22 +143,58 @@ class IVMeasurerBase(ABC):
             time.sleep(0.05)
         return self.get_last_iv_curve()
 
-    def get_all_settings(self) -> Dict:
+    @abstractmethod
+    def measurement_is_ready(self) -> bool:
         """
-        Method returns all settings for measurer.
-        :return: dictionary with all settings.
+        :return: True if new measurement is ready.
         """
 
-        identity_info = self.get_identity_information()
-        device_class = identity_info.device_class
-        dir_name = os.path.dirname(os.path.abspath(__file__))
-        filename = os.path.join(dir_name, f"{device_class} settings.json")
-        filename = filename.replace(" ", "_")
-        if not os.path.exists(filename):
-            return {}
-        with open(filename, "r", encoding="utf-8") as file:
-            settings = json.load(file)
-        return settings
+        raise NotImplementedError()
+
+    @abstractmethod
+    def open_device(self):
+        """
+        Opens device. You don't need that if defer_open is False.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def reconnect(self) -> bool:
+        """
+        :return: True if the reconnect was successful.
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def set_settings(self, settings: MeasurementSettings) -> None:
+        """
+        :param settings: measurement settings to be set on device.
+        """
+
+        raise NotImplementedError()
+
+    def set_value_to_parameter(self, attribute_name: str, value: Any) -> None:
+        """
+        Sets value to parameter of measurer device with given name.
+        :param attribute_name: name of attribute;
+        :param value: value for attribute.
+        """
+
+        if attribute_name in self.__dict__:
+            setattr(self, attribute_name, value)
+
+    @abstractmethod
+    def trigger_measurement(self) -> None:
+        """
+        Triggers measurement manually. You don’t need this if the hardware is in continuous mode.
+        """
+
+        raise NotImplementedError()
+
+    def unfreeze(self) -> None:
+        self._freeze = False
 
 
 def cache_curve(func: Callable) -> Callable:
@@ -199,3 +203,19 @@ def cache_curve(func: Callable) -> Callable:
         self._cashed_curve = curve
         return curve
     return wrap
+
+
+def close_on_error(func: Callable):
+    """
+    Due to the nature of the uRPC library uRPC device must be immediately closed after first error.
+    :param func: IVMeasurerIVM method.
+    :return: IVMeasurerIVM decorated method.
+    """
+
+    def handle(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except (RuntimeError, OSError) as exc:
+            self.close_device()
+            raise exc
+    return handle

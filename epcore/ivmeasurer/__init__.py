@@ -1,10 +1,8 @@
 """
-There is an IVMeasurerBase class, which implements standard interface. All
-other implementations should be derived from this class and should support
-this interface. Some implementations has additional methods and data
-structures. But they should be used for special purposes. The standard
-interface should be sufficient for performing basic measurements (with default
-values for special settings).
+There is an IVMeasurerBase class, which implements standard interface. All other implementations should be derived
+from this class and should support this interface. Some implementations has additional methods and data structures.
+But they should be used for special purposes. The standard interface should be sufficient for performing basic
+measurements (with default values for special settings).
 
 Implementations in plan:
 * IVMeasurerBase
@@ -30,14 +28,6 @@ from .measurerivm import IVMeasurerIVM02, IVMeasurerIVM10
 from .virtual import IVMeasurerVirtual
 from .virtualbad import IVMeasurerVirtualBad
 
-__all__ = ["IVMeasurerASA",
-           "IVMeasurerBase",
-           "IVMeasurerIdentityInformation",
-           "IVMeasurerIVM02",
-           "IVMeasurerIVM10",
-           "IVMeasurerVirtual",
-           "IVMeasurerVirtualASA",
-           "IVMeasurerVirtualBad"]
 
-__author__ = ""
-__email__ = ""
+__all__ = ["IVMeasurerASA", "IVMeasurerBase", "IVMeasurerIdentityInformation", "IVMeasurerIVM02", "IVMeasurerIVM10",
+           "IVMeasurerVirtual", "IVMeasurerVirtualASA", "IVMeasurerVirtualBad"]

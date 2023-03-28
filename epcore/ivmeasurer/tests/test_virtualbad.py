@@ -4,10 +4,10 @@ from epcore.ivmeasurer import IVMeasurerVirtualBad
 
 class TestVirtualBadIVC(unittest.TestCase):
 
-    def test_raises(self):
-        bad = IVMeasurerVirtualBad(fail_chance=0.3, defer_open=True)
+    def test_raises(self) -> None:
+        bad = IVMeasurerVirtualBad(defer_open=True, fail_chance=0.3)
         success = False
-        while not success:  # open device
+        while not success:
             try:
                 bad.open_device()
                 success = True
