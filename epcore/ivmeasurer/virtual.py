@@ -31,7 +31,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
     def __init__(self, url: str = "", name: str = "", defer_open: bool = False) -> None:
         """
         :param url: url for device identification in computer system. For
-        serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/tty/ttyACMx" (for Linux);
+        serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/ttyACMx" (for Linux);
         :param name: friendly name (for measurement system);
         :param defer_open: don't open serial port during initialization.
         """
