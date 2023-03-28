@@ -24,7 +24,7 @@ class IVMeasurerIVM02(IVMeasurerBase):
                  force_open: bool = False) -> None:
         """
         :param url: url for device identification in computer system.
-        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/tty/ttyACMx" (for Linux);
+        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/ttyACMx" (for Linux);
         :param name: friendly name (for measurement system);
         :param config: path to config file;
         :param defer_open: don't open serial port during initialization;
@@ -226,7 +226,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
                  force_open: bool = False) -> None:
         """
         :param url: url for device identification in computer system.
-        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/tty/ttyACMx" (for Linux);
+        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/ttyACMx" (for Linux);
         :param name: friendly name (for measurement system);
         :param config: path to config file;
         :param defer_open: don't open serial port during initialization;
