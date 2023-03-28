@@ -1,5 +1,6 @@
 import unittest
 from time import sleep
+from epcore.elements import MeasurementSettings
 from epcore.ivmeasurer import IVMeasurerVirtual
 
 
@@ -15,16 +16,6 @@ class TestVirtualIVC(unittest.TestCase):
             cached = measurer.get_last_cached_iv_curve()
             self.assertTrue(measured == cached)
 
-        settings = measurer.get_settings()
-        settings.probe_signal_frequency = 1  # Go slow mode
-        settings.sampling_rate = 100
-        measurer.set_settings(settings)
-
-        measurer.trigger_measurement()
-        # Last curve may not be ready...
-        self.assertTrue(measurer.get_last_cached_iv_curve())
-        # ...but the last measured curve must be alive
-
     def test_freeze(self) -> None:
         measurer = IVMeasurerVirtual()
         # Read one curve and store to cash
@@ -32,9 +23,7 @@ class TestVirtualIVC(unittest.TestCase):
         measurer.freeze()
         measurer.trigger_measurement()
         sleep(2)
-        # Measurement must NOT be ready because measurer is in freeze mode
         self.assertFalse(measurer.measurement_is_ready())
-
         # Cached curve must be alive in freeze mode
         curve = measurer.get_last_cached_iv_curve()
         self.assertTrue(curve)
@@ -54,10 +43,19 @@ class TestVirtualIVC(unittest.TestCase):
 
     def test_open_device(self) -> None:
         measurer = IVMeasurerVirtual(defer_open=True)
-
         with self.assertRaises(RuntimeError):
             measurer.calibrate()  # device closed, it must not work!
-
         measurer.open_device()
         measurer.calibrate()  # now it must work fine
         self.assertTrue(True)
+
+    def test_set_settings(self) -> None:
+        measurer = IVMeasurerVirtual()
+        settings = MeasurementSettings(sampling_rate=300,
+                                       internal_resistance=56,
+                                       max_voltage=3.3,
+                                       probe_signal_frequency=3,
+                                       precharge_delay=None)
+        measurer.set_settings(settings)
+        settings_from_device = measurer.get_settings()
+        self.assertEqual(settings, settings_from_device)

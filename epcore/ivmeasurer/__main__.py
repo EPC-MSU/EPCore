@@ -1,14 +1,12 @@
 import argparse
 import logging
 import sys
-from .measurerasa import IVMeasurerASA
-from .measurerivm import IVMeasurerIVM02, IVMeasurerIVM10
-from .safe_opener import BadFirmwareVersion, BadConfig
-from .utils import plot_curve
-from .virtual import IVMeasurerVirtual
+from epcore.ivmeasurer import IVMeasurerASA, IVMeasurerIVM02, IVMeasurerIVM10, IVMeasurerVirtual
+from epcore.ivmeasurer.safe_opener import BadConfig, BadFirmwareVersion
+from epcore.ivmeasurer.utils import plot_curve
 
 
-def work_with_asa_device(ip_address: str):
+def work_with_asa_device(ip_address: str) -> None:
     """
     Function to work with ASA device.
     :param ip_address: IP address of ASA device server.
