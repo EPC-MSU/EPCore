@@ -35,7 +35,7 @@ class IVMeasurerBase(ABC):
     def __init__(self, url: str = "", name: str = "") -> None:
         """
         :param url: url for device identification in computer system.
-        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/tty/ttyACMx" (for Linux);
+        For serial devices url will be "com:\\\\.\\COMx" (for Windows) or "com:///dev/ttyACMx" (for Linux);
         :param name: friendly name (for measurement system).
         """
 
