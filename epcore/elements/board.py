@@ -75,6 +75,8 @@ class Board(JsonConvertible):
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about board.
         """
-
-        return {"elements": [el.to_json() for el in self.elements],
-                "version": version}
+        json_data = {"elements": [el.to_json() for el in self.elements],
+                     "version": version}
+        if self.pcb is not None:
+            json_data["PCB"] = self.pcb.to_json()
+        return json_data
