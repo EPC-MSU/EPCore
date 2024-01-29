@@ -36,7 +36,7 @@ class TestPlan(unittest.TestCase):
         measurer.set_settings(optimal_settings)
         settings_after_search = measurer.get_settings()
         # The measurer should have new settings set
-        self.assertTrue(settings_after_search is optimal_settings)
+        self.assertTrue(settings_after_search is optimal_settings)  # TODO: "is" is just a pointer
 
     def test_optimal_settings_resistor(self):
         measurer = IVMeasurerVirtual()
