@@ -1,8 +1,8 @@
 from copy import deepcopy
 from typing import Any, Callable, Iterable, List, Optional, Tuple
-from epcore.analogmultiplexer import AnalogMultiplexerBase
-from epcore.elements import Board, Element, Measurement, MultiplexerOutput, Pin
-from epcore.ivmeasurer import IVMeasurerBase
+from ..analogmultiplexer import AnalogMultiplexerBase
+from ..elements import Board, Element, Measurement, MultiplexerOutput, Pin
+from ..ivmeasurer import IVMeasurerBase
 
 
 def call_callback_funcs_for_pin_changes(func: Callable[..., Any]):
@@ -89,7 +89,7 @@ class MeasurementPlan(Board):
         else:
             pin.set_test_measurement(measurement)
 
-    def add_callback_func_for_mux_output_change(self, callback_func: Callable[MultiplexerOutput, None]) -> None:
+    def add_callback_func_for_mux_output_change(self, callback_func: Callable[[MultiplexerOutput], None]) -> None:
         """
         Method adds new callback function that will be called when multiplexer output changes.
         :param callback_func: callback function to be added.
@@ -97,7 +97,7 @@ class MeasurementPlan(Board):
 
         self.callback_funcs_for_mux_output_change.append(callback_func)
 
-    def add_callback_func_for_pin_changes(self, callback_func: Callable[int, None]) -> None:
+    def add_callback_func_for_pin_changes(self, callback_func: Callable[[int], None]) -> None:
         """
         Method adds new callback function that will be called when pin changes.
         :param callback_func: callback function to be added.
@@ -237,6 +237,8 @@ class MeasurementPlan(Board):
             if i <= self._current_pin_index <= i + length:
                 index = self._current_pin_index - i
                 element.pins.pop(index)
+        if len(self._all_pins) == 0:
+            self._current_pin_index = 0
 
     def restore_original_board(self) -> None:
         """
