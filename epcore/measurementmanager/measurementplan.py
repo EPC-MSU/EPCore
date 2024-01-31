@@ -66,7 +66,19 @@ class MeasurementPlan(Board):
         self._all_pins: List[Pin] = self._get_all_pins()
         self._current_pin_index: int = 0
 
+    @property
+    def pins_number(self) -> int:
+        """
+        :return: number of pins in measurement plan.
+        """
+
+        return len(self._all_pins)
+
     def _get_all_pins(self) -> List[Pin]:
+        """
+        :return: list with all pins.
+        """
+
         pins = []
         for element in self.elements:
             for pin in element.pins:
@@ -225,6 +237,7 @@ class MeasurementPlan(Board):
 
         self.callback_funcs_for_pin_changes = []
 
+    @call_callback_funcs_for_pin_changes
     def remove_current_pin(self) -> None:
         """
         Method deletes the current pin.
