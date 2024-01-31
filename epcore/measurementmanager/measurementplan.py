@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Callable, Generator, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Generator, List, Optional, Tuple
 from ..analogmultiplexer import AnalogMultiplexerBase
 from ..elements import Board, Element, Measurement, MultiplexerOutput, Pin
 from ..ivmeasurer import IVMeasurerBase
