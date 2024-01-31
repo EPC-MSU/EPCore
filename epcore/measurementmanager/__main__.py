@@ -7,6 +7,7 @@ from ..elements import Board, Element, IVCurve, Pin
 from ..ivmeasurer import IVMeasurerVirtual
 from ..ivmeasurer.utils import plot_curves
 
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logging.debug("Measurement system example")

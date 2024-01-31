@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from warnings import warn
 from PIL.Image import Image
 from .abstract import JsonConvertible
 from .element import Element
+
 
 version = "1.1.2"
 
@@ -19,7 +20,7 @@ class PCBInfo(JsonConvertible):
     comment: Optional[str] = None
 
     @classmethod
-    def create_from_json(cls, json_data: Dict) -> "PCBInfo":
+    def create_from_json(cls, json_data: Dict[str, Any]) -> "PCBInfo":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
         :param json_data: dict with information.
@@ -32,7 +33,7 @@ class PCBInfo(JsonConvertible):
             comment=json_data.get("comment")
         )
 
-    def to_json(self) -> Dict:
+    def to_json(self) -> Dict[str, Union[float, str]]:
         """
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about object.
@@ -47,8 +48,7 @@ class PCBInfo(JsonConvertible):
 @dataclass
 class Board(JsonConvertible):
     """
-    Printed circuit board class. Normally board contains a number of components,
-    which can be tested.
+    Printed circuit board class. Normally board contains a number of components, which can be tested.
     """
 
     elements: List[Element] = field(default_factory=lambda: [])
@@ -56,7 +56,7 @@ class Board(JsonConvertible):
     pcb: Optional[PCBInfo] = None
 
     @classmethod
-    def create_from_json(cls, json_data: Dict) -> "Board":
+    def create_from_json(cls, json_data: Dict[str, Any]) -> "Board":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
         :param json_data: dict with information about board.
@@ -70,7 +70,7 @@ class Board(JsonConvertible):
             pcb=PCBInfo.create_from_json(json_data.get("PCB", {}))
         )
 
-    def to_json(self) -> Dict:
+    def to_json(self) -> Dict[str, Any]:
         """
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about board.

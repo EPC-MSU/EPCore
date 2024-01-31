@@ -19,7 +19,8 @@ def _normalize_arg(value, desired_ctype):
 
     if isinstance(value, desired_ctype):
         return value
-    elif issubclass(desired_ctype, Array) and isinstance(value, Sequence):
+
+    if issubclass(desired_ctype, Array) and isinstance(value, Sequence):
         member_type = desired_ctype._type_
 
         if desired_ctype._length_ < len(value):
@@ -27,12 +28,13 @@ def _normalize_arg(value, desired_ctype):
 
         if issubclass(member_type, c_ubyte) and isinstance(value, bytes):
             return desired_ctype.from_buffer_copy(value)
-        elif issubclass(member_type, c_ubyte) and isinstance(value, bytearray):
+
+        if issubclass(member_type, c_ubyte) and isinstance(value, bytearray):
             return value
-        else:
-            return desired_ctype(*value)
-    else:
-        return value
+
+        return desired_ctype(*value)
+
+    return value
 
 
 class IvCurve(_IterableStructure):
@@ -41,15 +43,15 @@ class IvCurve(_IterableStructure):
     voltages - массив напряжений [Вольты]
     сurrents - массив токов [мА]
     length - количество элементов в массивах voltages и currents (должно быть одинаковым).
-
     """
+
     _fields_ = (
-        ("voltages", c_double*MAX_NUM_POINTS),
-        ("currents", c_double*MAX_NUM_POINTS),
+        ("voltages", c_double * MAX_NUM_POINTS),
+        ("currents", c_double * MAX_NUM_POINTS),
         ("length", c_size_t)
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.length = MAX_NUM_POINTS
 
 
@@ -83,9 +85,10 @@ def SetMinVarVC(min_var_v, min_var_c):
     @param min_var_v Характерный масштаб по напряжению. Единицы измерения: Вольты.
     @param min_var_c Характерный масштаб по току. Единицы измерения: мА.
     """
+
     lib_func = lib.SetMinVarVC
     lib_func.argtype = c_double, c_double
-    lib_func(c_double(min_var_v),  c_double(min_var_c))
+    lib_func(c_double(min_var_v), c_double(min_var_c))
 
 
 def SetMinVarVCFromCurves(open_circuit_iv_curve, short_circuit_iv_curve):
@@ -106,6 +109,7 @@ def SetMinVarVCFromCurves(open_circuit_iv_curve, short_circuit_iv_curve):
     @param open_circuit_iv_curve сигнатура, снятая при разомкнутых щупах (объект типа IvCurve)
     @param short_circuit_iv_curve сигнатура, снятая при разомкнутых щупах (объект типа IvCurve)
     """
+
     lib_func = lib.SetMinVarVCFromCurves
     lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
     lib_func.restype = c_double
@@ -120,6 +124,7 @@ def GetMinVarVC():
     Функция для получения текущих значений порогов масштабирования при нормировке токов и напряжений.
     Подробнее о порогах см. описание функции SetMinVarVC.
     """
+
     min_var_v = c_double()
     min_var_c = c_double()
 
@@ -148,6 +153,7 @@ def CompareIvc(first_iv_curve, second_iv_curve):
     @param first_iv_curve первая кривая для сравнения (объект типа IvCurve)
     @param second_iv_curve первая кривая для сравнения (объект типа IvCurve)
     """
+
     lib_func = lib.CompareIVC
     lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
     lib_func.restype = c_double

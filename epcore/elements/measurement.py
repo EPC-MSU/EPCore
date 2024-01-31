@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from .abstract import JsonConvertible
 
 
@@ -15,13 +15,13 @@ class MeasurementSettings(JsonConvertible):
     probe_signal_frequency: int
     precharge_delay: Optional[float] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         # Current EPCore version supports only integer rate\freq
         self.sampling_rate = int(self.sampling_rate)
         self.probe_signal_frequency = int(self.probe_signal_frequency)
 
     @classmethod
-    def create_from_json(cls, json_data: Dict) -> "MeasurementSettings":
+    def create_from_json(cls, json_data: Dict[str, Any]) -> "MeasurementSettings":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
         :param json_data: dict with information.
@@ -36,7 +36,7 @@ class MeasurementSettings(JsonConvertible):
             precharge_delay=json_data.get("precharge_delay")
         )
 
-    def to_json(self) -> Dict:
+    def to_json(self) -> Dict[str, Any]:
         """
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about object.
@@ -61,7 +61,7 @@ class IVCurve(JsonConvertible):
     currents: List[float] = field(default_factory=lambda: [0., 0.])
     voltages: List[float] = field(default_factory=lambda: [0., 0.])
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         n_currents = len(self.currents)
         n_voltages = len(self.voltages)
         if n_currents != n_voltages:
@@ -72,7 +72,7 @@ class IVCurve(JsonConvertible):
                              "got {}".format(n_currents))
 
     @classmethod
-    def create_from_json(cls, json_dict: Dict) -> "IVCurve":
+    def create_from_json(cls, json_dict: Dict[str, Any]) -> "IVCurve":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
         :param json_dict: dict with information about IV-curve.
@@ -81,7 +81,7 @@ class IVCurve(JsonConvertible):
 
         return IVCurve(currents=json_dict["currents"], voltages=json_dict["voltages"])
 
-    def to_json(self) -> Dict:
+    def to_json(self) -> Dict[str, Any]:
         """
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about IV-curve.
@@ -106,7 +106,7 @@ class Measurement(JsonConvertible):
     is_reference: Optional[bool] = None
 
     @classmethod
-    def create_from_json(cls, json_data: Dict) -> "Measurement":
+    def create_from_json(cls, json_data: Dict[str, Any]) -> "Measurement":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
         :param json_data: dict with information about measurement.
@@ -121,7 +121,7 @@ class Measurement(JsonConvertible):
             is_reference=json_data.get("is_reference")
         )
 
-    def to_json(self) -> Dict:
+    def to_json(self) -> Dict[str, Any]:
         """
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about measurement.

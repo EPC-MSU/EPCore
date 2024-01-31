@@ -38,7 +38,7 @@ class IVCComparator:
     current_amplitude = (voltage_amplitude / r_cs * 1000)
     max_num_points = 10
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._lib = get_dll()
         self._lib.SetMinVarVC.argtype = c_double, c_double
         self._lib.CompareIVC.argtype = (POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double),
@@ -51,5 +51,5 @@ class IVCComparator:
                                    _to_c_array(second_ivc.currents), len(second_ivc.voltages))
         return float(res)
 
-    def set_min_ivc(self, min_var_v: float, min_var_c: float):
+    def set_min_ivc(self, min_var_v: float, min_var_c: float) -> None:
         self._lib.SetMinVarVC(c_double(min_var_v), c_double(min_var_c))

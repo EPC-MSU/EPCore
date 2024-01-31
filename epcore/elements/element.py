@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from .abstract import JsonConvertible
 from .pin import Pin
@@ -8,8 +8,7 @@ from .pin import Pin
 @dataclass
 class Element(JsonConvertible):
     """
-    Class for a PCB component. In most cases it has a number of pins
-    which can be tested electrically.
+    Class for a PCB component. In most cases it has a number of pins which can be tested electrically.
     """
 
     pins: List[Pin]
@@ -38,7 +37,7 @@ class Element(JsonConvertible):
         return None
 
     @classmethod
-    def create_from_json(cls, json_data: Dict) -> "Element":
+    def create_from_json(cls, json_data: Dict[str, Any]) -> "Element":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
         :param json_data: dict with information about element.
@@ -57,7 +56,7 @@ class Element(JsonConvertible):
             height=json_data.get("height")
         )
 
-    def to_json(self) -> Dict:
+    def to_json(self) -> Dict[str, Any]:
         """
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about element.

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from .abstract import JsonConvertible
 from .measurement import Measurement, MeasurementSettings
 
@@ -14,7 +14,7 @@ class MultiplexerOutput(JsonConvertible):
     module_number: int = None
 
     @classmethod
-    def create_from_json(cls, json_dict: Dict) -> Optional["MultiplexerOutput"]:
+    def create_from_json(cls, json_dict: Dict[str, Any]) -> Optional["MultiplexerOutput"]:
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
         :param json_dict: dict with information.
@@ -26,7 +26,7 @@ class MultiplexerOutput(JsonConvertible):
                                      module_number=json_dict.get("module_number"))
         return None
 
-    def to_json(self) -> Dict:
+    def to_json(self) -> Dict[str, Any]:
         """
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about object.
@@ -49,7 +49,7 @@ class Pin(JsonConvertible):
     measurements: Optional[List[Measurement]] = field(default_factory=list)
     multiplexer_output: Optional[MultiplexerOutput] = None
 
-    def append_test_measurement(self, measurement: Measurement):
+    def append_test_measurement(self, measurement: Measurement) -> None:
         """
         Append new test measurement to pin.
         :param measurement: new test measurement.
@@ -60,7 +60,7 @@ class Pin(JsonConvertible):
         self.measurements.append(measurement)
 
     @classmethod
-    def create_from_json(cls, json_data: Dict) -> "Pin":
+    def create_from_json(cls, json_data: Dict[str, Any]) -> "Pin":
         """
         Create object from dict with structure compatible with UFIV JSON file schema.
         :param json_data: dict with information.
@@ -93,10 +93,8 @@ class Pin(JsonConvertible):
     def get_reference_and_test_measurements(self) -> Tuple[Optional[Measurement], Optional[Measurement],
                                                            Optional[MeasurementSettings]]:
         """
-        Method looks for reference measurement and test measurement
-        with the same settings.
-        :return: tuple with reference measurement, test measurement
-        and their settings.
+        Method looks for reference measurement and test measurement with the same settings.
+        :return: tuple with reference measurement, test measurement and their settings.
         """
 
         ref_measurement = self.get_reference_measurement()
@@ -121,7 +119,7 @@ class Pin(JsonConvertible):
             raise ValueError("Too many reference curves; can't choose")
         return reference_measures[0]
 
-    def set_test_measurement(self, measurement: Measurement):
+    def set_test_measurement(self, measurement: Measurement) -> None:
         """
         Set new test measurement to pin.
         :param measurement: new test measurement.
@@ -132,12 +130,11 @@ class Pin(JsonConvertible):
         self.measurements = [m for m in self.measurements if m.is_reference]
         self.measurements.append(measurement)
 
-    def set_reference_measurement(self, measurement: Measurement, invalidate_test: bool = False):
+    def set_reference_measurement(self, measurement: Measurement, invalidate_test: bool = False) -> None:
         """
         Set new reference measurement to pin.
         :param measurement: new reference measurement;
-        :param invalidate_test: if True then test measurements will be
-        removed from pin.
+        :param invalidate_test: if True then test measurements will be removed from pin.
         """
 
         if not measurement.is_reference:
@@ -148,7 +145,7 @@ class Pin(JsonConvertible):
             self.measurements = [m for m in self.measurements if not m.is_reference]
             self.measurements.append(measurement)
 
-    def to_json(self) -> Dict:
+    def to_json(self) -> Dict[str, Any]:
         """
         Return dict with structure compatible with UFIV JSON file schema.
         :return: dict with information about pin object.
