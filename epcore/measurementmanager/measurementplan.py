@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Callable, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Generator, Iterable, List, Optional, Tuple
 from ..analogmultiplexer import AnalogMultiplexerBase
 from ..elements import Board, Element, Measurement, MultiplexerOutput, Pin
 from ..ivmeasurer import IVMeasurerBase
@@ -105,7 +105,7 @@ class MeasurementPlan(Board):
 
         self.callback_funcs_for_pin_changes.append(callback_func)
 
-    def all_pins_iterator(self) -> Iterable[Tuple[int, Pin]]:
+    def all_pins_iterator(self) -> Generator[Tuple[int, Pin], None, None]:
         yield from enumerate(self._all_pins)
 
     @call_callback_funcs_for_pin_changes
