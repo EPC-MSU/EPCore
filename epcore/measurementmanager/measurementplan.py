@@ -225,6 +225,19 @@ class MeasurementPlan(Board):
 
         self.callback_funcs_for_pin_changes = []
 
+    def remove_current_pin(self) -> None:
+        """
+        Method deletes the current pin.
+        """
+
+        self._all_pins.pop(self._current_pin_index)
+        i = 0
+        for element in self.elements:
+            length = len(element.pins)
+            if i <= self._current_pin_index <= i + length:
+                index = self._current_pin_index - i
+                element.pins.pop(index)
+
     def restore_original_board(self) -> None:
         """
         Remove all changes in board like: adding new pins, measures, etc.
