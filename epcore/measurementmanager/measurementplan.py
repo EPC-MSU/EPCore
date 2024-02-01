@@ -243,15 +243,19 @@ class MeasurementPlan(Board):
         Method deletes the current pin.
         """
 
-        self._all_pins.pop(self._current_pin_index)
+        if self.pins_number > 0:
+            self._all_pins.pop(self._current_pin_index)
+
         i = 0
         for element in self.elements:
             length = len(element.pins)
             if i <= self._current_pin_index <= i + length:
                 index = self._current_pin_index - i
                 element.pins.pop(index)
-        if len(self._all_pins) == 0:
+        if self.pins_number == 0:
             self._current_pin_index = 0
+        elif self._current_pin_index >= self.pins_number:
+            self._current_pin_index = self.pins_number - 1
 
     def restore_original_board(self) -> None:
         """
