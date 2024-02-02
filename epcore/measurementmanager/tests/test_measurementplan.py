@@ -167,6 +167,9 @@ class TestPlan(unittest.TestCase):
                 self._plan.save_comment_to_pin_with_index(i, f"comment {i}")
 
     def test_save_last_measurement_as_reference(self) -> None:
+        with self.assertRaises(ValueError):
+            self._empty_plan.save_last_measurement_as_reference()
+
         self.assertEqual(len(self._plan.get_current_pin().measurements), 0)
 
         self._measurer.measure_iv_curve()
@@ -175,6 +178,9 @@ class TestPlan(unittest.TestCase):
         self.assertTrue(self._plan.get_current_pin().measurements[0].is_reference)
 
     def test_save_last_measurement_as_test(self) -> None:
+        with self.assertRaises(ValueError):
+            self._empty_plan.save_last_measurement_as_test()
+
         self.assertEqual(len(self._plan.get_current_pin().measurements), 0)
 
         self._measurer.measure_iv_curve()

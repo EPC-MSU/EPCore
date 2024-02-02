@@ -96,6 +96,9 @@ class MeasurementPlan(Board):
         settings = self.measurer.get_settings()
         measurement = Measurement(settings=deepcopy(settings), ivc=curve, is_reference=is_reference)
         pin = self.get_current_pin()
+        if pin is None:
+            raise ValueError("There are no pins in measurement plan")
+
         if is_reference:
             pin.set_reference_measurement(measurement, invalidate_test)
         else:
