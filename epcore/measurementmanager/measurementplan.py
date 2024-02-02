@@ -31,7 +31,7 @@ def set_current_pin_output_to_multiplexer(func: Callable[..., None]):
     def wrapper(self, *args, **kwargs) -> None:
         func(self, *args, **kwargs)
         pin = self.get_current_pin()
-        if not self.multiplexer or not pin.multiplexer_output:
+        if not self.multiplexer or pin is None or not pin.multiplexer_output:
             return
 
         self.multiplexer.connect_channel(pin.multiplexer_output)
