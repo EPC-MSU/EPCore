@@ -18,7 +18,7 @@ class TestPlan(unittest.TestCase):
 
     def test_append_pin(self) -> None:
         self.assertEqual(self._empty_plan.pins_number, 0)
-        self.assertEqual(self._empty_plan.get_current_index(), 0)
+        self.assertIsNone(self._empty_plan.get_current_index())
         self.assertIsNone(self._empty_plan.get_current_pin())
 
         for i in range(6):
@@ -56,7 +56,7 @@ class TestPlan(unittest.TestCase):
         self.assertEqual(self._pins[7], new_pin_3)
 
     def test_get_current_index(self) -> None:
-        self.assertEqual(self._empty_plan.get_current_index(), 0)
+        self.assertIsNone(self._empty_plan.get_current_index())
         self.assertEqual(self._plan.get_current_index(), 0)
 
     def test_get_current_pin(self) -> None:
@@ -87,7 +87,7 @@ class TestPlan(unittest.TestCase):
     def test_go_next_pin(self) -> None:
         for _ in range(5):
             self._empty_plan.go_next_pin()
-            self.assertEqual(self._empty_plan.get_current_index(), 0)
+            self.assertIsNone(self._empty_plan.get_current_index())
             self.assertIsNone(self._empty_plan.get_current_pin())
 
         for i in range(30):
@@ -112,7 +112,7 @@ class TestPlan(unittest.TestCase):
     def test_go_prev_pin(self) -> None:
         for _ in range(5):
             self._empty_plan.go_prev_pin()
-            self.assertEqual(self._empty_plan.get_current_index(), 0)
+            self.assertIsNone(self._empty_plan.get_current_index())
             self.assertIsNone(self._empty_plan.get_current_pin())
 
         i = 0
@@ -124,7 +124,7 @@ class TestPlan(unittest.TestCase):
 
     def test_remove_current_pin(self) -> None:
         self._empty_plan.remove_current_pin()
-        self.assertEqual(self._empty_plan.get_current_index(), 0)
+        self.assertIsNone(self._empty_plan.get_current_index())
         self.assertIsNone(self._empty_plan.get_current_pin())
 
         self.assertEqual(self._plan.pins_number, 5)
@@ -145,6 +145,12 @@ class TestPlan(unittest.TestCase):
         self.assertEqual(self._plan.pins_number, 2)
         self.assertEqual(self._plan.get_current_index(), 1)
         self.assertEqual(self._plan.get_current_pin(), self._pins[1])
+
+        self._plan.go_pin(1)
+        for i in (0, None):
+            self._plan.remove_current_pin()
+            self.assertEqual(self._plan.get_current_index(), i)
+        self.assertEqual(self._plan.pins_number, 0)
 
     def test_save_comment_to_pin_with_index(self) -> None:
         for i in range(5):

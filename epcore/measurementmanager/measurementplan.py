@@ -147,12 +147,12 @@ class MeasurementPlan(Board):
         else:
             self._current_pin_index += 1
 
-    def get_current_index(self) -> int:
+    def get_current_index(self) -> Optional[int]:
         """
         :return: index of current pin.
         """
 
-        return self._current_pin_index
+        return self._current_pin_index if self.pins_number > 0 else None
 
     def get_current_pin(self) -> Optional[Pin]:
         """
