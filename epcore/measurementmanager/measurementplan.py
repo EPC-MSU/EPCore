@@ -170,7 +170,7 @@ class MeasurementPlan(Board):
 
         try:
             return self._all_pins[index]
-        except IndexError:
+        except (IndexError, TypeError):
             return None
 
     def get_pins_without_multiplexer_outputs(self) -> List[int]:
