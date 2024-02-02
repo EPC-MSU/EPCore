@@ -249,7 +249,7 @@ class MeasurementPlan(Board):
         i = 0
         for element in self.elements:
             length = len(element.pins)
-            if i <= self._current_pin_index <= i + length:
+            if length > 0 and i <= self._current_pin_index <= i + length:
                 index = self._current_pin_index - i
                 element.pins.pop(index)
         if self.pins_number == 0:

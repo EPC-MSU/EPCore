@@ -147,7 +147,7 @@ class TestPlan(unittest.TestCase):
         self.assertEqual(self._plan.get_current_pin(), self._pins[1])
 
         self._plan.go_pin(1)
-        for i in (0, None):
+        for i in (0, None, None, None):
             self._plan.remove_current_pin()
             self.assertEqual(self._plan.get_current_index(), i)
         self.assertEqual(self._plan.pins_number, 0)
