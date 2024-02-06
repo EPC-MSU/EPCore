@@ -55,6 +55,18 @@ class TestPlan(unittest.TestCase):
         self.assertEqual(self._plan.get_current_pin(), new_pin_3)
         self.assertEqual(self._pins[7], new_pin_3)
 
+    def test_check_pin_indices_change(self) -> None:
+        self.assertFalse(self._empty_plan.check_pin_indices_change())
+
+        self.assertTrue(self._plan.check_pin_indices_change())
+        for _ in range(3):
+            self._plan.go_next_pin()
+            self.assertTrue(self._plan.check_pin_indices_change())
+
+        self._plan.go_next_pin()
+        self.assertEqual(self._plan.get_current_index(), 4)
+        self.assertFalse(self._plan.check_pin_indices_change())
+
     def test_get_current_index(self) -> None:
         self.assertIsNone(self._empty_plan.get_current_index())
         self.assertEqual(self._plan.get_current_index(), 0)

@@ -150,6 +150,15 @@ class MeasurementPlan(Board):
         else:
             self._current_pin_index += 1
 
+    def check_pin_indices_change(self) -> bool:
+        """
+        Method checks that adding or removing the current pin will change the pin indices.
+        :return: True if pin indices change, otherwise False.
+        """
+
+        current_index = self.get_current_index()
+        return not ((isinstance(current_index, int) and current_index + 1 == self.pins_number) or current_index is None)
+
     def get_current_index(self) -> Optional[int]:
         """
         :return: index of current pin.
