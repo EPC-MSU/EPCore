@@ -16,6 +16,32 @@ class TestPlan(unittest.TestCase):
         board: Board = Board(elements=[Element(pins=self._pins)])
         self._plan: MeasurementPlan = MeasurementPlan(board=board, measurer=self._measurer)
 
+    def test_add_and_remove_callback_func_for_mux_output_change(self) -> None:
+
+        def callback_func():
+            pass
+
+        for _ in range(3):
+            self._plan.add_callback_func_for_mux_output_change(callback_func)
+        self.assertEqual(len(self._plan.callback_funcs_for_mux_output_change), 3)
+
+        self._plan.remove_all_callback_funcs_for_mux_output_change()
+        self.assertEqual(len(self._plan.callback_funcs_for_mux_output_change), 0)
+
+    def test_add_and_remove_callback_funcs_for_pin_changes(self) -> None:
+
+        def callback_func(index):
+            self.assertEqual(index, 3)
+
+        for _ in range(5):
+            self._plan.add_callback_func_for_pin_changes(callback_func)
+        self.assertEqual(len(self._plan.callback_funcs_for_pin_changes), 5)
+
+        self._plan.go_pin(3)
+
+        self._plan.remove_all_callback_funcs_for_pin_changes()
+        self.assertEqual(len(self._plan.callback_funcs_for_pin_changes), 0)
+
     def test_append_pin(self) -> None:
         self.assertEqual(self._empty_plan.pins_number, 0)
         self.assertIsNone(self._empty_plan.get_current_index())
