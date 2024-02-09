@@ -92,9 +92,7 @@ class MeasurementPlan(Board):
         :param invalidate_test: if True then test measurements will be removed from current pin.
         """
 
-        curve = self.measurer.get_last_cached_iv_curve()
-        settings = self.measurer.get_settings()
-        measurement = Measurement(settings=deepcopy(settings), ivc=curve, is_reference=is_reference)
+        measurement = self.get_last_measurement(is_reference)
         pin = self.get_current_pin()
         if pin is None:
             raise ValueError("There are no pins in measurement plan")
@@ -172,6 +170,16 @@ class MeasurementPlan(Board):
         """
 
         return self.get_pin_with_index(self._current_pin_index)
+
+    def get_last_measurement(self, is_reference: bool = False) -> Measurement:
+        """
+        :param is_reference: if True then measurement will be saved as reference.
+        :return: last measurement made by the measurer.
+        """
+
+        curve = self.measurer.get_last_cached_iv_curve()
+        settings = self.measurer.get_settings()
+        return Measurement(settings=deepcopy(settings), ivc=curve, is_reference=is_reference)
 
     def get_pin_with_index(self, index: int) -> Optional[Pin]:
         """
