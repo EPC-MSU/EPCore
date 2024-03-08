@@ -389,7 +389,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         # We want only single sine period
         device_settings.number_points = int(settings.sampling_rate // settings.probe_signal_frequency)
         if settings.precharge_delay is not None:
-            device_settings.number_charge_points = settings.precharge_delay * settings.sampling_rate
+            device_settings.number_charge_points = int(settings.precharge_delay * settings.sampling_rate)
         else:
             device_settings.number_charge_points = 0
         device_settings.output_mode = device_settings.output_mode.OUT_MODE_PROBE_SIGNAL_CONTINUOUS
