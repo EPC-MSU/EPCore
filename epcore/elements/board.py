@@ -81,14 +81,12 @@ class Board(JsonConvertible):
         """
 
         pcb_info = self.pcb.to_json() if self.pcb is not None else dict()
-        if save_image_if_needed_to and self.image:
+        if save_image_if_needed_to and board_path and self.image:
             os.makedirs(save_image_if_needed_to, exist_ok=True)
-            image_path = os.path.join(save_image_if_needed_to, "image.png")
+            image_name = os.path.basename(board_path).replace(".uzf", ".png")
+            image_path = os.path.join(save_image_if_needed_to, image_name)
             self.image.save(image_path)
-            if board_path:
-                pcb_info["pcb_image_path"] = os.path.relpath(image_path, os.path.dirname(board_path))
-            else:
-                pcb_info["pcb_image_path"] = image_path
+            pcb_info["pcb_image_path"] = os.path.relpath(image_path, os.path.dirname(board_path))
 
         data = {"elements": [element.to_json() for element in self.elements],
                 "version": version}
