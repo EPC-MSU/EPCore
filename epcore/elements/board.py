@@ -75,8 +75,8 @@ class Board(JsonConvertible):
         """
         WARNING! When saving the board image, the programmer himself must maintain the relevance of the relative path
         to the image saved in json (see #91931).
-        :param save_image_if_needed_to: folder where to save the image, if the board has an image;
-        :param board_path:
+        :param save_image_if_needed_to: path where to save the image, if the board has an image;
+        :param board_path: path to the folder where the json with the board is saved.
         :return: dictionary with information about board with structure compatible with UFIV JSON file schema.
         """
 
