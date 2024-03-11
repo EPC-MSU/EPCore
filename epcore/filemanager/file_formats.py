@@ -2,7 +2,7 @@ import json
 import os
 import zipfile
 from tempfile import TemporaryDirectory
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 from PIL import Image, ImageOps
 from ..elements import version
 from ..utils import convert_p10, convert_p10_2
@@ -13,7 +13,7 @@ class FileUFIVFormat:
     Common class for board files (in UFIV format).
     """
 
-    def __init__(self, json_path: str = None):
+    def __init__(self, json_path: str = None) -> None:
         """
         :param json_path: path to json file.
         """
@@ -25,14 +25,14 @@ class FileUFIVFormat:
         self.json_pth = json_path
         self.find_img()
 
-    def add_img_pth(self, img_path: str):
+    def add_img_pth(self, img_path: str) -> None:
         """
         :param img_path: path to image of board.
         """
 
         self.img_pth = img_path
 
-    def find_img(self):
+    def find_img(self) -> None:
         """
         Method finds board image in directory containing json file.
         """
@@ -43,7 +43,7 @@ class FileUFIVFormat:
                 if f[:-4] == os.path.basename(self.json_pth)[:-5]:
                     self.add_img_pth(os.path.join(directory, f))
 
-    def get_json_and_image(self) -> Tuple:
+    def get_json_and_image(self) -> Tuple[Dict[str, Any], Optional[Image.Image]]:
         """
         Method returns json file and image of board.
         :return: json file content and image of board.
@@ -63,7 +63,7 @@ class FileP10NormalFormat(FileUFIVFormat):
     Class for board files in P10 normal format.
     """
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         """
         :param path: path to json file.
         """
@@ -71,7 +71,7 @@ class FileP10NormalFormat(FileUFIVFormat):
         super().__init__(path)
         self.convert_func = convert_p10
 
-    def find_img(self):
+    def find_img(self) -> None:
         """
         Method finds board image in directory containing json file.
         """
@@ -81,7 +81,7 @@ class FileP10NormalFormat(FileUFIVFormat):
         if os.path.isfile(img_path):
             self.add_img_pth(img_path)
 
-    def get_json_and_image(self, p10_convert_flag: bool) -> Tuple:
+    def get_json_and_image(self, p10_convert_flag: bool) -> Tuple[Dict[str, Any], Image.Image]:
         """
         Method converts from P10 format to UFIV and returns json file and image of board.
         :param p10_convert_flag: if True json file content will be converted to UFIV format.
@@ -99,7 +99,7 @@ class FileP10NewFormat(FileP10NormalFormat):
     Class for board files in P10 new format.
     """
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         """
         :param path: path to json file.
         """
@@ -113,7 +113,7 @@ class FileArchivedUFIVFormat(FileUFIVFormat):
     Class for board files in UFIV zipped format.
     """
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         """
         :param path: path to UFIV zipped file.
         """

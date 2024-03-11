@@ -1,5 +1,6 @@
 from os.path import dirname, join as join_path
 
+
 __all__ = ["path_to_p10_elements_2_schema", "path_to_p10_elements_schema", "path_to_ufiv_schema"]
 
 _path_to_ufiv_schema = join_path(dirname(__file__), "ufiv.schema.json")

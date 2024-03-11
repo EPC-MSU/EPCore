@@ -10,7 +10,7 @@ import re
 import zipfile
 from json import dump, load
 from tempfile import TemporaryDirectory
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 from jsonschema import validate, ValidationError
 from PIL import Image, ImageOps
 from ..doc import path_to_p10_elements_2_schema, path_to_p10_elements_schema, path_to_ufiv_schema
@@ -37,10 +37,10 @@ formats_to_file = {
 }
 
 
-def _check_json_data_for_ufiv_format(json_data: Dict) -> Dict:
+def _check_json_data_for_ufiv_format(json_data: Dict[str, Any]) -> Dict:
     """
-    Function checks json data to be saved in ufiv format file. If data
-    does not match ufiv format, function will fit the data to format.
+    Function checks json data to be saved in ufiv format file. If data does not match ufiv format, function will fit
+    the data to format.
     :param json_data: data.
     :return: modified data.
     """
@@ -53,12 +53,12 @@ def _check_json_data_for_ufiv_format(json_data: Dict) -> Dict:
     return json_data
 
 
-def _validate_json_with_schema(input_json: Dict, schema: Dict) -> Tuple[bool, Optional[Exception]]:
+def _validate_json_with_schema(input_json: Dict[str, Any], schema: Dict[str, Any]) -> Tuple[bool, Optional[Exception]]:
     """
     Function validates json. Raise ValidationError in case of invalid json.
     :param input_json: json to be validated;
     :param schema: json schema for validation.
-    :return: is_valid, error.
+    :return: is valid, error.
     """
 
     try:
@@ -91,8 +91,9 @@ def detect_format(path: str) -> Formats:
     :return: format of board file.
     """
 
-    if ".uzf" in path:
+    if re.match(r"^.*\.uzf$", path):
         return Formats.UFIV_ARCHIVED
+
     with open(path, "r") as file:
         input_json = load(file)
     if "version" not in input_json:
@@ -104,12 +105,14 @@ def detect_format(path: str) -> Formats:
         is_valid, err = _validate_json_with_schema(input_json, p10_schema)
         if is_valid:
             return Formats.NORMAL_P10
+
         logging.info("Check alternative P10 format.")
         with open(path_to_p10_elements_2_schema(), "r") as schema_file:
             p10_new_schema = load(schema_file)
         is_valid, err = _validate_json_with_schema(input_json, p10_new_schema)
         if is_valid:
             return Formats.NEW_P10
+
         raise err
     return Formats.UFIV
 
@@ -118,8 +121,7 @@ def load_board_from_ufiv(path: str, validate_input: bool = True, auto_convert_p1
     """
     Function loads board (json and png) from directory.
     :param path: path to json file;
-    :param validate_input: if True function validates json content to schema
-    before load;
+    :param validate_input: if True function validates json content to schema before load;
     :param auto_convert_p10: enable auto conversion p10->ufiv.
     :return: board.
     """
@@ -132,12 +134,14 @@ def load_board_from_ufiv(path: str, validate_input: bool = True, auto_convert_p1
         input_json, image = source_file.get_json_and_image(auto_convert_p10)
     else:
         input_json, image = source_file.get_json_and_image()
+
     if validate_input:
         with open(path_to_ufiv_schema(), "r") as schema_file:
             ufiv_schema = load(schema_file)
             is_valid, err = _validate_json_with_schema(input_json, ufiv_schema)
             if not is_valid:
                 raise err
+
     board = Board.create_from_json(input_json)
     board.image = image
     return board
