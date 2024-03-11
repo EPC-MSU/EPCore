@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 from warnings import warn
-from PIL.Image import Image
+from PIL import Image, ImageOps
 from .abstract import JsonConvertible
 from .element import Element
 
@@ -52,23 +52,34 @@ class Board(JsonConvertible):
     """
 
     elements: List[Element] = field(default_factory=lambda: [])
-    image: Optional[Image] = None
+    image: Optional[Image.Image] = None
     pcb: Optional[PCBInfo] = None
 
     @classmethod
-    def create_from_json(cls, json_data: Dict[str, Any]) -> "Board":
+    def create_from_json(cls, json_data: Dict[str, Any], ignore_absent_image: bool = False) -> "Board":
         """
         Create object from dictionary with structure compatible with UFIV JSON file schema.
-        :param json_data: dictionary with information about board.
+        :param json_data: dictionary with information about board;
+        :param ignore_absent_image:
         :return: board object.
         """
 
         if json_data["version"] != version:
             warn(f"Module version {version} does not match version of file {json_data['version']}")
-        return Board(
+
+        pcb_info = json_data.get("PCB", {})
+        board = Board(
             elements=[Element.create_from_json(element) for element in json_data["elements"]],
-            pcb=PCBInfo.create_from_json(json_data.get("PCB", {}))
+            pcb=PCBInfo.create_from_json(pcb_info)
         )
+        image_path = pcb_info.get("pcb_image_path", None)
+        if image_path and os.path.isfile(image_path):
+            image = ImageOps.exif_transpose(Image.open(image_path))
+            board.image = image
+        elif image_path and not ignore_absent_image and not os.path.isfile(image_path):
+            raise FileNotFoundError(f"No board image file '{image_path}'")
+
+        return board
 
     def to_json(self, save_image_if_needed_to: Optional[str] = None, board_path: Optional[str] = None
                 ) -> Dict[str, Any]:
