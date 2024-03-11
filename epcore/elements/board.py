@@ -73,17 +73,22 @@ class Board(JsonConvertible):
     def to_json(self, save_image_if_needed_to: Optional[str] = None, board_path: Optional[str] = None
                 ) -> Dict[str, Any]:
         """
+        WARNING! When saving the board image, the programmer himself must maintain the relevance of the relative path
+        to the image saved in json (see #91931).
         :param save_image_if_needed_to: folder where to save the image, if the board has an image;
         :param board_path: path to the file where the board is saved.
         :return: dictionary with information about board with structure compatible with UFIV JSON file schema.
         """
 
         pcb_info = self.pcb.to_json() if self.pcb is not None else dict()
-        if save_image_if_needed_to and board_path and self.image:
+        if save_image_if_needed_to and self.image:
             os.makedirs(save_image_if_needed_to, exist_ok=True)
             image_path = os.path.join(save_image_if_needed_to, "image.png")
             self.image.save(image_path)
-            pcb_info["pcb_image_path"] = os.path.relpath(image_path, os.path.dirname(board_path))
+            if board_path:
+                pcb_info["pcb_image_path"] = os.path.relpath(image_path, os.path.dirname(board_path))
+            else:
+                pcb_info["pcb_image_path"] = image_path
 
         data = {"elements": [element.to_json() for element in self.elements],
                 "version": version}
