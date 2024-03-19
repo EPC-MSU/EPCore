@@ -142,15 +142,16 @@ def load_board_from_ufiv(path: str, validate_input: bool = True, auto_convert_p1
             if not is_valid:
                 raise err
 
-    board = Board.create_from_json(input_json)
-    board.image = image
+    board = Board.create_from_json(input_json, ignore_absent_image=True, board_path=source_file.json_pth)
+    if not board.image:
+        board = image
     return board
 
 
 def save_board_to_ufiv(path: str, board: Board) -> str:
     """
     Function saves board (png, json) files.
-    :param path: path to saved file;
+    :param path: path to the file where to save the board;
     :param board: board that should be saved.
     :return: path to saved file.
     """

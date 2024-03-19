@@ -26,13 +26,14 @@ To run tests:
 python -m unittest discover epcore/elements
 """
 
-from .board import Board, PCBInfo, version
+from .board import Board, version
 from .element import Element
 from .measurement import IVCurve, Measurement, MeasurementSettings
+from .pcbinfo import PCBInfo
 from .pin import MultiplexerOutput, Pin
+
 
 __all__ = ["Board", "Element", "IVCurve", "Measurement", "MeasurementSettings", "MultiplexerOutput", "PCBInfo", "Pin",
            "version"]
-
 __author__ = "mihalin"
 __email__ = "mihalin@physlab.ru"
