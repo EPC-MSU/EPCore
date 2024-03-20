@@ -4,3 +4,4 @@ __pycache__
 .idea
 venv/
 */__pycache__
+epcore/elements/tests/data_for_board_tests/test_1
