@@ -167,7 +167,7 @@ def save_board_to_ufiv(path: str, board: Board) -> str:
     img_name = os.path.basename(path.replace(".uzf", ".png"))
     img_path = os.path.join(temp_dir.name, img_name)
 
-    json_file = _check_json_data_for_ufiv_format(board.to_json(img_path, temp_dir.name))
+    json_file = _check_json_data_for_ufiv_format(board.to_json(img_path, json_path))
     with open(json_path, "w") as file:
         dump(json_file, file, indent=1)
     archive.write(json_path, arcname=json_name)
