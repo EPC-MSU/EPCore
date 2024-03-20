@@ -142,7 +142,7 @@ def load_board_from_ufiv(path: str, validate_input: bool = True, auto_convert_p1
             if not is_valid:
                 raise err
 
-    board = Board.create_from_json(input_json, ignore_absent_image=True, board_path=source_file.json_pth)
+    board = Board.create_from_json(input_json, board_path=source_file.json_pth)
     if not board.image:
         board = image
     return board
