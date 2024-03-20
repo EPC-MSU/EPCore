@@ -11,6 +11,10 @@ from .pcbinfo import PCBInfo
 version = "1.1.2"
 
 
+class ImageNotFoundError(FileNotFoundError):
+    pass
+
+
 @dataclass
 class Board(JsonConvertible):
     """
@@ -50,7 +54,7 @@ class Board(JsonConvertible):
                 image = ImageOps.exif_transpose(Image.open(image_path))
                 board.image = image
             elif image_path and not ignore_absent_image and not os.path.isfile(image_path):
-                raise FileNotFoundError(f"No board image file '{image_path}'")
+                raise ImageNotFoundError(f"No board image file '{image_path}'")
 
         return board
 
