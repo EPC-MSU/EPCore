@@ -48,6 +48,16 @@ class LoadSaveTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             load_board_from_ufiv(dummy_path)
 
+    def test_load_board_from_ufiv_with_rel_path_and_image(self) -> None:
+        board_path = os.path.join(LoadSaveTests.dir_path, "board_with_rel_path_and_image", "board.json")
+        board = load_board_from_ufiv(board_path)
+        self.assertIsNotNone(board)
+
+    def test_load_board_from_ufiv_with_rel_path_and_without_image(self) -> None:
+        board_path = os.path.join(LoadSaveTests.dir_path, "board_with_rel_path_and_without_image", "board.json")
+        with self.assertRaises(FileNotFoundError):
+            load_board_from_ufiv(board_path)
+
     def test_load_board_from_ufiv_validation(self) -> None:
         invalid_board_path = os.path.join(LoadSaveTests.dir_path, "test_board_invalid.json")
         with self.assertRaises(ValidationError):
