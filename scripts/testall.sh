@@ -1,4 +1,4 @@
-cd..
+cd ..
 rm -rf venv
 set -e
 
