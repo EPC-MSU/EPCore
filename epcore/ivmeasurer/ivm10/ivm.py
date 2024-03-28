@@ -389,10 +389,10 @@ class IvmDeviceHandle:
         def result(self, value: Union[int, c_ubyte]) -> None:
             self._result = _normalize_arg(value, c_ubyte)
 
-    def start_autocalibration(self, **kwargs) -> "StartAutocalibrationResponse":
+    def start_autocalibration(self, **kwargs) -> int:
         dst_buffer = kwargs.get("dst_buffer", self.StartAutocalibrationResponse())
         _validate_call(_lib.ivm_start_autocalibration(self._handle, byref(dst_buffer)))
-        return dst_buffer
+        return dst_buffer.result
 
     class GetStatusResponse(_IterableStructure):
         _fields_ = (

@@ -57,6 +57,7 @@ def _check_version(mask: str, version: str) -> bool:
 
 
 class _OpenManager:
+
     def __init__(self, device, config_path: str, log, force_open: bool = False):
         self._force = force_open
         self._log = log

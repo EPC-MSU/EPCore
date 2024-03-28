@@ -7,9 +7,9 @@ import logging
 import time
 from typing import Callable, List, Tuple
 import numpy as np
-from epcore.elements import IVCurve, MeasurementSettings
-from epcore.ivmeasurer.base import cache_curve, IVMeasurerBase, IVMeasurerIdentityInformation
-from epcore.ivmeasurer.processing import interpolate_curve, smooth_curve
+from ..elements import IVCurve, MeasurementSettings
+from .base import cache_curve, IVMeasurerBase, IVMeasurerIdentityInformation
+from .processing import interpolate_curve, smooth_curve
 
 
 def _check_open(func: Callable):
@@ -109,18 +109,22 @@ class IVMeasurerVirtual(IVMeasurerBase):
         return IVCurve(currents=i_out.tolist(), voltages=v_out.tolist())
 
     @_check_open
-    def calibrate(self, *args) -> None:
+    def calibrate(self, *args) -> int:
         """
-        We don't need to calibrate virtual device.
+        :return: calibration result code.
         """
 
-        pass
+        return 0
 
     def close_device(self) -> None:
         self._open = False
 
     @_check_open
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
+        """
+        :return: main identity information about device.
+        """
+
         return IVMeasurerIdentityInformation(manufacturer="EPC MSU",
                                              device_class="EyePoint virtual device",
                                              device_name="Virtual IV Measurer",
@@ -138,6 +142,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
         if self.__measurement_is_ready is not True:
             raise RuntimeError("Measurement is not ready")
+
         curve = copy.deepcopy(self.__last_curve)
         curve = interpolate_curve(curve=curve, final_num_points=IVMeasurerVirtual._NORMAL_NUM_POINTS)
         curve = smooth_curve(curve=curve, kernel_size=IVMeasurerVirtual._SMOOTHING_KERNEL_SIZE)
@@ -145,12 +150,21 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
     @_check_open
     def get_settings(self) -> MeasurementSettings:
+        """
+        :return: measurement settings set on the device.
+        """
+
         return self.__settings
 
     @_check_open
     def measurement_is_ready(self) -> bool:
+        """
+        :return: True if new measurement is ready.
+        """
+
         if self.is_freezed():
             return False
+
         if time.time() > self.__ready_time:
             self.__measurement_is_ready = True
         return self.__measurement_is_ready
@@ -160,11 +174,19 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.set_settings(self.__default_settings)
 
     def reconnect(self) -> bool:
+        """
+        :return: True if the reconnect was successful.
+        """
+
         self.open_device()
         return True
 
     @_check_open
     def set_settings(self, settings: MeasurementSettings = None) -> None:
+        """
+        :param settings: measurement settings to be set on device.
+        """
+
         if settings:
             self.__settings = settings
 
@@ -172,6 +194,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
     def trigger_measurement(self) -> None:
         if self.is_freezed():
             return
+
         self.__measurement_is_ready = False
         if self.model == "resistor":
             self.__last_curve = self.__calculate_r_iv()
@@ -179,5 +202,6 @@ class IVMeasurerVirtual(IVMeasurerBase):
             self.__last_curve = self.__calculate_c_iv()
         else:
             raise NotImplementedError
+
         self.__measurement_is_ready = False
         self.__ready_time = time.time() + 2. / self.__settings.probe_signal_frequency

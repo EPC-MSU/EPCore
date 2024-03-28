@@ -3,12 +3,12 @@ IVMeasurer Implementation for EyePoint IVM hardware measurer.
 """
 
 import numpy as np
-from epcore.elements import IVCurve, MeasurementSettings
-from epcore.ivmeasurer.base import cache_curve, close_on_error, IVMeasurerBase, IVMeasurerIdentityInformation
-from epcore.ivmeasurer.ivm02.ivm import IvmDeviceHandle as Ivm02Handle, _logging_callback as _logging_ivm02
-from epcore.ivmeasurer.ivm10.ivm import IvmDeviceHandle as Ivm10Handle, _logging_callback as _logging_ivm10
-from epcore.ivmeasurer.processing import interpolate_curve, smooth_curve
-from epcore.ivmeasurer.safe_opener import open_device_safe
+from ..elements import IVCurve, MeasurementSettings
+from .base import cache_curve, close_on_error, IVMeasurerBase, IVMeasurerIdentityInformation
+from .ivm02.ivm import IvmDeviceHandle as Ivm02Handle, _logging_callback as _logging_ivm02
+from .ivm10.ivm import IvmDeviceHandle as Ivm10Handle, _logging_callback as _logging_ivm10
+from .processing import interpolate_curve, smooth_curve
+from .safe_opener import open_device_safe
 
 
 class IVMeasurerIVM02(IVMeasurerBase):
@@ -45,13 +45,14 @@ class IVMeasurerIVM02(IVMeasurerBase):
             self.open_device()
 
     @close_on_error
-    def calibrate(self, *args) -> None:
+    def calibrate(self, *args) -> int:
         """
         Calibrates device.
+        :return: calibration result code.
         """
 
         # TODO: calibration settings?
-        self._device.calibrate()
+        return self._device.calibrate()
 
     def close_device(self) -> None:
         try:
@@ -148,6 +149,10 @@ class IVMeasurerIVM02(IVMeasurerBase):
 
     @close_on_error
     def measurement_is_ready(self) -> bool:
+        """
+        :return: True if new measurement is ready.
+        """
+
         if self.is_freezed():
             return False
         return bool(self._device.measurement_ready())
@@ -176,13 +181,12 @@ class IVMeasurerIVM02(IVMeasurerBase):
         """
 
         device_settings = self._device.get_measure_settings()
-
         if int(settings.sampling_rate) < 100 or int(settings.sampling_rate) > 2000000:
             raise ValueError(f"Invalid value for sampling rate: {settings.sampling_rate}. Should be in [100, 2000000].")
+
         device_settings.desc_frequency = settings.sampling_rate
         device_settings.max_voltage = settings.max_voltage
         device_settings.probe_signal_frequency = settings.probe_signal_frequency
-
         if (int(device_settings.probe_signal_frequency) < 1 or int(device_settings.probe_signal_frequency) > 100000 or
                 int(device_settings.probe_signal_frequency) > device_settings.desc_frequency / 5):
             raise ValueError(f"Invalid value for probe signal frequency: {device_settings.probe_signal_frequency}. "
@@ -247,13 +251,14 @@ class IVMeasurerIVM10(IVMeasurerBase):
             self.open_device()
 
     @close_on_error
-    def calibrate(self, *args) -> None:
+    def calibrate(self, *args) -> int:
         """
         Calibrates device.
+        :return: calibration result code.
         """
 
         # TODO: calibration settings?
-        self._device.start_autocalibration()
+        return self._device.start_autocalibration()
 
     def close_device(self) -> None:
         try:
@@ -299,6 +304,7 @@ class IVMeasurerIVM10(IVMeasurerBase):
         curve = IVCurve(currents=currents, voltages=voltages)
         if raw is True:
             return curve
+
         # Postprocessing
         if device_settings.probe_signal_frequency > 20000:
             curve = interpolate_curve(curve=curve, final_num_points=IVMeasurerIVM10._NORMAL_NUM_POINTS)
@@ -334,6 +340,10 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
     @close_on_error
     def measurement_is_ready(self) -> bool:
+        """
+        :return: True if new measurement is ready.
+        """
+
         if self.is_freezed():
             return False
         return bool(self._device.check_measurement_status().ready_status.measurement_complete)
@@ -363,10 +373,11 @@ class IVMeasurerIVM10(IVMeasurerBase):
 
         if settings is None:
             return
-        device_settings = self._device.get_measurement_settings()
 
+        device_settings = self._device.get_measurement_settings()
         if int(settings.sampling_rate) < 100 or int(settings.sampling_rate) > 2000000:
             raise ValueError(f"Invalid value for sampling rate: {settings.sampling_rate}. Should be in [100, 2000000].")
+
         device_settings.sampling_rate = settings.sampling_rate
         device_settings.max_voltage = settings.max_voltage
         device_settings.probe_signal_frequency = settings.probe_signal_frequency

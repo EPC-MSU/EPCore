@@ -378,7 +378,7 @@ class IvmDeviceHandle:
     def calibrate(self, **kwargs) -> "CalibrateResponse":
         dst_buffer = kwargs.get("dst_buffer", self.CalibrateResponse())
         _validate_call(_lib.ivm_calibrate(self._handle, byref(dst_buffer)))
-        return dst_buffer
+        return dst_buffer.result.value
 
     class GetStatusResponse(_IterableStructure):
         _fields_ = (

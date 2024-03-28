@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 from scipy import interpolate as itl
-from epcore.elements import IVCurve
+from ..elements import IVCurve
 
 
 def interpolate_curve(curve: IVCurve, final_num_points: int) -> IVCurve:

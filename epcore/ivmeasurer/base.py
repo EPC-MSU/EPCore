@@ -8,8 +8,8 @@ import os
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Callable, Dict
-from epcore.elements import IVCurve, MeasurementSettings
+from typing import Any, Callable, Dict, Optional
+from ..elements import IVCurve, MeasurementSettings
 
 
 @dataclass
@@ -62,10 +62,11 @@ class IVMeasurerBase(ABC):
         self._url = url
 
     @abstractmethod
-    def calibrate(self, *args) -> None:
+    def calibrate(self, *args) -> Optional[int]:
         """
         Calibrates device.
         :param args: arguments.
+        :return: calibration result code.
         """
 
         raise NotImplementedError()
@@ -84,6 +85,7 @@ class IVMeasurerBase(ABC):
         filename = os.path.join(dir_name, f"{device_class} settings.json".replace(" ", "_"))
         if not os.path.exists(filename):
             return {}
+
         with open(filename, "r", encoding="utf-8") as file:
             settings = json.load(file)
         return settings
@@ -125,9 +127,17 @@ class IVMeasurerBase(ABC):
 
     @abstractmethod
     def get_settings(self) -> MeasurementSettings:
+        """
+        :return: measurement settings set on the device.
+        """
+
         raise NotImplementedError()
 
     def is_freezed(self) -> bool:
+        """
+        :return: True if measurements are frozen.
+        """
+
         return self._freeze
 
     def measure_iv_curve(self) -> IVCurve:
@@ -205,14 +215,14 @@ def cache_curve(func: Callable) -> Callable:
     return wrap
 
 
-def close_on_error(func: Callable):
+def close_on_error(func: Callable[..., Any]):
     """
     Due to the nature of the uRPC library uRPC device must be immediately closed after first error.
     :param func: IVMeasurerIVM method.
     :return: IVMeasurerIVM decorated method.
     """
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *args, **kwargs) -> Any:
         try:
             return func(self, *args, **kwargs)
         except (RuntimeError, OSError) as exc:
