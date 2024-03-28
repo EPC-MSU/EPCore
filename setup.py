@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 
 setup(name="epcore",
-      version="0.1.22",
+      version="0.1.23",
       description="A common set of key modules on the basis of which various software is built that works with "
                   "EyePoint signature analyzers",
       url="https://gitlab.ximc.ru/eyepoint/epcore",
