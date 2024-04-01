@@ -7,9 +7,10 @@
             "type": "button",
             "label_ru": "Калибровка",
             "label_en": "Calibration",
-            "tooltip_ru": "Кнопка для проведения калибровки",
-            "tooltip_en": "Calibration button",
-            "func": "calibrate"
+            "func": "calibrate",
+            "required_result": 0,
+            "error_message_ru": "При калибровке возникла ошибка. Измеренные уровни сигналов не соответствуют ожидаемым. Убедитесь, что щупы не контактируют с землёй или источниками каких-либо сигналов.",
+            "error_message_en": "An error occurred during calibration. Measured signal levels are not as expected. Make sure the probes are not in contact with ground or any signal sources."
         }
     ]
 }
