@@ -81,6 +81,13 @@ def _get_major_and_minor_version_parts(version: str) -> StrictVersion:
 class _OpenManager:
 
     def __init__(self, device, config_path: str, log, force_open: bool = False) -> None:
+        """
+        :param device: device;
+        :param config_path: path to config file;
+        :param log: logging callback;
+        :param force_open: device will be opened despite the errors.
+        """
+
         self._all_ok: bool = True
         self._config_path: str = config_path
         self._device = device
@@ -235,9 +242,9 @@ class _OpenManager:
 
     def get_from_config(self, section: str, parameter: str) -> Optional[str]:
         """
-        :param section:
-        :param parameter:
-        :return:
+        :param section: section name;
+        :param parameter: option name.
+        :return: option value from configuration file.
         """
 
         if not self._config.has_option(section, parameter):
