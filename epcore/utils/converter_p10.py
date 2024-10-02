@@ -50,8 +50,7 @@ def _convert_pin(pin: Dict, force_reference: bool = False) -> Dict:
 
 
 def _convert_element(element: Dict, force_reference: bool = False) -> Dict:
-    remove_element_keys = ["side_indexes", "probability", "manual_name", "is_manual", "w_pins",
-                           "h_pins", "width", "height"]
+    remove_element_keys = ["side_indexes", "probability", "manual_name", "is_manual", "w_pins", "h_pins"]
     element["pins"] = [_convert_pin(pin, force_reference) for pin in element["pins"]]
     if not element["is_manual"]:
         element["set_automatically"] = True
