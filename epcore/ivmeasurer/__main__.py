@@ -1,6 +1,4 @@
 import argparse
-import matplotlib
-matplotlib.use("TkAgg")
 from epcore.ivmeasurer import IVMeasurerIVM10, IVMeasurerVirtual
 from epcore.ivmeasurer.safe_opener import BadConfig, BadFirmwareVersion
 from epcore.ivmeasurer.utils import plot_curve
