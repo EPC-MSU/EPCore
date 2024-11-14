@@ -112,18 +112,17 @@ def _fullpath_lib(name: str) -> str:
 
 def _get_dll() -> CDLL:
     os_kind = platform.system().lower()
+    if os_kind == "freebsd" or "linux" in os_kind:
+        return None
+
     if os_kind == "windows":
         if 8 * struct.calcsize("P") == 32:
             lib = CDLL(_fullpath_lib(os.path.join("ivm-win32", "ivm.dll")))
         else:
             lib = CDLL(_fullpath_lib(os.path.join("ivm-win64", "ivm.dll")))
-    elif os_kind == "freebsd" or "linux" in os_kind:
-        if platform.uname()[4] == "aarch64":
-            lib = CDLL(_fullpath_lib(os.path.join("ivm-arm64", "libivm.so")))
-        else:
-            lib = CDLL(_fullpath_lib(os.path.join("ivm-debian", "libivm.so")))
     else:
         raise NotImplementedError("Unsupported platform {}".format(os_kind))
+
     return lib
 
 
