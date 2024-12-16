@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 from .abstract import JsonConvertible
@@ -14,6 +15,28 @@ class MeasurementSettings(JsonConvertible):
     max_voltage: float
     probe_signal_frequency: int
     precharge_delay: Optional[float] = None
+
+    def __eq__(self, other) -> bool:
+        """
+        :param other: object to compare with.
+        :return: True if the objects are equal.
+        """
+
+        abs_tol = 1e-6
+        if not hasattr(other, "sampling_rate") or self.sampling_rate != other.sampling_rate:
+            return False
+
+        if (not hasattr(other, "internal_resistance") or
+                not math.isclose(self.internal_resistance, other.internal_resistance, abs_tol=abs_tol)):
+            return False
+
+        if not hasattr(other, "max_voltage") or not math.isclose(self.max_voltage, other.max_voltage, abs_tol=abs_tol):
+            return False
+
+        if not hasattr(other, "probe_signal_frequency") or self.probe_signal_frequency != other.probe_signal_frequency:
+            return False
+
+        return True
 
     def __post_init__(self) -> None:
         # Current EPCore version supports only integer rate\freq
