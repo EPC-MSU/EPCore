@@ -22,7 +22,7 @@ class MeasurementSettings(JsonConvertible):
         :return: True if the objects are equal.
         """
 
-        abs_tol = 1e-6
+        abs_tol = 1e-3
         if not hasattr(other, "sampling_rate") or self.sampling_rate != other.sampling_rate:
             return False
 
