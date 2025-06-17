@@ -53,6 +53,24 @@ def _check_json_data_for_ufiv_format(json_data: Dict[str, Any]) -> Dict:
     return json_data
 
 
+def round_floats(obj: Any) -> Any:
+    """
+    :param obj: an object whose float elements need to be rounded to 3 decimal places.
+    :return: object with rounded float elements.
+    """
+
+    if isinstance(obj, float):
+        return round(obj, 3)
+
+    if isinstance(obj, dict):
+        return {key: round_floats(value) for key, value in obj.items()}
+
+    if isinstance(obj, (list, tuple)):
+        return [round_floats(item) for item in obj]
+
+    return obj
+
+
 def _validate_json_with_schema(input_json: Dict[str, Any], schema: Dict[str, Any]) -> Tuple[bool, Optional[Exception]]:
     """
     Function validates json. Raise ValidationError in case of invalid json.
@@ -169,7 +187,7 @@ def save_board_to_ufiv(path: str, board: Board) -> str:
 
     json_file = _check_json_data_for_ufiv_format(board.to_json(img_path, json_path))
     with open(json_path, "w") as file:
-        dump(json_file, file, indent=1)
+        dump(round_floats(json_file), file, indent=1)
     archive.write(json_path, arcname=json_name)
 
     if board.image:
