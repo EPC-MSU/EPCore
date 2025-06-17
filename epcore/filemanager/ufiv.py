@@ -55,12 +55,12 @@ def _check_json_data_for_ufiv_format(json_data: Dict[str, Any]) -> Dict:
 
 def round_floats(obj: Any) -> Any:
     """
-    :param obj: an object whose float elements need to be rounded to 3 decimal places.
+    :param obj: an object whose float elements need to be rounded to 5 decimal places.
     :return: object with rounded float elements.
     """
 
     if isinstance(obj, float):
-        return round(obj, 3)
+        return round(obj, 5)
 
     if isinstance(obj, dict):
         return {key: round_floats(value) for key, value in obj.items()}
