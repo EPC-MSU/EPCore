@@ -5,6 +5,7 @@ UFIV - Universal file format for IV-curve measurements.
 
 import enum
 import logging
+import math
 import os
 import re
 import zipfile
@@ -19,7 +20,7 @@ from .file_formats import FileArchivedUFIVFormat, FileP10NewFormat, FileP10Norma
 
 
 MAX_ERR_MSG_LEN = 256
-_image_path: str = None  # path to the last image of board
+_image_path: Optional[str] = None  # path to the last image of board
 
 
 class Formats(enum.Enum):
@@ -53,22 +54,42 @@ def _check_json_data_for_ufiv_format(json_data: Dict[str, Any]) -> Dict:
     return json_data
 
 
-def round_floats(obj: Any) -> Any:
+def _round_floats(obj: Any) -> Any:
     """
-    :param obj: an object whose float elements need to be rounded to 5 decimal places.
+    :param obj: an object whose floating point elements need to be rounded. Real numbers are rounded according to
+    the following rule. If the number is greater than 1 in absolute value, the number is rounded to 5 decimal places.
+    If the number is less than 1 in absolute value, the number is rounded to 5 significant digits.
     :return: object with rounded float elements.
     """
 
+    precision = 5
     if isinstance(obj, float):
-        return round(obj, 5)
+        if abs(obj) >= 1:
+            return round(obj, precision)
+
+        return _round_to_n_significant_digits(obj, precision)
 
     if isinstance(obj, dict):
-        return {key: round_floats(value) for key, value in obj.items()}
+        return {key: _round_floats(value) for key, value in obj.items()}
 
     if isinstance(obj, (list, tuple)):
-        return [round_floats(item) for item in obj]
+        return [_round_floats(item) for item in obj]
 
     return obj
+
+
+def _round_to_n_significant_digits(number: float, n: int) -> float:
+    """
+    :param number: a number to be rounded to n significant digits;
+    :param n: to how many significant digits to round.
+    :return: rounded number.
+    """
+
+    if number == 0:
+        return 0
+
+    precision = n - 1 - int(math.floor(math.log10(abs(number))))
+    return round(number, precision)
 
 
 def _validate_json_with_schema(input_json: Dict[str, Any], schema: Dict[str, Any]) -> Tuple[bool, Optional[Exception]]:
@@ -187,7 +208,7 @@ def save_board_to_ufiv(path: str, board: Board) -> str:
 
     json_file = _check_json_data_for_ufiv_format(board.to_json(img_path, json_path))
     with open(json_path, "w") as file:
-        dump(round_floats(json_file), file, indent=1)
+        dump(_round_floats(json_file), file, indent=1)
     archive.write(json_path, arcname=json_name)
 
     if board.image:
