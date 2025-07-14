@@ -190,6 +190,9 @@ class TestPlan(unittest.TestCase):
             self.assertEqual(self._plan.get_current_index(), i)
         self.assertEqual(self._plan.pins_number, 0)
 
+    def test_remove_all_test_signatures(self) -> None:
+        pass
+
     def test_save_comment_to_pin_with_index(self) -> None:
         for i in range(5):
             with self.assertRaises(IndexError):

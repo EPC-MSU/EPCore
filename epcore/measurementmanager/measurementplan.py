@@ -220,6 +220,7 @@ class MeasurementPlan(Board):
 
         if pin_number >= len(self._all_pins) or pin_number < 0:
             raise ValueError(f"Pin {pin_number} does not exist")
+
         self._current_pin_index = pin_number
 
     @call_callback_funcs_for_pin_changes
@@ -232,6 +233,7 @@ class MeasurementPlan(Board):
         self._current_pin_index -= 1
         if self._current_pin_index < 0:
             self._current_pin_index = len(self._all_pins) - 1
+
         if len(self._all_pins) == 0:
             self._current_pin_index = 0
 
@@ -249,6 +251,14 @@ class MeasurementPlan(Board):
 
         self.callback_funcs_for_pin_changes = []
 
+    def remove_all_test_signatures(self) -> None:
+        """
+        Method removes test signatures from measurements of all pins of a measurement plan.
+        """
+
+        for pin in self._all_pins:
+            pin.remove_test_measurements()
+
     @call_callback_funcs_for_pin_changes
     def remove_current_pin(self) -> None:
         """
@@ -264,6 +274,7 @@ class MeasurementPlan(Board):
             if length > 0 and i <= self._current_pin_index <= i + length:
                 index = self._current_pin_index - i
                 element.pins.pop(index)
+
         if self.pins_number == 0:
             self._current_pin_index = 0
         elif self._current_pin_index >= self.pins_number:

@@ -24,6 +24,7 @@ class MultiplexerOutput(JsonConvertible):
         if json_dict.get("channel_number") and json_dict.get("module_number"):
             return MultiplexerOutput(channel_number=json_dict.get("channel_number"),
                                      module_number=json_dict.get("module_number"))
+
         return None
 
     def to_json(self) -> Dict[str, Any]:
@@ -57,6 +58,7 @@ class Pin(JsonConvertible):
 
         if measurement.is_reference:
             raise ValueError("It must be non reference measurement")
+
         self.measurements.append(measurement)
 
     @classmethod
@@ -102,9 +104,11 @@ class Pin(JsonConvertible):
             settings = ref_measurement.settings
         else:
             settings = None
+
         for measurement in self.measurements:
             if not measurement.is_reference and ((settings and measurement.settings == settings) or not settings):
                 return ref_measurement, measurement, measurement.settings
+
         return ref_measurement, None, settings
 
     def get_reference_measurement(self) -> Optional[Measurement]:
@@ -115,9 +119,18 @@ class Pin(JsonConvertible):
         reference_measures = [measurement for measurement in self.measurements if measurement.is_reference]
         if not reference_measures:
             return None
+
         if len(reference_measures) > 2:
             raise ValueError("Too many reference curves; can't choose")
+
         return reference_measures[0]
+
+    def remove_test_measurements(self) -> None:
+        """
+        Removes test signatures from pin measurements.
+        """
+
+        self.measurements = [self.get_reference_measurement()]
 
     def set_test_measurement(self, measurement: Measurement) -> None:
         """
@@ -127,6 +140,7 @@ class Pin(JsonConvertible):
 
         if measurement.is_reference:
             raise ValueError("It must be test measurement")
+
         self.measurements = [m for m in self.measurements if m.is_reference]
         self.measurements.append(measurement)
 
@@ -139,6 +153,7 @@ class Pin(JsonConvertible):
 
         if not measurement.is_reference:
             raise ValueError("It must be reference measurement")
+
         if invalidate_test:
             self.measurements = [measurement]
         else:
