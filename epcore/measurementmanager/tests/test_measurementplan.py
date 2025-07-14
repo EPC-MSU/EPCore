@@ -1,12 +1,28 @@
 import unittest
 from typing import List
 from epcore.analogmultiplexer import AnalogMultiplexerVirtual
-from epcore.elements import Board, Element, MultiplexerOutput, Pin
+from epcore.elements import Board, Element, IVCurve, Measurement, MeasurementSettings, MultiplexerOutput, Pin
 from epcore.ivmeasurer import IVMeasurerVirtual
 from epcore.measurementmanager import MeasurementPlan
 
 
 class TestPlan(unittest.TestCase):
+
+    @staticmethod
+    def _create_pin() -> Pin:
+        """
+        :return: pin with reference and several test measurements.
+        """
+
+        ref_measurement = Measurement(settings=MeasurementSettings(1, 2, 3, 4, 5),
+                                      ivc=IVCurve([1, 2, 3], [1, 2, 3]), is_reference=True)
+        measurements = [ref_measurement]
+        for i in range(1, 10):
+            test_measurement = Measurement(settings=MeasurementSettings(1, 2, 3, 4, 5),
+                                           ivc=IVCurve([1 * i, 2 * i, 3 * i], [1 * i, 2 * i, 3 * i]))
+            measurements.append(test_measurement)
+
+        return Pin(0, 0, measurements=measurements)
 
     def setUp(self) -> None:
         self._measurer: IVMeasurerVirtual = IVMeasurerVirtual()
@@ -191,7 +207,27 @@ class TestPlan(unittest.TestCase):
         self.assertEqual(self._plan.pins_number, 0)
 
     def test_remove_all_test_signatures(self) -> None:
-        pass
+        number_of_elements = 5
+        number_of_pins = 3
+
+        elements = []
+        ref_signatures = []
+        for i in range(number_of_elements):
+            pins = []
+            for j in range(number_of_pins):
+                pin = self._create_pin()
+                ref_signatures.append(pin.get_reference_measurement())
+                pins.append(pin)
+
+            elements.append(Element(pins))
+
+        board = Board(elements=elements)
+        plan = MeasurementPlan(board, None)
+        plan.remove_all_test_signatures()
+
+        for i, pin in plan.all_pins_iterator():
+            self.assertEqual(len(pin.measurements), 1)
+            self.assertEqual(ref_signatures[i], pin.get_reference_measurement())
 
     def test_save_comment_to_pin_with_index(self) -> None:
         for i in range(5):
