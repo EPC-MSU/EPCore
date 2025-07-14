@@ -130,7 +130,8 @@ class Pin(JsonConvertible):
         Removes test signatures from pin measurements.
         """
 
-        self.measurements = [self.get_reference_measurement()]
+        ref_measurement = self.get_reference_measurement()
+        self.measurements = [ref_measurement] if ref_measurement else []
 
     def set_test_measurement(self, measurement: Measurement) -> None:
         """
