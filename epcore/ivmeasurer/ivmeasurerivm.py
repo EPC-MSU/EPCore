@@ -76,6 +76,21 @@ class IVMeasurerIVM(IVMeasurerBase):
             pass
 
     @close_on_error
+    def get_button_events(self) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+        """
+        :return: two tuples. The first tuple records events for buttons on the generator probe. The second tuple
+        records events for buttons on the recv probe. In each tuple with events for buttons:
+        * the first element records whether the button was pressed (if it was, then not 0);
+        * the second element records whether the button was released (if it was, then not 0).
+        """
+
+        status = self._device.get_status()
+        io_events = status.io_events
+        gen_events = io_events.ioevents_gen_probe_button_pressed, io_events.ioevents_gen_probe_button_released
+        recv_events = io_events.ioevents_recv_probe_button_pressed, io_events.ioevents_recv_probe_button_released
+        return gen_events, recv_events
+
+    @close_on_error
     def get_button_states(self) -> Tuple[int, int]:
         """
         :return: tuple with states of buttons on probes. The first element is responsible for the state of the button
@@ -188,6 +203,9 @@ class IVMeasurerIVM(IVMeasurerBase):
             return True
         except (RuntimeError, OSError):
             return False
+
+    def reset_button_events(self) -> None:
+        self._device.reset_events(15, 1)
 
     @close_on_error
     def set_settings(self, settings: MeasurementSettings = None) -> None:
