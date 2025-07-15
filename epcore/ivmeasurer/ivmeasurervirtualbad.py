@@ -1,7 +1,7 @@
 from random import random
-from epcore.elements import IVCurve, MeasurementSettings
-from epcore.ivmeasurer.base import IVMeasurerIdentityInformation
-from epcore.ivmeasurer.virtual import IVMeasurerVirtual
+from ..elements import IVCurve, MeasurementSettings
+from .ivmeasurerbase import IVMeasurerIdentityInformation
+from .ivmeasurervirtual import IVMeasurerVirtual
 
 
 class IVMeasurerVirtualBad(IVMeasurerVirtual):

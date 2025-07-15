@@ -7,7 +7,7 @@ measurements (with default values for special settings).
 Implementations in plan:
 * IVMeasurerBase
 * IVMeasurerVirtual - Virtual measurer. You can use it without any hardware.
-* IVMeasurerIVM10
+* IVMeasurerIVM
 * IVMeasurerNetClient
 
 To run example:
@@ -22,12 +22,12 @@ To build documentaion:
 pydoc -w epcore.ivmeasurer
 """
 
-from .base import IVMeasurerBase, IVMeasurerIdentityInformation
-from .measurerasa import IVMeasurerASA, IVMeasurerVirtualASA
-from .measurerivm import IVMeasurerIVM02, IVMeasurerIVM10
-from .virtual import IVMeasurerVirtual
-from .virtualbad import IVMeasurerVirtualBad
+from .ivmeasurerbase import IVMeasurerBase, IVMeasurerIdentityInformation
+from .ivmeasurerivm import IVMeasurerIVM
+from .ivmeasurerasa import IVMeasurerASA, IVMeasurerVirtualASA
+from .ivmeasurervirtual import IVMeasurerVirtual
+from .ivmeasurervirtualbad import IVMeasurerVirtualBad
 
 
-__all__ = ["IVMeasurerASA", "IVMeasurerBase", "IVMeasurerIdentityInformation", "IVMeasurerIVM02", "IVMeasurerIVM10",
-           "IVMeasurerVirtual", "IVMeasurerVirtualASA", "IVMeasurerVirtualBad"]
+__all__ = ["IVMeasurerASA", "IVMeasurerBase", "IVMeasurerIdentityInformation", "IVMeasurerIVM", "IVMeasurerVirtual",
+           "IVMeasurerVirtualASA", "IVMeasurerVirtualBad"]

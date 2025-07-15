@@ -2,7 +2,7 @@ import logging
 from typing import List
 import matplotlib.pyplot as plt
 import numpy as np
-from epcore.elements import IVCurve
+from ..elements import IVCurve
 
 
 def plot_curve(iv_curve: IVCurve) -> None:

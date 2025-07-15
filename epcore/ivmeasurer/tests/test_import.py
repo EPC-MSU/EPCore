@@ -11,13 +11,9 @@ class ImportTest(unittest.TestCase):
         from epcore.ivmeasurer import IVMeasurerVirtualBad
         self.assertTrue(bool(IVMeasurerVirtualBad))
 
-    def test_import_ivm02(self) -> None:
-        from epcore.ivmeasurer import IVMeasurerIVM02
-        self.assertTrue(bool(IVMeasurerIVM02))
-
-    def test_import_ivm10(self) -> None:
-        from epcore.ivmeasurer import IVMeasurerIVM10
-        self.assertTrue(bool(IVMeasurerIVM10))
+    def test_import_ivmeasurerivm(self) -> None:
+        from epcore.ivmeasurer import IVMeasurerIVM
+        self.assertTrue(bool(IVMeasurerIVM))
 
     def test_import_virtual(self) -> None:
         from epcore.ivmeasurer import IVMeasurerVirtual

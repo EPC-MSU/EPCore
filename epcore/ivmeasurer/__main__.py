@@ -1,7 +1,7 @@
 import argparse
 import logging
 import sys
-from epcore.ivmeasurer import IVMeasurerASA, IVMeasurerIVM02, IVMeasurerIVM10, IVMeasurerVirtual
+from epcore.ivmeasurer import IVMeasurerASA, IVMeasurerIVM, IVMeasurerVirtual
 from epcore.ivmeasurer.safe_opener import BadConfig, BadFirmwareVersion
 from epcore.ivmeasurer.utils import plot_curve
 
@@ -39,32 +39,21 @@ def work_with_asa_device(ip_address: str) -> None:
 
 
 if __name__ == "__main__":
-
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)-8s %(message)s")
     logging.debug("IVMeasurer example")
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", action="store", dest="port",
                         help="Real IVM measurer COM port. Format: com:\\\\.\\COMx or /dev/ttyACM0.\n"
                              "Make sure there is 'config.ini' file in current working directory!")
-    parser.add_argument("-f", action="store", dest="firmware",
-                        help="First two numbers of firmware version. Format: x.x")
     args = parser.parse_args()
 
-    firmware_vs_handler = {"0.2": IVMeasurerIVM02,
-                           "1.0": IVMeasurerIVM10}
     if args.port is not None:
         if "xmlrpc" in args.port:
             work_with_asa_device(args.port)
             sys.exit(0)
 
-        handler = firmware_vs_handler.get(args.firmware, None)
-        if handler is None:
-            supported_vers = ", ".join(firmware_vs_handler.keys())
-            raise BadFirmwareVersion("Please use '-f' argument to specify one of the supported firmware versions: "
-                                     "{}".format(supported_vers))
-
         try:
-            measurer = handler(args.port, config="config.ini")
+            measurer = IVMeasurerIVM(args.port, config="config.ini")
         except (BadConfig, BadFirmwareVersion) as exc:
             raise type(exc)("Something wrong with config file! Check example: 'epcore/ivmeasurer/config.ini'.")
     else:
@@ -79,7 +68,7 @@ if __name__ == "__main__":
     calibration_result = measurer.calibrate()
     logging.debug("Calibration result: %s", calibration_result)
 
-    if isinstance(measurer, (IVMeasurerIVM02, IVMeasurerIVM10)):
+    if isinstance(measurer, IVMeasurerIVM):
         logging.debug("Get IV curve from device")
         ivc = measurer.measure_iv_curve()
         plot_curve(ivc)

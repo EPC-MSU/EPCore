@@ -8,7 +8,7 @@ import time
 from typing import Callable, List, Tuple
 import numpy as np
 from ..elements import IVCurve, MeasurementSettings
-from .base import cache_curve, IVMeasurerBase, IVMeasurerIdentityInformation
+from .ivmeasurerbase import cache_curve, IVMeasurerBase, IVMeasurerIdentityInformation
 from .processing import interpolate_curve, smooth_curve
 
 
