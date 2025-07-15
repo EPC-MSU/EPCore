@@ -3,6 +3,7 @@ IVMeasurer Implementation for EyePoint IVM hardware measurer.
 """
 
 import logging
+from typing import Tuple
 import numpy as np
 from ivm import IvmDeviceHandle
 from ..elements import IVCurve, MeasurementSettings
@@ -55,13 +56,13 @@ class IVMeasurerIVM(IVMeasurerBase):
                                                                           probe_signal_frequency=100,
                                                                           precharge_delay=0)
         open_device_safe(self._url, IvmDeviceHandle, self._config, _logging_callback, force_open)
+
         if not defer_open:
             self.open_device()
 
     @close_on_error
     def calibrate(self, *args) -> int:
         """
-        Calibrates device.
         :return: calibration result code.
         """
 
@@ -73,6 +74,18 @@ class IVMeasurerIVM(IVMeasurerBase):
             self._device.close_device()
         except (RuntimeError, OSError):
             pass
+
+    @close_on_error
+    def get_button_states(self) -> Tuple[int, int]:
+        """
+        :return: tuple with states of buttons on probes. The first element is responsible for the state of the button
+        on the generator probe. The second element is responsible for the state of the button on the recv probe.
+        If not 0, then the button is pressed.
+        """
+
+        status = self._device.get_status()
+        io_state = status.io_state
+        return io_state.iostate_gen_probe_button_pressed, io_state.iostate_recv_probe_button_pressed
 
     @close_on_error
     def get_identity_information(self) -> IVMeasurerIdentityInformation:
@@ -104,16 +117,19 @@ class IVMeasurerIVM(IVMeasurerBase):
             frame = self._device.get_measurement(frame_number)
             currents.extend(list(frame.current))
             voltages.extend(list(frame.voltage))
+
         # Device return currents in mA
         currents = (np.array(currents[:device_settings.number_points]) / 1000).tolist()
         voltages = voltages[:device_settings.number_points]
         curve = IVCurve(currents=currents, voltages=voltages)
+
         if raw is True:
             return curve
 
         # Postprocessing
         if device_settings.probe_signal_frequency > 20000:
             curve = interpolate_curve(curve=curve, final_num_points=IVMeasurerIVM._NORMAL_NUM_POINTS)
+
         curve = smooth_curve(curve=curve, kernel_size=IVMeasurerIVM._SMOOTHING_KERNEL_SIZE)
         return curve
 
@@ -138,6 +154,7 @@ class IVMeasurerIVM(IVMeasurerBase):
         precharge_delay = device_settings.number_charge_points / device_settings.sampling_rate
         if int(precharge_delay) == 0:
             precharge_delay = None
+
         return MeasurementSettings(sampling_rate=device_settings.sampling_rate,
                                    internal_resistance=internal_resistance,
                                    max_voltage=device_settings.max_voltage,
@@ -152,6 +169,7 @@ class IVMeasurerIVM(IVMeasurerBase):
 
         if self.is_freezed():
             return False
+
         return bool(self._device.check_measurement_status().ready_status.measurement_complete)
 
     @close_on_error
