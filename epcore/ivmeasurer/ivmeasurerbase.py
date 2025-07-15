@@ -24,7 +24,6 @@ class IVMeasurerIdentityInformation:
     hardware_version: tuple
     firmware_version: tuple
     name: str
-    rank: int
 
 
 class IVMeasurerBase(ABC):
