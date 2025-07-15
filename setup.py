@@ -12,7 +12,7 @@ setup(name="epcore",
       python_requires=">=3.6, <=3.9.13",
       install_requires=[
           "dataclasses==0.8; python_version~='3.6.0'",
-          "ivm=1.1.1",
+          "ivm==1.1.1",
           "jsonschema==3.2.0",
           "numpy==1.18.1",
           "Pillow==8.0.1",
