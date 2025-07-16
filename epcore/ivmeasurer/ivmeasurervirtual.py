@@ -116,13 +116,6 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
         return 0
 
-    def check_any_button_was_pressed_and_released(self) -> bool:
-        """
-        :return: True if the button on the generator probe or recv probe was pressed and released.
-        """
-
-        return False
-
     def close_device(self) -> None:
         self._open = False
 
