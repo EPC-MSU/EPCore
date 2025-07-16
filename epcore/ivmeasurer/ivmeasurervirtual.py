@@ -116,8 +116,36 @@ class IVMeasurerVirtual(IVMeasurerBase):
 
         return 0
 
+    def check_any_button_was_pressed_and_released(self) -> bool:
+        """
+        :return: True if the button on the generator probe or recv probe was pressed and released.
+        """
+
+        return False
+
     def close_device(self) -> None:
         self._open = False
+
+    def get_button_events(self) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+        """
+        :return: two tuples. The first tuple records events for buttons on the generator probe. The second tuple
+        records events for buttons on the recv probe. In each tuple with events for buttons:
+        * the first element records whether the button was pressed (if it was, then not 0);
+        * the second element records whether the button was released (if it was, then not 0).
+        """
+
+        gen_events = 0, 0
+        recv_events = 0, 0
+        return gen_events, recv_events
+
+    def get_button_states(self) -> Tuple[int, int]:
+        """
+        :return: tuple with states of buttons on probes. The first element is responsible for the state of the button
+        on the generator probe. The second element is responsible for the state of the button on the recv probe.
+        If not 0, then the button is pressed.
+        """
+
+        return 0, 0
 
     @_check_open
     def get_identity_information(self) -> IVMeasurerIdentityInformation:

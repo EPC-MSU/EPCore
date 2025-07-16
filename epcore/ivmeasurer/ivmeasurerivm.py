@@ -69,6 +69,14 @@ class IVMeasurerIVM(IVMeasurerBase):
         # TODO: calibration settings?
         return self._device.start_autocalibration().result
 
+    def check_any_button_was_pressed_and_released(self) -> bool:
+        """
+        :return: True if the button on the generator probe or recv probe was pressed and released.
+        """
+
+        gen_events, recv_events = self.get_button_events()
+        return all(gen_events) or all(recv_events)
+
     def close_device(self) -> None:
         try:
             self._device.close_device()
@@ -204,6 +212,7 @@ class IVMeasurerIVM(IVMeasurerBase):
         except (RuntimeError, OSError):
             return False
 
+    @close_on_error
     def reset_button_events(self) -> None:
         self._device.reset_events(15, 1)
 
