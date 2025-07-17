@@ -143,7 +143,7 @@ class _OpenManager:
                 raise RuntimeError("The device class doesn't have close_device() method")
             raise err
 
-    def check_config(self) -> bool:
+    def _check_config(self) -> bool:
         """
         :return: True if the config file exists and can be opened.
         """
@@ -157,12 +157,12 @@ class _OpenManager:
         self._config.read(full_path, encoding="utf-8")
         return True
 
-    def check_controller_name(self) -> bool:
+    def _check_controller_name(self) -> bool:
         """
         :return: True if the device has a valid controller name.
         """
 
-        controller_name_from_config = self.get_from_config("Global", "Name")
+        controller_name_from_config = self._get_from_config("Global", "Name")
         if controller_name_from_config is None:
             self._error(BadConfig("The configuration file does not have a 'Global' section with the 'Name' key"))
             return False
@@ -174,7 +174,7 @@ class _OpenManager:
 
         return True
 
-    def check_firmware_version(self) -> bool:
+    def _check_firmware_version(self) -> bool:
         """
         :return: True, if the device firmware is compatible with the epcore version.
         """
@@ -192,7 +192,7 @@ class _OpenManager:
 
         return result
 
-    def check_ginf(self) -> bool:
+    def _check_ginf(self) -> bool:
         """
         :return: True, if we were able to read the controller name and firmware version.
         """
@@ -210,7 +210,7 @@ class _OpenManager:
 
         return True
 
-    def check_library_version(self) -> bool:
+    def _check_library_version(self) -> bool:
         """
         :return: True if the device library version is supported by epcore.
         """
@@ -221,31 +221,7 @@ class _OpenManager:
 
         return True
 
-    def checking_chain(self) -> None:
-        # 1. Check open device
-        self.open_device()
-
-        # 2. Check config exists
-        if not self.check_config():
-            return
-
-        # 3. Check ginf
-        if not self.check_ginf():
-            return
-
-        # 4. Check controller name
-        if not self.check_controller_name():
-            return
-
-        # 5. Check library version in config
-        if not self.check_library_version():
-            return
-
-        # 6. Check firmware version
-        if not self.check_firmware_version():
-            return
-
-    def get_from_config(self, section: str, parameter: str) -> Optional[str]:
+    def _get_from_config(self, section: str, parameter: str) -> Optional[str]:
         """
         :param section: section name in the configuration file;
         :param parameter: option name in the configuration file.
@@ -257,7 +233,7 @@ class _OpenManager:
 
         return self._config[section][parameter]
 
-    def open_device(self) -> None:
+    def _open_device(self) -> None:
         try:
             if "open_device" in dir(self._device):
                 # Current naming
@@ -269,6 +245,30 @@ class _OpenManager:
                 raise RuntimeError("The device class doesn't have open_device() method")
         except RuntimeError:
             self._error(OpenDeviceError(), critical=True)
+
+    def check_device_for_compatibility(self) -> None:
+        # 1. Check open device
+        self._open_device()
+
+        # 2. Check config exists
+        if not self._check_config():
+            return
+
+        # 3. Check ginf
+        if not self._check_ginf():
+            return
+
+        # 4. Check controller name
+        if not self._check_controller_name():
+            return
+
+        # 5. Check library version in config
+        if not self._check_library_version():
+            return
+
+        # 6. Check firmware version
+        if not self._check_firmware_version():
+            return
 
 
 def open_device_safe(uri: str, klass: type, config_path: str, log: Callable, force_open: bool = False):
@@ -291,7 +291,7 @@ def open_device_safe(uri: str, klass: type, config_path: str, log: Callable, for
 
     device = klass(uri, defer_open=True)
     manager = _OpenManager(device, config_path, log, force_open)
-    manager.checking_chain()
+    manager.check_device_for_compatibility()
 
     return (device, manager.status, manager.controller_name, manager.library_version, manager.firmware_version,
             manager.all_firmwares)
