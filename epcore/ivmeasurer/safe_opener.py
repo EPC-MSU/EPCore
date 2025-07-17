@@ -43,41 +43,6 @@ class OpenDeviceError(SafeOpenError):
     pass
 
 
-def _check_version(mask: str, version: str) -> bool:
-    """
-    Function checks whether the version matches the given mask. Starting from ticket #101382, the match between a
-    version and a mask is determined as follows: the major and minor parts must match.
-    :param mask: mask;
-    :param version: version in SemVer format 'major.minor.bugfix'.
-    :return: True if the version being checked is compatible with the mask.
-    """
-
-    try:
-        version = _get_major_and_minor_version_parts(version)
-        # For versions like 1.1.0-2.0.3
-        if "-" in mask:
-            version_min, version_max = mask.split("-", maxsplit=2)
-            version_min = _get_major_and_minor_version_parts(version_min)
-            version_max = _get_major_and_minor_version_parts(version_max)
-            return version_min <= version <= version_max
-
-        # For versions like 1.1.1
-        return _get_major_and_minor_version_parts(mask) == version
-    except (TypeError, ValueError):
-        return False
-
-
-def _get_major_and_minor_version_parts(version: str) -> StrictVersion:
-    """
-    :param version: version in SemVer format 'major.minor.bugfix'.
-    :return: version in format 'major.minor.0'.
-    """
-
-    str_version = StrictVersion(version)
-    major, minor, _ = str_version.version
-    return StrictVersion(f"{major}.{minor}")
-
-
 class _OpenManager:
 
     def __init__(self, device, config_path: str, log, force_open: bool = False) -> None:
@@ -100,6 +65,7 @@ class _OpenManager:
         self._firmware_version: Optional[str] = None
         self._firmwares: List[str] = []
         self._library_version: Optional[str] = None
+        self._serial_number: Optional[int] = None
 
     @property
     def all_firmwares(self) -> List[str]:
@@ -169,7 +135,7 @@ class _OpenManager:
 
         if self._controller_name.lower() != controller_name_from_config.lower():
             self._error(BadControllerName(self._controller_name, self._library_version,
-                                          self._firmware_version, controller_name_from_config))
+                                          self._firmware_version, self._serial_number, controller_name_from_config))
             return False
 
         return True
@@ -183,12 +149,12 @@ class _OpenManager:
         for opt in self._config.options(self._library_version):
             compatible_firmware_version = self._config[self._library_version][opt]
             self._firmwares.append(compatible_firmware_version)
-            if _check_version(compatible_firmware_version, self._firmware_version):
+            if check_version(compatible_firmware_version, self._firmware_version):
                 result = True
 
         if not result:
             self._error(BadFirmwareVersion(self._controller_name, self._library_version, self._firmware_version,
-                                           self._firmwares))
+                                           self._serial_number, self._firmwares))
 
         return result
 
@@ -203,6 +169,7 @@ class _OpenManager:
             self._firmware_version = ".".join([str(x) for x in (identity.firmware_major,
                                                                 identity.firmware_minor,
                                                                 identity.firmware_bugfix)])
+            self._serial_number = identity.serial_number
             self._library_version = self._device.lib_version()
         except (ValueError, NotImplementedError, RuntimeError) as exc:
             self._error(GINFError(str(exc) + " occurred while reading identity information (GINF not implemented?)"))
@@ -216,7 +183,8 @@ class _OpenManager:
         """
 
         if not self._config.has_section(self._library_version):
-            self._error(BadFirmwareVersion(self._controller_name, self._library_version, self._firmware_version, []))
+            self._error(BadFirmwareVersion(self._controller_name, self._library_version, self._firmware_version,
+                                           self._serial_number, []))
             return False
 
         return True
@@ -269,6 +237,41 @@ class _OpenManager:
         # 6. Check firmware version
         if not self._check_firmware_version():
             return
+
+
+def check_version(mask: str, version: str) -> bool:
+    """
+    Function checks whether the version matches the given mask. Starting from ticket #101382, the match between a
+    version and a mask is determined as follows: the major and minor parts must match.
+    :param mask: mask;
+    :param version: version in SemVer format 'major.minor.bugfix'.
+    :return: True if the version being checked is compatible with the mask.
+    """
+
+    try:
+        version = get_major_and_minor_version_parts(version)
+        # For versions like 1.1.0-2.0.3
+        if "-" in mask:
+            version_min, version_max = mask.split("-", maxsplit=2)
+            version_min = get_major_and_minor_version_parts(version_min)
+            version_max = get_major_and_minor_version_parts(version_max)
+            return version_min <= version <= version_max
+
+        # For versions like 1.1.1
+        return get_major_and_minor_version_parts(mask) == version
+    except (TypeError, ValueError):
+        return False
+
+
+def get_major_and_minor_version_parts(version: str) -> StrictVersion:
+    """
+    :param version: version in SemVer format 'major.minor.bugfix'.
+    :return: version in format 'major.minor.0'.
+    """
+
+    str_version = StrictVersion(version)
+    major, minor, _ = str_version.version
+    return StrictVersion(f"{major}.{minor}")
 
 
 def open_device_safe(uri: str, klass: type, config_path: str, log: Callable, force_open: bool = False):

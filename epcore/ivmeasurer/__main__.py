@@ -86,13 +86,14 @@ def work_with_ivmeasurerivm(url: str) -> None:
         return
     except BadControllerName as exc:
         logging.error("This version of epcore does not support '%s' controllers. epcore supports '%s' controllers",
-                      exc.args[0], exc.args[3])
+                      exc.args[0], exc.args[4])
         return
     except BadFirmwareVersion as exc:
-        compatible_firmwares = ", ".join([f"'{firmware}'" for firmware in exc.args[3]])
-        logging.error("Firmware version '%s' of the '%s' controller is not compatible with this version of epcore. "
-                      "Firmware '%s' requires ivm-library version '%s'. Firmware versions compatible with this version "
-                      "of epcore: %s", exc.args[2], exc.args[0], exc.args[2], exc.args[1], compatible_firmwares)
+        compatible_firmwares = ", ".join([f"'{firmware}'" for firmware in exc.args[4]])
+        logging.error("Firmware version '%s' of the '%s' controller SN %d is not compatible with this version of "
+                      "epcore. Firmware '%s' requires ivm-library version '%s'. Firmware versions compatible with this "
+                      "version of epcore: %s", exc.args[2], exc.args[0], exc.args[3], exc.args[2], exc.args[1],
+                      compatible_firmwares)
         return
     except ConfigNotFound as exc:
         logging.error("Configuration file '%s' for working with IVMeasurerIVM not found", exc.args[0])

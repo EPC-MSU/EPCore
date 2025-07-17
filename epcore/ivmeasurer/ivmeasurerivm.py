@@ -115,7 +115,8 @@ class IVMeasurerIVM(IVMeasurerBase):
             device_class=bytes(info.product_name).decode("utf-8").replace("\x00", ""),
             hardware_version=(info.hardware_major, info.hardware_minor, info.hardware_bugfix),
             firmware_version=(info.firmware_major, info.firmware_minor, info.firmware_bugfix),
-            name=bytes(info.controller_name).decode("utf-8").replace("\x00", ""))
+            name=bytes(info.controller_name).decode("utf-8").replace("\x00", ""),
+            serial_number=info.serial_number)
 
     @cache_curve
     @close_on_error

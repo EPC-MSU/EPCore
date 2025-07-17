@@ -289,7 +289,8 @@ class IVMeasurerASA(IVMeasurerBase):
                                              device_class="ASA device",
                                              hardware_version=tuple(),
                                              firmware_version=(1, 0, 1),
-                                             name="ASA device")
+                                             name="ASA device",
+                                             serial_number=0)
 
     @cache_curve
     @close_on_error
