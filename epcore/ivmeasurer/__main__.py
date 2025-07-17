@@ -76,7 +76,7 @@ def work_with_ivmeasurer(measurer: IVMeasurerBase) -> None:
 def work_with_ivmeasurerivm(url: str) -> None:
     """
     Function to work with real IV-measurer.
-    :param url:
+    :param url: url for device identification in computer system.
     """
 
     try:
