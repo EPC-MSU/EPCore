@@ -38,7 +38,7 @@ class IVMeasurerBase(ABC):
         :param name: friendly name (for measurement system).
         """
 
-        self._cashed_curve: IVCurve = None
+        self._cashed_curve: Optional[IVCurve] = None
         self._freeze: bool = False
         self._name: str = name
         self._url: str = url

@@ -1,8 +1,8 @@
 import argparse
 import logging
 import sys
-from epcore.ivmeasurer import IVMeasurerASA, IVMeasurerIVM, IVMeasurerVirtual
-from epcore.ivmeasurer.safe_opener import BadConfig, BadFirmwareVersion
+from epcore.ivmeasurer import IVMeasurerASA, IVMeasurerBase, IVMeasurerIVM, IVMeasurerVirtual
+from epcore.ivmeasurer.safe_opener import BadConfig, BadControllerName, BadFirmwareVersion, ConfigNotFound
 from epcore.ivmeasurer.utils import plot_curve
 
 
@@ -38,26 +38,10 @@ def work_with_asa_device(ip_address: str) -> None:
     plot_curve(measurer_asa.measure_iv_curve())
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)-8s %(message)s")
-    logging.debug("IVMeasurer example")
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", action="store", dest="port",
-                        help="Real IVM measurer COM port. Format: com:\\\\.\\COMx or /dev/ttyACM0.\n"
-                             "Make sure there is 'config.ini' file in current working directory!")
-    args = parser.parse_args()
-
-    if args.port is not None:
-        if "xmlrpc" in args.port:
-            work_with_asa_device(args.port)
-            sys.exit(0)
-
-        try:
-            measurer = IVMeasurerIVM(args.port, config="config.ini")
-        except (BadConfig, BadFirmwareVersion) as exc:
-            raise type(exc)("Something wrong with config file! Check example: 'epcore/ivmeasurer/config.ini'.")
-    else:
-        measurer = IVMeasurerVirtual()
+def work_with_ivmeasurer(measurer: IVMeasurerBase) -> None:
+    """
+    :param measurer: a measurer with which standard actions must be performed.
+    """
 
     info = measurer.get_identity_information()
     logging.debug("Device info: %s", str(info))
@@ -87,3 +71,54 @@ if __name__ == "__main__":
         ivc = measurer.measure_iv_curve()
         logging.debug("Measurement finished")
         plot_curve(ivc)
+
+
+def work_with_ivmeasurerivm(url: str) -> None:
+    """
+    Function to work with real IV-measurer.
+    :param url:
+    """
+
+    try:
+        measurer = IVMeasurerIVM(url, config="config.ini")
+    except BadConfig as exc:
+        logging.error(exc)
+        return
+    except BadControllerName as exc:
+        logging.error("This version of epcore does not support '%s' controllers. epcore supports '%s' controllers",
+                      exc.args[0], exc.args[3])
+        return
+    except BadFirmwareVersion as exc:
+        compatible_firmwares = ", ".join([f"'{firmware}'" for firmware in exc.args[3]])
+        logging.error("Firmware version '%s' of the '%s' controller is not compatible with this version of epcore. "
+                      "Firmware '%s' requires ivm-library version '%s'. Firmware versions compatible with this version "
+                      "of epcore: %s", exc.args[2], exc.args[0], exc.args[2], exc.args[1], compatible_firmwares)
+        return
+    except ConfigNotFound as exc:
+        logging.error("Configuration file '%s' for working with IVMeasurerIVM not found", exc.args[0])
+        return
+
+    work_with_ivmeasurer(measurer)
+
+
+def work_with_ivmeasurervirtual() -> None:
+    measurer = IVMeasurerVirtual()
+    work_with_ivmeasurer(measurer)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)-8s %(message)s")
+    logging.debug("IVMeasurer example")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", action="store", dest="port",
+                        help="Real IVM measurer COM port. Format: com:\\\\.\\COMx or /dev/ttyACM0.\n"
+                             "Make sure there is 'config.ini' file in current working directory!")
+    args = parser.parse_args(sys.argv[1:])
+
+    if args.port is not None:
+        if "xmlrpc" in args.port:
+            work_with_asa_device(args.port)
+        else:
+            work_with_ivmeasurerivm(args.port)
+    else:
+        work_with_ivmeasurervirtual()

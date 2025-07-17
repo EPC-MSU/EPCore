@@ -106,16 +106,16 @@ class _OpenManager:
         return self._firmwares
 
     @property
+    def controller_name(self) -> str:
+        return self._controller_name
+
+    @property
     def firmware_version(self) -> str:
         return self._firmware_version
 
     @property
     def library_version(self) -> str:
         return self._library_version
-
-    @property
-    def name(self) -> str:
-        return self._controller_name
 
     @property
     def status(self) -> bool:
@@ -157,16 +157,33 @@ class _OpenManager:
         self._config.read(full_path, encoding="utf-8")
         return True
 
-    def check_firmware(self) -> bool:
+    def check_controller_name(self) -> bool:
+        """
+        :return: True if the device has a valid controller name.
+        """
+
+        controller_name_from_config = self.get_from_config("Global", "Name")
+        if controller_name_from_config is None:
+            self._error(BadConfig("The configuration file does not have a 'Global' section with the 'Name' key"))
+            return False
+
+        if self._controller_name.lower() != controller_name_from_config.lower():
+            self._error(BadControllerName(self._controller_name, self._library_version,
+                                          self._firmware_version, controller_name_from_config))
+            return False
+
+        return True
+
+    def check_firmware_version(self) -> bool:
         """
         :return: True, if the device firmware is compatible with the epcore version.
         """
 
         result = False
         for opt in self._config.options(self._library_version):
-            firmware_version = self.get_from_config(self._library_version, opt)
-            self._firmwares.append(firmware_version)
-            if _check_version(firmware_version, self._firmware_version):
+            compatible_firmware_version = self._config[self._library_version][opt]
+            self._firmwares.append(compatible_firmware_version)
+            if _check_version(compatible_firmware_version, self._firmware_version):
                 result = True
 
         if not result:
@@ -186,8 +203,9 @@ class _OpenManager:
             self._firmware_version = ".".join([str(x) for x in (identity.firmware_major,
                                                                 identity.firmware_minor,
                                                                 identity.firmware_bugfix)])
-        except (ValueError, NotImplementedError, RuntimeError) as err:
-            self._error(GINFError(str(err) + " occurred while reading identity information (GINF not implemented?)"))
+            self._library_version = self._device.lib_version()
+        except (ValueError, NotImplementedError, RuntimeError) as exc:
+            self._error(GINFError(str(exc) + " occurred while reading identity information (GINF not implemented?)"))
             return False
 
         return True
@@ -197,21 +215,8 @@ class _OpenManager:
         :return: True if the device library version is supported by epcore.
         """
 
-        self._library_version = self._device.lib_version()
         if not self._config.has_section(self._library_version):
-            self._error(BadConfig("Library version " + self._library_version + " not found in config"))
-            return False
-
-        return True
-
-    def check_name(self) -> bool:
-        """
-        :return: True if the device has a valid controller name.
-        """
-
-        if self._controller_name.lower() != self.get_from_config("Global", "Name").lower():
-            self._error(BadControllerName(self._controller_name, self._library_version,
-                                          self._firmware_version, self._firmwares))
+            self._error(BadFirmwareVersion(self._controller_name, self._library_version, self._firmware_version, []))
             return False
 
         return True
@@ -224,31 +229,30 @@ class _OpenManager:
         if not self.check_config():
             return
 
-        # 3. Check library version in config
-        if not self.check_library_version():
-            return
-
-        # 4. Check ginf
+        # 3. Check ginf
         if not self.check_ginf():
             return
 
-        # 5. Check controller name
-        if not self.check_name():
+        # 4. Check controller name
+        if not self.check_controller_name():
+            return
+
+        # 5. Check library version in config
+        if not self.check_library_version():
             return
 
         # 6. Check firmware version
-        if not self.check_firmware():
+        if not self.check_firmware_version():
             return
 
     def get_from_config(self, section: str, parameter: str) -> Optional[str]:
         """
-        :param section: section name;
-        :param parameter: option name.
-        :return: option value from configuration file.
+        :param section: section name in the configuration file;
+        :param parameter: option name in the configuration file.
+        :return: option value from the configuration file.
         """
 
         if not self._config.has_option(section, parameter):
-            self._error(BadConfig("Section " + section + " parameter " + parameter + " not found"))
             return None
 
         return self._config[section][parameter]
@@ -267,18 +271,18 @@ class _OpenManager:
             self._error(OpenDeviceError(), critical=True)
 
 
-def open_device_safe(uri: str, klass: type, conf: str, log: Callable, force_open: bool = False):
+def open_device_safe(uri: str, klass: type, config_path: str, log: Callable, force_open: bool = False):
     """
     Function opens device safely: check versions of firmware, library and program soft.
     This function works similarly to open_device, but checks device name and protocol compatibility.
     In case of failure (and if force_open is set to False) device will be closed.
     :param uri: path to device, str (like in open_device function);
     :param klass: device handle, class;
-    :param conf: path to config file, str;
+    :param config_path: path to config file, str;
     :param log: logging callback, Callable[int, str, int];
     :param force_open: device will be opened despite the errors.
     :return: device (device handle exemplar);
-    :return: status (ok/not-ok)(bool);
+    :return: status (ok/not-ok) (bool);
     :return: device name (str);
     :return: library version (str);
     :return: firmware version (str);
@@ -286,8 +290,8 @@ def open_device_safe(uri: str, klass: type, conf: str, log: Callable, force_open
     """
 
     device = klass(uri, defer_open=True)
-    manager = _OpenManager(device, conf, log, force_open)
+    manager = _OpenManager(device, config_path, log, force_open)
     manager.checking_chain()
 
-    return device, manager.status, manager.name, manager.library_version, manager.firmware_version, \
-        manager.all_firmwares
+    return (device, manager.status, manager.controller_name, manager.library_version, manager.firmware_version,
+            manager.all_firmwares)
