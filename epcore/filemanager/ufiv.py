@@ -20,7 +20,6 @@ from .file_formats import FileArchivedUFIVFormat, FileP10NewFormat, FileP10Norma
 
 
 MAX_ERR_MSG_LEN = 256
-_image_path: Optional[str] = None  # path to the last image of board
 
 
 class Formats(enum.Enum):
@@ -116,8 +115,6 @@ def add_image_to_ufiv(path: str, board: Board) -> Board:
     :return: board.
     """
 
-    global _image_path
-    _image_path = path
     image = Image.open(path)
     board.image = ImageOps.exif_transpose(image)
     return board
@@ -165,10 +162,8 @@ def load_board_from_ufiv(path: str, validate_input: bool = True, auto_convert_p1
     :return: board.
     """
 
-    global _image_path
     _format = detect_format(path)
     source_file = formats_to_file[_format](path)
-    _image_path = source_file.img_pth
     if _format is Formats.NORMAL_P10 or _format is Formats.NEW_P10:
         input_json, image = source_file.get_json_and_image(auto_convert_p10)
     else:
