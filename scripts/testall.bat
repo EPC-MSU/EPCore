@@ -2,8 +2,9 @@ cd ..
 setlocal EnableDelayedExpansion
 
 echo --- Install requirements ---
+set PYTHON=python
 if exist venv  rd /S /Q venv
-python -m venv venv
+%PYTHON% -m venv venv
 venv\Scripts\python -m pip install --upgrade pip
 venv\Scripts\python -m pip install -r requirements.txt
 venv\Scripts\python -m pip install flake8
