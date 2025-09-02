@@ -58,6 +58,17 @@ class Board(JsonConvertible):
 
         return board
 
+    def add_image(self, path: str) -> None:
+        """
+        :param path: path to image.
+        """
+
+        image = Image.open(path)
+        self.image = ImageOps.exif_transpose(image)
+
+    def delete_image(self) -> None:
+        self.image = None
+
     def to_json(self, save_image_if_needed_to: Optional[str] = None, board_path: Optional[str] = None
                 ) -> Dict[str, Any]:
         """
