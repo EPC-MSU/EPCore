@@ -3,7 +3,7 @@ import os
 import zipfile
 from tempfile import TemporaryDirectory
 from typing import Any, Dict, Optional, Tuple
-from PIL import Image, ImageOps
+from PIL import Image
 from ..elements import version
 from ..utils import convert_p10, convert_p10_2
 
