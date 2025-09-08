@@ -54,7 +54,6 @@ class FileUFIVFormat:
         image = None
         if self.img_pth and os.path.isfile(self.img_pth):
             image = Image.open(self.img_pth)
-            image = ImageOps.exif_transpose(image)
         return input_json, image
 
 
