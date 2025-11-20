@@ -12,10 +12,11 @@ setup(name="epcore",
       python_requires=">=3.6, <=3.9.13",
       install_requires=[
           "dataclasses==0.8; python_version~='3.6.0'",
-          "jsonschema==3.2.0",
-          "numpy==1.18.1",
-          "Pillow==8.0.1",
-          "scipy==1.5.4"
+          "jsonschema",
+          "numpy",
+          "Pillow",
+          "scipy",
+          "setuptools; python_version>='3.12'"
       ],
       package_data={
           "epcore.analogmultiplexer": ["epmux/epmux-arm64/libepmux.so",
