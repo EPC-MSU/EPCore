@@ -3,7 +3,7 @@ import struct
 import sys
 import platform
 import time
-from collections import Sequence
+from collections.abc import Sequence
 from ctypes import (Array, byref, c_char_p, c_double, c_int8, c_size_t, c_ubyte, c_uint32, c_uint8, CDLL, cdll,
                     POINTER, Structure)
 from platform import system
