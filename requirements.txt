@@ -1,7 +1,10 @@
 dataclasses==0.8; python_version~="3.6.0"
-jsonschema
-matplotlib
-numpy
-Pillow
-scipy
+jsonschema==3.2.0; python_version=="3.6"
+jsonschema; python_version>"3.6"
+numpy==1.18.1; python_version=="3.6"
+numpy; python_version>"3.6"
+Pillow==8.0.1; python_version=="3.6"
+Pillow; python_version>"3.6"
+scipy==1.5.4; python_version=="3.6"
+scipy; python_version>"3.6"
 setuptools; python_version>="3.12"

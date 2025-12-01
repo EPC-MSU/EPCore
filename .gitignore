@@ -1,7 +1,10 @@
 !.hg*
 __pycache__
 *.pyc
+*.egg-info/
+*.egg
 .idea
+build/
 venv/
 */__pycache__
 epcore/elements/tests/data_for_board_tests/test_1
