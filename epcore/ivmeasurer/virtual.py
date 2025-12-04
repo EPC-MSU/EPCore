@@ -5,7 +5,7 @@ File with class for virtual IV measurer.
 import copy
 import logging
 import time
-from typing import Callable, List, Tuple
+from typing import Callable, List, Optional, Tuple
 import numpy as np
 from ..elements import IVCurve, MeasurementSettings
 from .base import cache_curve, IVMeasurerBase, IVMeasurerIdentityInformation
@@ -44,7 +44,7 @@ class IVMeasurerVirtual(IVMeasurerBase):
         self.__last_curve: IVCurve = IVCurve()
         self.__measurement_is_ready: bool = False
         self.__ready_time = 0
-        self.__settings: MeasurementSettings = None
+        self.__settings: Optional[MeasurementSettings] = None
         self._open: bool = False
         self.model: str = "resistor"
         self.noise_factor: float = 0.05
