@@ -5,47 +5,63 @@
         {
             "description": "Модель (резистор, конденсатор)",
             "parameter": "model",
-            "parameter_name_ru": "Модель",
-            "parameter_name_en": "Model",
-            "tooltip_ru": "Виртуальный измеряемый электронный элемент",
-            "tooltip_en": "Virtual measured electronic element",
-            "type": "radio_button",
-            "value_type": "str",
+            "type": "selectable_group_boxes",
             "values":
             [
                 {
-                    "label_ru": "Конденсатор, [C] = Ф",
-                    "label_en": "Capacitor, [C] = F",
-                    "value": "capacitor"
+                    "description": "Виртуальный измеритель измеряет сигнатуру на конденсаторе",
+                    "parameter": "model",
+                    "type": "group_box",
+                    "label_ru": "Конденсатор",
+                    "label_en": "Capacitor",
+                    "value": "capacitor",
+                    "child_parameters": [
+                        {
+                            "description": "Емкость виртуального конденсатора",
+                            "parameter": "nominal",
+                            "label_ru": "Емкость, мкФ",
+                            "label_en": "Capacitance, uF",
+                            "type": "line_edit",
+                            "value_type": "float",
+                            "default_value": 1.0e-7,
+                            "multiplier": 1.0e-6,
+                            "min": 1.0e-20,
+                            "max": 1000000000
+                        }
+                    ]
                 },
                 {
-                    "label_ru": "Резистор, [R] = Ом",
-                    "label_en": "Resistor, [R] = Ohm",
-                    "value": "resistor"
+                    "description": "Виртуальный измеритель измеряет сигнатуру на резисторе",
+                    "parameter": "model",
+                    "type": "group_box",
+                    "label_ru": "Резистор",
+                    "label_en": "Resistor",
+                    "value": "resistor",
+                    "child_parameters": [
+                        {
+                            "description": "Сопротивление виртуального резистора",
+                            "parameter": "nominal",
+                            "label_ru": "Сопротивление, Ом",
+                            "label_en": "Resistance, Ohm",
+                            "type": "line_edit",
+                            "value_type": "float",
+                            "default_value": 100,
+                            "multiplier": 1,
+                            "min": 1.0e-20,
+                            "max": 1000000000
+                        }
+                    ]
                 }
             ]
         },
         {
-            "description": "Номинал резистора/конденсатора",
-            "parameter": "nominal",
-            "parameter_name_ru": "Номинал",
-            "parameter_name_en": "Nominal",
-            "tooltip_ru": "Номинал виртуального резистора или конденсатора (минимальное значение 1.0e-20, максимальное значение 100000)",
-            "tooltip_en": "Virtual resistor or capacitor value (min value 1.0e-20, max value 100000)",
-            "type": "line_edit",
-            "value_type": "float",
-            "min": 1.0e-20,
-            "max": 100000
-        },
-        {
             "description": "Уровень шума",
             "parameter": "noise_factor",
-            "parameter_name_ru": "Уровень шума",
-            "parameter_name_en": "Noise level",
-            "tooltip_ru": "Уровень шума измеряемого сигнала (минимальное значение 0, максимальное значение 1)",
-            "tooltip_en": "Measured signal noise level (min value 0, max value 1)",
+            "label_ru": "Уровень шума, %",
+            "label_en": "Noise level, %",
             "type": "line_edit",
             "value_type": "float",
+            "multiplier": 0.01,
             "min": 1.0e-100,
             "max": 1
         }
