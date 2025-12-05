@@ -5,17 +5,17 @@
         {
             "description": "Модель (резистор, конденсатор)",
             "parameter": "model",
-            "type": "group_boxes",
+            "type": "selectable_group_boxes",
             "values":
             [
                 {
                     "description": "Виртуальный измеритель измеряет сигнатуру на конденсаторе",
-                    "parameter": "capacitor",
+                    "parameter": "model",
                     "type": "group_box",
                     "label_ru": "Конденсатор",
                     "label_en": "Capacitor",
                     "value": "capacitor",
-                    "elements": [
+                    "child_parameters": [
                         {
                             "description": "Емкость виртуального конденсатора",
                             "parameter": "nominal",
@@ -32,12 +32,12 @@
                 },
                 {
                     "description": "Виртуальный измеритель измеряет сигнатуру на резисторе",
-                    "parameter": "resistor",
+                    "parameter": "model",
                     "type": "group_box",
                     "label_ru": "Резистор",
                     "label_en": "Resistor",
                     "value": "resistor",
-                    "elements": [
+                    "child_parameters": [
                         {
                             "description": "Сопротивление виртуального резистора",
                             "parameter": "nominal",
