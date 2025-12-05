@@ -23,7 +23,7 @@
                             "label_en": "Capacitance, uF",
                             "type": "line_edit",
                             "value_type": "float",
-                            "default_value": 0.1,
+                            "default_value": 1.0e-7,
                             "multiplier": 1.0e-6,
                             "min": 1.0e-20,
                             "max": 100000
