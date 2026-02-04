@@ -214,13 +214,8 @@ def _get_dll() -> Optional[CDLL]:
     """
 
     if platform.system() == "Linux":
-        if platform.uname()[4] == "aarch64":
-            # Library for this device was not built
-            return
-        libraries = [_get_full_path(os.path.join("libasa-debian", library))
-                     for library in ADDITIONAL_LIBRARIES_FOR_LINUX]
-        _load_additional_libraries(libraries)
-        return CDLL(_get_full_path(os.path.join("libasa-debian", "libasa.so")))
+        return
+
     if system() == "Windows":
         if 8 * struct.calcsize("P") == 32:
             libraries = [_get_full_path(os.path.join("libasa-win32", library))
@@ -231,6 +226,7 @@ def _get_dll() -> Optional[CDLL]:
                      for library in ADDITIONAL_LIBRARIES_FOR_WINDOWS]
         _load_additional_libraries(libraries)
         return CDLL(_get_full_path(os.path.join("libasa-win64", "asa.dll")))
+
     raise NotImplementedError("Unsupported platform {}".format(system()))
 
 
