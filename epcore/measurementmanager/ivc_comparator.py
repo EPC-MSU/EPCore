@@ -53,3 +53,6 @@ class IVCComparator:
 
     def set_min_ivc(self, min_var_v: float, min_var_c: float) -> None:
         self._lib.SetMinVarVC(c_double(min_var_v), c_double(min_var_c))
+
+    def set_ranges(self, range_v: float, range_c: float) -> None:
+        self._lib.SetRanges(c_double(range_v), c_double(range_c))
