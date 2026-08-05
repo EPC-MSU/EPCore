@@ -17,6 +17,7 @@ class TestIVCmpMethods(unittest.TestCase):
             resistor2.voltages.append(IVCComparator.voltage_amplitude * np.sin(phase))
             resistor2.currents.append(IVCComparator.current_amplitude * np.cos(phase))
         comparator.set_min_ivc(0.03 * IVCComparator.voltage_amplitude, 0.03 * IVCComparator.current_amplitude)
+        comparator.set_ranges(IVCComparator.voltage_amplitude, IVCComparator.current_amplitude)
         res = comparator.compare_ivc(resistor1, resistor2)
         self.assertTrue(res != -1 and np.abs(res - 0.99) < 0.01)
 
@@ -33,6 +34,7 @@ class TestIVCmpMethods(unittest.TestCase):
         curve_2.voltages = (np.sin(np.linspace(0, 2 * np.pi, 100))).tolist()
         curve_2.currents = (np.sin(np.linspace(0, 2 * np.pi, 100))).tolist()
         comparator.set_min_ivc(0.03 * IVCComparator.voltage_amplitude, 0.03 * IVCComparator.current_amplitude)
+        comparator.set_ranges(IVCComparator.voltage_amplitude, IVCComparator.current_amplitude)
         res_1 = comparator.compare_ivc(curve_1, curve_2)
         res_2 = comparator.compare_ivc(curve_2, curve_1)
         self.assertTrue(res_1 != -1 and res_2 != -1 and np.abs(res_1 - res_2) < 0.01)
@@ -48,6 +50,7 @@ class TestIVCmpMethods(unittest.TestCase):
             resistor2.voltages.append(0.47 * IVCComparator.voltage_amplitude * np.sin(phase))
             resistor2.currents.append(0.63 * IVCComparator.current_amplitude * np.sin(phase))
         comparator.set_min_ivc(0.03 * IVCComparator.voltage_amplitude, 0.03 * IVCComparator.current_amplitude)
+        comparator.set_ranges(IVCComparator.voltage_amplitude, IVCComparator.current_amplitude)
         res = comparator.compare_ivc(resistor1, resistor2)
         # TODO: python compare return 0.25 (now 0.3)
         self.assertTrue(res != -1 and np.abs(res - 0.25) < 0.01)
@@ -59,6 +62,7 @@ class TestIVCmpMethods(unittest.TestCase):
             phase = 2 * np.pi * i / IVCComparator.max_num_points
             resistor.voltages.append(0.5 * IVCComparator.voltage_amplitude * np.sin(phase))
             resistor.currents.append(0.5 * IVCComparator.current_amplitude * np.sin(phase))
+        comparator.set_ranges(IVCComparator.voltage_amplitude, IVCComparator.current_amplitude)
         res = comparator.compare_ivc(resistor, resistor)
         self.assertTrue(res != -1 and np.abs(res) < 0.01)
 
@@ -73,5 +77,6 @@ class TestIVCmpMethods(unittest.TestCase):
             short_circuit.voltages.append(0)
             short_circuit.currents.append(IVCComparator.current_amplitude * np.sin(phase))
         comparator.set_min_ivc(0.03 * IVCComparator.voltage_amplitude, 0.03 * IVCComparator.current_amplitude)
+        comparator.set_ranges(IVCComparator.voltage_amplitude, IVCComparator.current_amplitude)
         res = comparator.compare_ivc(open_circuit, short_circuit)
         self.assertTrue(res != -1 and np.abs(res - 0.99) < 0.01)

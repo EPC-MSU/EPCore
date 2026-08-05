@@ -41,6 +41,7 @@ class IVCComparator:
     def __init__(self) -> None:
         self._lib = get_dll()
         self._lib.SetMinVarVC.argtype = c_double, c_double
+        self._lib.SetRangesVC.argtypes = c_double, c_double
         self._lib.CompareIVC.argtype = (POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double),
                                         c_size_t)
         self._lib.CompareIVC.restype = c_double
@@ -55,4 +56,4 @@ class IVCComparator:
         self._lib.SetMinVarVC(c_double(min_var_v), c_double(min_var_c))
 
     def set_ranges(self, range_v: float, range_c: float) -> None:
-        self._lib.SetRanges(c_double(range_v), c_double(range_c))
+        self._lib.SetRangesVC(c_double(range_v), c_double(range_c))
